@@ -1,0 +1,6 @@
+
+
+- unified error output for memory errors
+- support replacement DIMM table
+- decode syndromes on K8? (from EDAC)
+

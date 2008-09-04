@@ -1,0 +1,41 @@
+<newer changes first>
+
+Support AMD Fam10h/11h CPUs (Joachim Deguara)
+Add switch to use LOG_ERR for syslog messages
+Various misc. cleanups
+mcelog now logs summaries of some serious events into syslog by default
+Fix syslog multiline logging
+Separate decoding output and error messages
+Automatic dependency generation in Makefile
+Many cleanups in DMI decoding
+Add DIMM database and error triggers
+Automatic sanity check for DMI information and enable by default
+Add support for decoding Intel Core2 machine checks
+Simple decoding of the TSC value into uptime for Intel CPUs
+Add the MCE design paper.
+Decode Intel thermal events properly
+Add some "RAMs" to K8 ECC strings in futile hope that users will get 
+	the hint
+Allow modifier command line options after --ascii
+Don't print decoded address twice for --ascii
+Fix SMBIOS anchor scan to work on more machines and don't crash when 
+	no anchor found.
+Fix --ascii reparsing of mcelog output.
+Add --filter and filter out known broken K8 GART errors
+Add --ignorenodev argument and use in cron script (avoids cron errors
+in Xen guest kernels) 
+Add new --dmi argument to look up machine check addresses in SMBIOS
+(warning unreliable due to wide spread bios bugs) 
+Fix argument decoding (support --, allow arguments in any order)
+Clarify --ascii in the manpage
+Support for AMD K8 Revision F machine check DRAM error thresholding 
+	from Jacob Shin <jacob.shin@amd.com>
+Add P4 decoder contributed by "Guo, Racing" <racing.guo@intel.com> for
+	Intel P4 and Xeon.
+Add K8 decoder from 2.4 kernel code to decode Opteron/Athlon64 logs.
+	(code mostly from Eric Morton and Andi Kleen)  
+Add --ascii function to decode fatal kernel output.
+Improve manpage
+Fix 32bit bugs
+Fix uninitialized variable in check_cpu
+Minor cleanups

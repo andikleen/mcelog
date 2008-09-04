@@ -1,0 +1,2 @@
+#!/bin/bash
+/usr/sbin/mcelog --ignorenodev --filter >> /var/log/mcelog

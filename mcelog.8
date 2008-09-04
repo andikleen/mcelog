@@ -1,0 +1,147 @@
+.TH MCELOG 8 "Mar 2004" "SuSE Labs" "Linux's Administrator's Manual"
+.SH NAME
+mcelog \- Print machine check log from x86-64 kernel.
+.SH SYNOPSIS
+mcelog [options] [device]
+.br
+mcelog [options] \-\-ascii
+.br
+mcelog [options] \-\-drop-old-memory
+.br
+mcelog [options] \-\-reset-memory locator
+.br
+mcelog [options] \-\-dump-memory[=locator]
+.SH DESCRIPTION
+Linux x86-64 kernels since 2.6.4 don't print recoverable machine check errors
+to the kernel log anymore. Instead they are saved into a special 
+kernel buffer accessible using
+.I /dev/mcelog.
+mcelog reads /dev/mcelog and prints the stored machine check records
+to stdout. Then the stored machine check records in the kernel
+buffer are deleted.
+
+When the 
+.B \-\-syslog
+option is specified redirect output to system log. The 
+.B \-\-syslog-error
+option causes the errors to be logged as 
+.I LOG_ERR.
+Some one line summies of errors are also always logged to the syslog.
+
+When
+.B \-\-k8
+is specified assume the events are for a AMD Opteron or Athlon 64 or Athlon
+FX CPU. 
+With
+.B \-\-p4
+is specified assume the events are for a Intel Pentium 4 or Intel (older) Xeon.
+With 
+.B \-\-core2
+assume the events are for a Intel Core2 CPU or Intel (newer) Xeon.
+When 
+.B \-\-generic 
+all the fields are dumped without CPU specific decoding.
+Default is to decode for the CPU mcelog is running on.
+
+With the
+.B \-\-dmi
+option mcelog will look up the addresses reported in machine
+checks in the 
+.I SMBIOS/DMI
+tables of the BIOS.
+This can sometimes tell you which DIMM or memory controller
+has developed a problem. More often the information reported
+by the BIOS is either subtly or obviously wrong or useless.
+This option requires that mcelog has read access to /dev/mem
+(normally requires root) and runs on the same machine
+in the same hardware configuration as when the machine check
+event happened.
+
+When 
+.B \-\-ignorenodev
+is specified then mcelog will exit silently when the device
+cannot be opened. This is useful in virtualized environment
+with limited devices.
+
+When 
+.B \-\-filter
+is specified 
+.I mcelog
+will filter out known broken machine check events.
+
+When a device is specified the machine check logs are read from
+device instead of the default
+.I /dev/mcelog.
+
+With the 
+.B \-\-ascii
+option mcelog decodes a fatal machine check panic generated
+by the kernel ("CPU n: Machine Check Exception ...") in ASCII from stdout.
+This is useful to make sense of the hexadecimal numbers in there.
+Note that when the panic comes from a different machine than 
+where mcelog is running on you might need to specify the correct
+architecture (
+.I \-\-k8
+or
+.I \-\-p4 
+or 
+.I \-\-core2
+).
+
+.B \-\-database filename
+specifies the memory module error database file. Default is
+/var/lib/memory-errors.  It is only used together with DMI decoding.
+
+
+.B \-\-error\-trigger=cmd,thresh
+When a memory module accumulates 
+.I thresh
+errors in the err database run command 
+.I cmd. 
+
+.B \-\-drop-old-memory
+Drop old DIMMs in the memory module database that are not plugged in
+anymore.
+
+.B \-\-reset\-memory=locator
+When the DIMMs have suitable unique serial numbers mcelog
+will automatically detect changed DIMMs. When the DIMMs don't
+have those the user will have to use this option when changing
+a DIMM to reset the error count in the error database.
+.I Locator 
+is the memory slot identifier printed on the motherboard.
+
+.B \-\-dump-memory[=locator]
+Dump error database information for memory module located
+at 
+.I locator.
+When no locator is specified dump all.
+
+.SH NOTES
+The kernel prefers old messages over new. If the log buffer overflows
+only old ones will be kept.
+
+The exact output depends on the CPU.
+
+This program should be run regularly from cron to collect
+machine check events.
+
+SMBIOS/DMI output is unreliable and sometimes wrong. Not Linux's
+fault - complain to your motherboard vendor. mcelog does some sanity
+checks to distingush bad BIOS from good BIOS but it is not 100% 
+fool proof.
+
+mcelog will report serious errors to the syslog during decoding.
+
+.SH FILES
+/dev/mcelog (char 10, minor 227) 
+.br
+/var/lib/memory-errors
+.br
+Memory error database
+.SH SEE ALSO
+AMD x86-64 architecture programmer's manual, Volume 2, System programming
+.br
+IA32 Intel Architecture Software developer's manual, Volume 3, System programming guide
+.br
+Datasheet of your CPU.

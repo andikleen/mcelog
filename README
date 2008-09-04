@@ -1,0 +1,11 @@
+
+The latest x86-64 2.6 kernel won't log machine check errors to the
+kernel log anymore. You need this tool to decode them.
+
+Create the device first.
+
+mknod /dev/mcelog c 10 227
+
+This program is licensed under the subject of the GNU Public General
+License, v.2
+
