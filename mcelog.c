@@ -1,4 +1,6 @@
 /* Copyright (C) 2004,2005,2006 Andi Kleen, SuSE Labs.
+   Copyright (C) 2008 Intel Corporation 
+   Authors: Andi Kleen, Ying Huang
    Decode IA32/x86-64 machine check events in /dev/mcelog. 
 
    mcelog is free software; you can redistribute it and/or
