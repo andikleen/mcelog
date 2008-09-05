@@ -282,18 +282,22 @@ void check_cpu(void)
 		fprintf(stderr, "mcelog: warning: Cannot open /proc/cpuinfo\n");
 } 
 
-char *skipgunk(char *s)
+char *skipspace(char *s)
 {
 	while (isspace(*s))
-		++s; 
+		++s;
+	return s;
+}
+
+char *skipgunk(char *s)
+{
+	s = skipspace(s);
 	if (*s == '<') { 
 		s += strcspn(s, ">"); 
 		if (*s == '>') 
 			++s; 
 	}
-	while (isspace(*s))
-		++s; 
-	return s;
+	return skipspace(s);
 }
 
 void dump_mce_final(struct mce *m, char *symbol, int missing)
@@ -317,6 +321,8 @@ void decodefatal(FILE *inf)
 	int missing = 0; 
 	char symbol[100];
 	int data = 0;
+	int next = 0;
+	char *s = NULL;
 
 	ascii_mode = 1;
 	if (do_dmi)
@@ -327,43 +333,44 @@ void decodefatal(FILE *inf)
 	k = 0;
 	memset(&m, 0, sizeof(struct mce));
 	symbol[0] = '\0';
-	while (getdelim(&line, &linelen, '\n', inf) > 0) { 
+	while (next > 0 || getdelim(&line, &linelen, '\n', inf) > 0) { 
 		int n = 0;
-		char *s = skipgunk(line), *p;
+
+		s = s ? s + next : line;
+		s = skipgunk(s);
+		next = 0;
 
 		if (!strncmp(s, "CPU", 3)) { 
 			unsigned cpu = 0, bank = 0;
 			n = sscanf(s,
-	       "CPU %u: Machine Check Exception: %16Lx Bank %d: %016Lx",
-			       &cpu,
-			       &m.mcgstatus,
-			       &bank,
-			       &m.status
-			       );
+	       "CPU %u: Machine Check Exception: %16Lx Bank %d: %016Lx%n",
+				   &cpu,
+				   &m.mcgstatus,
+				   &bank,
+				   &m.status,
+				   &next);
 			if (n == 1) {
-				n = sscanf(s, "CPU %u %u", &cpu, &bank);
+				n = sscanf(s, "CPU %u %u%n", &cpu, &bank, &next);
 				m.cpu = cpu;
 				m.bank = bank;
-				if (n != 2) 
+				if (n < 2) 
 					missing++;
-				
-				if ((p = strstr(s, "TSC")) != NULL) {
-					if (sscanf(p,"TSC %Lx", &m.tsc)!=1)
-						missing++;
-				}
 			} else { 
 				m.cpu = cpu;
 				m.bank = bank;
-				if (n != 4) 
+				if (n < 4) 
 					missing++; 
 
 			}
 		} 
 		else if (!strncmp(s, "STATUS", 6)) {
-			if (sscanf(s,"STATUS %Lx MCGSTATUS %Lx", 
-				   &m.status,  &m.mcgstatus) != 2)
-				missing++;			
-		} 
+			if (sscanf(s,"STATUS %Lx%n", &m.status, &next) < 1)
+				missing++;
+		}
+		else if (!strncmp(s, "MCGSTATUS", 6)) {
+			if (sscanf(s,"MCGSTATUS %Lx%n", &m.mcgstatus, &next) < 1)
+				missing++;
+		}
 		else if (!strncmp(s, "RIP", 3)) { 
 			unsigned cs = 0; 
 
@@ -372,28 +379,28 @@ void decodefatal(FILE *inf)
 			else
 				s += 3; 
 
-			n = sscanf(s, "%02x:<%016Lx> {%100s}",
+			n = sscanf(s, "%02x:<%016Lx> {%100s}%n",
 				   &cs,
 				   &m.rip, 
-				   symbol); 
+				   symbol, &next); 
 			m.cs = cs;
 			if (n < 2) 
 				missing++; 
 		} 
-
 		else if (!strncmp(s, "TSC",3)) { 
-			if ((n = sscanf(s, "TSC %Lx", &m.tsc)) != 1) 
+			if ((n = sscanf(s, "TSC %Lx%n", &m.tsc, &next)) < 1) 
 				missing++; 
 		}
 		else if (!strncmp(s, "ADDR",4)) { 
-			if ((n = sscanf(s, "ADDR %Lx", &m.addr)) != 1) 
+			if ((n = sscanf(s, "ADDR %Lx%n", &m.addr, &next)) < 1) 
 				missing++;
 		}
 		else if (!strncmp(s, "MISC",4)) { 
-			if ((n = sscanf(s, "MISC %Lx", &m.misc)) != 1) 
+			if ((n = sscanf(s, "MISC %Lx%n", &m.misc, &next)) < 1) 
 				missing++; 
 		}
 		else { 
+			s = skipspace(s);
 			if (*s && data) { 
 				dump_mce_final(&m, symbol, missing); 
 				data = 0;
