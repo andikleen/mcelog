@@ -116,9 +116,31 @@ void Wprintf(char *fmt, ...)
 	va_end(ap);
 }
 
+char *extended_bankname(unsigned bank) 
+{
+	static char buf[64];
+	switch (bank) { 
+	case MCE_THERMAL_BANK:
+		return "THERMAL EVENT";
+	case MCE_TIMEOUT_BANK:
+		return "Timeout waiting for exception on other CPUs";
+	case K8_MCE_THRESHOLD_BASE ... K8_MCE_THRESHOLD_TOP:
+		return k8_bank_name(bank);
+
+		/* add more extended banks here */
+
+	default:
+		sprintf(buf, "Undecoded extended event %x", bank);
+		return buf;
+	} 
+}
+
 char *bankname(unsigned bank) 
 { 
 	static char numeric[64];
+	if (bank >= MCE_EXTENDED_BANK) 
+		return extended_bankname(bank);
+
 	switch (cputype) { 
 	case CPU_K8:
 		return k8_bank_name(bank);

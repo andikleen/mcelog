@@ -28,8 +28,6 @@
 #include "p4.h"
 #include "core2.h"
 
-#define BANK_THERMAL 128
-
 /* decode mce for P4/Xeon and Core2 family */
 
 static inline int test_prefix(int nr, __u32 value)
@@ -285,7 +283,7 @@ static void decode_thermal(struct mce *log)
 
 void decode_intel_mc(struct mce *log, int cpu)
 {
-	if (log->bank == BANK_THERMAL) { 
+	if (log->bank == MCE_THERMAL_BANK) { 
 		decode_thermal(log);
 		return;
 	}
@@ -304,8 +302,6 @@ void decode_intel_mc(struct mce *log, int cpu)
 char *intel_bank_name(int num)
 {
 	static char bname[64];
-	if (num == BANK_THERMAL) 
-		return "THERMAL EVENT"; 
 	sprintf(bname, "BANK %d", num);
 	return bname;
 }

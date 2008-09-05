@@ -49,6 +49,9 @@ struct mce {
 /* Software defined banks */
 #define MCE_EXTENDED_BANK	128
 
+#define MCE_THERMAL_BANK	(MCE_EXTENDED_BANK + 0)
+#define MCE_TIMEOUT_BANK        (MCE_EXTENDED_BANK + 90)
+
 #define MCI_THRESHOLD_OVER  (1ULL<<48)  /* threshold error count overflow */
 
 #define MCI_STATUS_VAL   (1ULL<<63)  /* valid error */

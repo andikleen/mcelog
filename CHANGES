@@ -1,5 +1,6 @@
 <newer changes first>
 
+Add decoding of broadcast timeouts
 Add --version argument
 Fix parsing of multiple fields on a line in --ascii 
 Add --raw mode for easier machine decoding (Ying Huang)
