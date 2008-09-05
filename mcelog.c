@@ -183,16 +183,17 @@ static void print_tsc(int cpunum, __u64 tsc)
 void dump_mce(struct mce *m) 
 {
 	int ismemerr = 0;
+	unsigned cpu = m->extcpu ? m->extcpu : m->cpu;
 
 	Wprintf("HARDWARE ERROR. This is *NOT* a software problem!\n");
 	Wprintf("Please contact your hardware vendor\n");
 	/* should not happen */
 	if (!m->finished)
 		Wprintf("not finished?\n");
-	Wprintf("CPU %d %s ", m->cpu, bankname(m->bank));
+	Wprintf("CPU %d %s ", cpu, bankname(m->bank));
 	if (m->tsc) {
 		Wprintf("TSC ");
-		print_tsc(m->cpu, m->tsc);
+		print_tsc(cpu, m->tsc);
 		if (m->mcgstatus & MCI_STATUS_UC)
 			Wprintf(" (upper bound, found by polled driver)");
 		Wprintf("\n");
