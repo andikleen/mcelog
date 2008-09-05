@@ -139,17 +139,6 @@ void resolveaddr(unsigned long addr)
 	/* Should check for PCI resources here too */
 }
 
-int mce_filter_k8(struct mce *m)
-{	
-	/* Filter out GART errors */
-	if (m->bank == 4) { 
-		unsigned short exterrcode = (m->status >> 16) & 0x0f;
-		if (exterrcode == 5 && (m->status & (1ULL<<61)))
-			return 0;
-	} 
-	return 1;
-}
-
 int mce_filter(struct mce *m)
 {
 	if (!filter_bogus) 

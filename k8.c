@@ -267,3 +267,14 @@ char *k8_bank_name(int num)
 	sprintf(buf, "%d %s", num, s);
 	return buf;
 }
+
+int mce_filter_k8(struct mce *m)
+{	
+	/* Filter out GART errors */
+	if (m->bank == 4) { 
+		unsigned short exterrcode = (m->status >> 16) & 0x0f;
+		if (exterrcode == 5 && (m->status & (1ULL<<61)))
+			return 0;
+	} 
+	return 1;
+}
