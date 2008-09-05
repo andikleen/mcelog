@@ -3,6 +3,7 @@
 #include <assert.h>
 #include "mcelog.h"
 #include "core2.h"
+#include "bitfield.h"
 
 /* Decode P6 family (Core2) model specific errors. 
    The generic errors are decoded in p4.c */
@@ -41,12 +42,6 @@ static char *bus_queue_error_type[] = {
 	[5] = "BQ_ERR_AERR1_TYPE",
 };
 
-static char *reserved_3bits[8];
-static char *reserved_1bit[2];
-static char *reserved_2bits[4];
-
-#define SINGLEBIT(n,d) static char *n[2] = { [1] = d }; 
-
 SINGLEBIT(frc, "FRC error");
 SINGLEBIT(berr, "BERR");
 SINGLEBIT(int_binit, "internal BINIT");
@@ -60,15 +55,7 @@ SINGLEBIT(aerr, "parity error");
 SINGLEBIT(uecc, "uncorrectable ECC");
 SINGLEBIT(cecc, "correctable ECC");
 
-struct field {
-	int start_bit;
-	char **str;
-	int stringlen;
-};
-
-#define FIELD(start_bit, name) { start_bit, name, NELE(name) }
-
-struct field fields[] = { 
+static struct field core2_status[] = { 
 	FIELD(16, reserved_3bits),
 	FIELD(19, bus_queue_req_type),
 	FIELD(25, bus_queue_error_type),
@@ -93,43 +80,9 @@ struct field fields[] = {
 	{},
 };
 
-static u64 bitmask(u64 i)
-{
-	u64 mask = 1;
-	while (mask < i) 
-		mask = (mask << 1) | 1; 
-	return mask;
-}
-
 void core2_decode_model(u64 status)
 {
-	struct field *f;
-	int linelen = 0;
-	char *delim = "";
-	
-	for (f = &fields[0]; f->str; f++) { 
-		u64 v = (status >> f->start_bit) & bitmask(f->stringlen - 1);
-		char *s = NULL;
-		if (v < f->stringlen)
-			s = f->str[v]; 
-		if (!s) { 
-			if (v == 0) 
-				continue;
-			char buf[60];
-			s = buf; 
-			snprintf(buf, sizeof buf, "<%u:%Lx>", f->start_bit, v);
-		}
-		int len = strlen(s);
-		if (linelen + len > 75) {
-			delim = "\n";
-			linelen = 0;
-		}
-		Wprintf("%s%s", delim, s);
-		delim = " ";
-		linelen += len + 1; 
-	}
-	if (linelen > 0) 
-		Wprintf("\n");
+	decode_bitfield(status, core2_status);
 	if ((status >> 47) & 0xff)
 		Wprintf("ECC syndrome: %Lx\n", (status >> 47) & 0xff);
 }
