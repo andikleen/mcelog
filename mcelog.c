@@ -33,6 +33,7 @@
 #include "dmi.h"
 #include "dimm.h"
 #include "tsc.h"
+#include "version.h"
 
 enum cputype cpu = CPU_GENERIC;	
 
@@ -574,6 +575,9 @@ int main(int ac, char **av)
 			argsleft(av);
 			checkdmi();
 			decodefatal(stdin); 
+			exit(0);
+		} else if (!strcmp(*av, "--version")) { 
+			fprintf(stderr, "mcelog %s\n", MCELOG_VERSION);
 			exit(0);
 		} else if (dimm_cmd(av)) {
 			exit(0);

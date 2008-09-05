@@ -11,6 +11,8 @@ mcelog [options] \-\-drop-old-memory
 mcelog [options] \-\-reset-memory locator
 .br
 mcelog [options] \-\-dump-memory[=locator]
+.br
+mcelog \-\-version
 .SH DESCRIPTION
 Linux x86-64 kernels since 2.6.4 don't print recoverable machine check errors
 to the kernel log anymore. Instead they are saved into a special 
@@ -117,6 +119,8 @@ at
 .I locator.
 When no locator is specified dump all.
 
+.B \-\-version
+displays the version of mcelog and exits.
 .SH NOTES
 The kernel prefers old messages over new. If the log buffer overflows
 only old ones will be kept.
