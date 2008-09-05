@@ -432,8 +432,9 @@ void usage(void)
 "--p4|--k8|--core2|--generic Set CPU type to decode\n"
 "--cpumhz MHZ        Set CPU Mhz to decode\n"
 "--database fn       Set filename of DIMM database (default %s)\n"
-"--error-trigger cmd,thresh   Run cmd on exceeding thresh errors per DIMM\n",
-		dimm_db_fn
+"--error-trigger cmd,thresh   Run cmd on exceeding thresh errors per DIMM\n"
+"--raw		     (with --ascii) Dump in raw ASCII format for machine processing\n",
+	dimm_db_fn
 );
 	exit(1);
 }
