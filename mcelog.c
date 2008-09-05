@@ -50,6 +50,7 @@ double cpumhz;
 char *error_trigger;
 unsigned error_thresh = 20;
 int ascii_mode;
+int dump_raw_ascii;
 
 static void opensyslog(void)
 {
@@ -229,6 +230,21 @@ void dump_mce(struct mce *m)
 	}
 }
 
+void dump_mce_raw_ascii(struct mce *m)
+{
+	/* should not happen */
+	if (!m->finished)
+		Wprintf("not finished?\n");
+	Wprintf("CPU %u\n", m->extcpu ? m->extcpu : m->cpu);
+	Wprintf("BANK %d\n", m->bank);
+	Wprintf("TSC 0x%Lx\n", m->tsc);
+	Wprintf("RIP 0x%02x:0x%Lx\n", m->cs, m->rip);
+	Wprintf("MISC 0x%Lx\n", m->misc);
+	Wprintf("ADDR 0x%Lx\n", m->addr);
+	Wprintf("STATUS 0x%Lx\n", m->status);
+	Wprintf("MCGSTATUS 0x%Lx\n\n", m->mcgstatus);
+}
+
 void check_cpu(void)
 { 
 	FILE *f;
@@ -283,9 +299,12 @@ char *skipgunk(char *s)
 void dump_mce_final(struct mce *m, char *symbol, int missing)
 {
 	m->finished = 1;
-	dump_mce(m);
-	if (symbol[0])
-		Wprintf("RIP: %s\n", symbol);
+	if (!dump_raw_ascii) {
+		dump_mce(m);
+		if (symbol[0])
+			Wprintf("RIP: %s\n", symbol);
+	} else
+		dump_mce_raw_ascii(m);
 }
 
 /* Decode ASCII input for fatal messages */
@@ -379,7 +398,8 @@ void decodefatal(FILE *inf)
 				dump_mce_final(&m, symbol, missing); 
 				data = 0;
 			} 
-			Wprintf("%s", line); 
+			if (!dump_raw_ascii)
+				Wprintf("%s", line);
 		} 
 		if (n > 0) 
 			data = 1;
@@ -508,6 +528,8 @@ int modifier(char *s, char *next)
 	} else if (!strcmp(s, "--syslog-error")) { 
 		syslog_level = LOG_ERR;
 		use_syslog = 1;
+ 	} else if (!strcmp(s, "--dump-raw-ascii") || !strcmp(s, "--raw")) {
+ 		dump_raw_ascii = 1;
 	} else
 		return 0;
 	return gotarg;
@@ -624,8 +646,11 @@ int main(int ac, char **av)
 		struct mce *mce = (struct mce *)(buf + i*recordlen);
 		if (!mce_filter(mce)) 
 			continue;
-		Wprintf("MCE %d\n", i); 
-		dump_mce(mce); 
+		if (!dump_raw_ascii) {
+			Wprintf("MCE %d\n", i);
+			dump_mce(mce);
+		} else
+			dump_mce_raw_ascii(mce);
 	}
 
 	if (recordlen < sizeof(struct mce))  {

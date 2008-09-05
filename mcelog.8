@@ -71,6 +71,13 @@ is specified
 .I mcelog
 will filter out known broken machine check events.
 
+When 
+.B \-\-raw
+is specified
+.I mcelog
+will not decode, but just dump the mcelog in a raw hex format. This
+can be useful for automatic post processing.
+
 When a device is specified the machine check logs are read from
 device instead of the default
 .I /dev/mcelog.
