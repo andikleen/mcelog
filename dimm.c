@@ -1,7 +1,22 @@
-/* manage dimm database.
+/* Copyright (C) 2006 Andi Kleen, SuSE Labs.
+   Manage dimm database.
    this is used to keep track of the error counts per DIMM
    so that we can take action when one starts to experience a 
-   unusual large number of them. */
+   unusual large number of them. Still WIP.
+
+   mcelog is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public
+   License as published by the Free Software Foundation; version
+   2.
+
+   mcelog is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should find a copy of v2 of the GNU General Public License somewhere
+   on your Linux system; if not, write to the Free Software Foundation, 
+   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 
 /* TBD:
    Put error trigger information into database? */
