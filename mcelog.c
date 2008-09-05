@@ -35,7 +35,7 @@
 #include "tsc.h"
 #include "version.h"
 
-enum cputype cpu = CPU_GENERIC;	
+enum cputype cputype = CPU_GENERIC;	
 
 char *logfn = "/dev/mcelog";
 char *dimm_db_fn = "/var/lib/memory-errors"; 
@@ -116,7 +116,7 @@ void Wprintf(char *fmt, ...)
 char *bankname(unsigned bank) 
 { 
 	static char numeric[64];
-	switch (cpu) { 
+	switch (cputype) { 
 	case CPU_K8:
 		return k8_bank_name(bank);
 	case CPU_CORE2:
@@ -152,7 +152,7 @@ int mce_filter(struct mce *m)
 	if (!filter_bogus) 
 		return 1;
 	/* Filter out known broken MCEs */
-	switch (cpu) {
+	switch (cputype) {
 	case CPU_K8:
 		return mce_filter_k8(m);
 		/* add more buggy CPUs here */
@@ -171,9 +171,9 @@ static void print_tsc(int cpunum, __u64 tsc)
 	char buf[200];
 	int ret; 
 	if (cpu_forced) 
-		ret = decode_tsc_forced(buf, cpu, cpumhz, tsc);
+		ret = decode_tsc_forced(buf, cputype, cpumhz, tsc);
 	else
-		ret = decode_tsc_current(buf, cpu, tsc);
+		ret = decode_tsc_current(buf, cputype, tsc);
 	if (ret >= 0) 
 		Wprintf(buf);
 	else
@@ -207,13 +207,13 @@ void dump_mce(struct mce *m)
 		Wprintf("ADDR %Lx ", m->addr);
 	if (m->rip | m->misc | m->addr)	
 		Wprintf("\n");
-	switch (cpu) { 
+	switch (cputype) { 
 	case CPU_K8:
 		ismemerr = decode_k8_mc(m); 
 		break;
 	case CPU_CORE2:
 	case CPU_P4:
-		decode_intel_mc(m, cpu);
+		decode_intel_mc(m, cputype);
 		break;
 	/* add handlers for other CPUs here */
 	default:
@@ -247,12 +247,12 @@ void check_cpu(void)
 		if (found == 2) {
 			if (!strcmp(vendor,"AuthenticAMD") && 
 			    ( family == 15 || family == 16 || family == 17) )
-				cpu = CPU_K8;
+				cputype = CPU_K8;
 			if (!strcmp(vendor,"GenuineIntel")) {
 				if (family == 15)
-					cpu = CPU_P4;
+					cputype = CPU_P4;
 				else if (family == 6)
-					cpu = CPU_CORE2;
+					cputype = CPU_CORE2;
 			}
 			/* Add checks for other CPUs here */	
 		} else {
@@ -452,16 +452,16 @@ int modifier(char *s, char *next)
 	char *arg;
 	int gotarg = 1;
 	if (!strcmp(s, "--k8")) {
-		cpu = CPU_K8;
+		cputype = CPU_K8;
 		cpu_forced = 1;
 	} else if (!strcmp(s, "--p4")) {
-		cpu = CPU_P4;
+		cputype = CPU_P4;
 		cpu_forced = 1;
 	} else if (!strcmp(s, "--generic")) { 
-		cpu = CPU_GENERIC;
+		cputype = CPU_GENERIC;
 		cpu_forced = 1;
 	} else if (!strcmp(s, "--core2")) { 
-		cpu = CPU_CORE2;
+		cputype = CPU_CORE2;
 		cpu_forced = 1;
 	} else if (!strcmp(s, "--ignorenodev")) { 
 		ignore_nodev = 1;
