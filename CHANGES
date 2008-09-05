@@ -1,5 +1,11 @@
 <newer changes first>
 
+Add --version argument
+Fix parsing of multiple fields on a line in --ascii 
+Add --raw mode for easier machine decoding (Ying Huang)
+Skip printk timestamp headers (Ying Huang)
+Support more than 255 CPUs 
+Update for upcoming kernel interface "struct mce" extensions
 Support AMD Fam10h/11h CPUs (Joachim Deguara)
 Add switch to use LOG_ERR for syslog messages
 Various misc. cleanups
