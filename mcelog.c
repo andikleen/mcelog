@@ -326,6 +326,8 @@ void dump_mce_final(struct mce *m, char *symbol, int missing)
 		dump_mce(m);
 		if (symbol[0])
 			Wprintf("RIP: %s\n", symbol);
+		if (missing) 
+			Wprintf("(Fields were incomplete)\n");
 	} else
 		dump_mce_raw_ascii(m);
 }
@@ -383,11 +385,11 @@ void decodefatal(FILE *inf)
 			}
 		} 
 		else if (!strncmp(s, "STATUS", 6)) {
-			if (sscanf(s,"STATUS %Lx%n", &m.status, &next) < 1)
+			if ((n = sscanf(s,"STATUS %Lx%n", &m.status, &next)) < 1)
 				missing++;
 		}
 		else if (!strncmp(s, "MCGSTATUS", 6)) {
-			if (sscanf(s,"MCGSTATUS %Lx%n", &m.mcgstatus, &next) < 1)
+			if ((n = sscanf(s,"MCGSTATUS %Lx%n", &m.mcgstatus, &next)) < 1)
 				missing++;
 		}
 		else if (!strncmp(s, "RIP", 3)) { 
