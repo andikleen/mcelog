@@ -292,6 +292,12 @@ char *skipspace(char *s)
 char *skipgunk(char *s)
 {
 	s = skipspace(s);
+ 	if (*s == '[') {
+ 		s += strcspn(s, "]");
+ 		if (*s == ']')
+ 			++s;
+ 	}
+	s = skipspace(s);
 	if (*s == '<') { 
 		s += strcspn(s, ">"); 
 		if (*s == '>') 
