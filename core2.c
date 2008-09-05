@@ -42,39 +42,26 @@ static char *bus_queue_error_type[] = {
 	[5] = "BQ_ERR_AERR1_TYPE",
 };
 
-SINGLEBIT(frc, "FRC error");
-SINGLEBIT(berr, "BERR");
-SINGLEBIT(int_binit, "internal BINIT");
-SINGLEBIT(ext_binit, "external BINIT");
-SINGLEBIT(response_parity, "response parity error");
-SINGLEBIT(bus_binit, "bus BINIT");
-SINGLEBIT(timeout_binit, "timeout BINIT (ROB timeout)");
-SINGLEBIT(hard_err, "hard error");
-SINGLEBIT(ierr, "IERR");
-SINGLEBIT(aerr, "parity error");
-SINGLEBIT(uecc, "uncorrectable ECC");
-SINGLEBIT(cecc, "correctable ECC");
-
 static struct field core2_status[] = { 
 	FIELD(16, reserved_3bits),
 	FIELD(19, bus_queue_req_type),
 	FIELD(25, bus_queue_error_type),
 	FIELD(25, bus_queue_error_type),
-	FIELD(28, frc),
-	FIELD(29, berr),
-	FIELD(30, int_binit),
+	SBITFIELD(28, "FRC error"),
+	SBITFIELD(29, "BERR"),
+	SBITFIELD(30, "internal BINIT"),
 	FIELD(31, reserved_1bit),
 	FIELD(32, reserved_3bits),
-	FIELD(35, ext_binit),
-	FIELD(36, response_parity),
-	FIELD(37, bus_binit),
-	FIELD(38, timeout_binit),
+	SBITFIELD(35, "external BINIT"),
+	SBITFIELD(36, "response parity error"),
+	SBITFIELD(37, "bus BINIT"),
+	SBITFIELD(38, "timeout BINIT (ROB timeout)"),
 	FIELD(39, reserved_3bits),
-	FIELD(42, hard_err),
-	FIELD(43, ierr),
-	FIELD(44, aerr),
-	FIELD(45, uecc),
-	FIELD(46, cecc),
+	SBITFIELD(42, "hard error"),
+	SBITFIELD(43, "IERR"),
+	SBITFIELD(44, "parity error"),
+	SBITFIELD(45, "uncorrectable ECC"),
+	SBITFIELD(46, "correctable ECC"),
 	/* [47..54]: ECC syndrome */
 	FIELD(55, reserved_2bits),
 	{},

@@ -1,5 +1,4 @@
-
-#define SINGLEBIT(n,d) static char *n[2] = { [1] = d }; 
+/* Generic bitfield decoder */
 
 struct field {
 	int start_bit;
@@ -8,6 +7,7 @@ struct field {
 };
 
 #define FIELD(start_bit, name) { start_bit, name, NELE(name) }
+#define SBITFIELD(start_bit, string) { start_bit, ((char * [2]) { NULL, string }), 2 }
 
 void decode_bitfield(u64 status, struct field *fields);
 
