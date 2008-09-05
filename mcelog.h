@@ -1,10 +1,12 @@
-
+ 
 typedef unsigned long long u64;
 typedef unsigned int u32;
+typedef unsigned short u16;
 typedef unsigned char u8;
 
 #define __u64 u64
 #define __u32 u32
+#define __u16 u16
 #define __u8  u8
 
 /* kernel structure: */
@@ -15,16 +17,28 @@ struct mce {
 	__u64 misc;
 	__u64 addr;
 	__u64 mcgstatus;
-	__u64 rip;	
+	__u64 rip;
 	__u64 tsc;	/* cpu time stamp counter */
-	__u64 res1;	/* for future extension */	
-	__u64 res2;	/* dito. */
-	__u8  cs;		/* code segment */
+	__u64 time;	/* wall time_t when error was detected */
+	__u8  cpuvendor;	/* cpu vendor as encoded in system.h */
+	__u8  pad1;
+	__u16 pad2;
+	__u32 cpuid;	/* CPUID 1 EAX */
+	__u8  cs;	/* code segment */
 	__u8  bank;	/* machine check bank */
 	__u8  cpu;	/* cpu that raised the error */
 	__u8  finished;   /* entry is valid */
-	__u32 pad;   
+	__u32 extcpu;	/* extended CPU number */
 };
+
+#define X86_VENDOR_INTEL	0
+#define X86_VENDOR_CYRIX	1
+#define X86_VENDOR_AMD		2
+#define X86_VENDOR_UMC		3
+#define X86_VENDOR_CENTAUR	5
+#define X86_VENDOR_TRANSMETA	7
+#define X86_VENDOR_NSC		8
+#define X86_VENDOR_NUM		9
 
 #define MCE_OVERFLOW 0		/* bit 0 in flags means overflow */
 
