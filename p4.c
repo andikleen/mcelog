@@ -83,7 +83,7 @@ static char* get_RRRR_str(__u8 rrrr)
 static char* get_PP_str(__u8 pp)
 {
 	static char* PP[] = {
-		"Originated-request",
+		"Local-CPU-originated-request",
 		"Responed-to-request",
 		"Observed-error-as-third-party",
 		"Generic"
