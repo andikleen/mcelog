@@ -1,11 +1,14 @@
 <newer changes first>
 
+Various bug fixes to the decoder
+Add --intel-family=... argument
+Better decoding of core2 events and explicit decoding of pre Core P6 cores
 Add decoding of broadcast timeouts
 Add --version argument
 Fix parsing of multiple fields on a line in --ascii 
 Add --raw mode for easier machine decoding (Ying Huang)
-Skip printk timestamp headers (Ying Huang)
-Support more than 255 CPUs 
+Skip printk timestamp headers in --ascii (Ying Huang)
+Support more than 255 CPUs (requires updated kernel)
 Update for upcoming kernel interface "struct mce" extensions
 Support AMD Fam10h/11h CPUs (Joachim Deguara)
 Add switch to use LOG_ERR for syslog messages
