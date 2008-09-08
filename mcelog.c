@@ -395,8 +395,8 @@ void decodefatal(FILE *inf)
 		else if (!strncmp(s, "RIP", 3)) { 
 			unsigned cs = 0; 
 
-			if (!strncmp(s, "RIP!INEXACT!", 12))
-				s += 12; 
+			if (!strncmp(s, "RIP !INEXACT!", 13))
+				s += 13; 
 			else
 				s += 3; 
 
