@@ -2,3 +2,5 @@
 *~
 mcelog
 dbquery
+*.orig
+*.rej
