@@ -37,7 +37,7 @@ dbquery: db.o dbquery.o
 
 depend: .depend
 
-.depend:
+.depend: ${SRC}
 	${CC} -MM -I. ${SRC} > .depend.X && mv .depend.X .depend
 
 include .depend
