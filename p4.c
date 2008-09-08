@@ -279,8 +279,11 @@ static void decode_thermal(struct mce *log)
 		Wprintf("Processor core is above trip temperature. Throttling enabled.\n");
 		Wprintf("Please check your system cooling.\n");
 		Wprintf("CPUs throttled. System performance will be impacted\n");
+		Lprintf("Processor core overheating. System performance will be impacted\n");
+		Lprintf("Please check your system cooling\n");
 	} else { 
 		Wprintf("Processor core below trip temperature. Throttling disabled\n");
+		Lprintf("Processor core below trip temperature. Normal performance again.\n");
 	} 
 }
 
