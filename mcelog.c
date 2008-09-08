@@ -357,7 +357,7 @@ void decodefatal(FILE *inf)
 	while (next > 0 || getdelim(&line, &linelen, '\n', inf) > 0) { 
 		int n = 0;
 
-		s = s ? s + next : line;
+		s = next > 0 ? s + next : line;
 		s = skipgunk(s);
 		next = 0;
 
