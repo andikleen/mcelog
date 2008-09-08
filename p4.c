@@ -300,12 +300,19 @@ void decode_intel_mc(struct mce *log, int cputype)
 
 	decode_mcg(log->mcgstatus);
 	decode_mci(log->status, cpu);
-	
-	if (test_prefix(11, (log->status & 0xffffL))) { 
-		if (cputype == CPU_CORE2)
+
+	if (test_prefix(11, (log->status & 0xffffL))) {
+		switch (cputype) {
+		case CPU_P6OLD:
+			p6old_decode_model(log->status);
+			break;
+		case CPU_CORE2:
 			core2_decode_model(log->status);
-		else
+			break;
+		case CPU_P4:
 			p4_decode_model(log->status & 0xffff0000L);
+			break;
+		}
 	}
 }
 

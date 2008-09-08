@@ -31,6 +31,7 @@
 #include <ctype.h>
 #include "mcelog.h"
 #include "k8.h"
+#include "intel.h"
 #include "p4.h"
 #include "dmi.h"
 #include "dimm.h"
@@ -144,8 +145,7 @@ char *bankname(unsigned bank)
 	switch (cputype) { 
 	case CPU_K8:
 		return k8_bank_name(bank);
-	case CPU_CORE2:
-	case CPU_P4:
+	CASE_INTEL_CPUS:
 		return intel_bank_name(bank);
 	/* add banks of other cpu types here */
 	default:
@@ -170,8 +170,7 @@ int mce_filter(struct mce *m)
 	case CPU_K8:
 		return mce_filter_k8(m);
 		/* add more buggy CPUs here */
-	case CPU_CORE2:
-	case CPU_P4:
+	CASE_INTEL_CPUS:
 		/* No bugs known */
 		return 1;
 	default:
@@ -226,8 +225,7 @@ void dump_mce(struct mce *m)
 	case CPU_K8:
 		ismemerr = decode_k8_mc(m); 
 		break;
-	case CPU_CORE2:
-	case CPU_P4:
+	CASE_INTEL_CPUS:
 		decode_intel_mc(m, cputype);
 		break;
 	/* add handlers for other CPUs here */
@@ -265,25 +263,24 @@ void check_cpu(void)
 	if (f != NULL) { 
 		int found = 0; 
 		int family; 
+		int model;
 		char vendor[64];
 		char *line = NULL;
 		size_t linelen = 0; 
-		while (getdelim(&line, &linelen, '\n', f) > 0 && found < 2) { 
+		while (getdelim(&line, &linelen, '\n', f) > 0 && found < 3) { 
 			if (sscanf(line, "vendor_id : %63[^\n]", vendor) == 1) 
 				found++; 
 			if (sscanf(line, "cpu family : %d", &family) == 1)
 				found++;
+			if (sscanf(line, "model : %d", &model) == 1)
+				found++;
 		} 
-		if (found == 2) {
+		if (found == 3) {
 			if (!strcmp(vendor,"AuthenticAMD") && 
 			    ( family == 15 || family == 16 || family == 17) )
 				cputype = CPU_K8;
-			if (!strcmp(vendor,"GenuineIntel")) {
-				if (family == 15)
-					cputype = CPU_P4;
-				else if (family == 6)
-					cputype = CPU_CORE2;
-			}
+			if (!strcmp(vendor,"GenuineIntel"))
+				cputype = select_intel_cputype(family, model);
 			/* Add checks for other CPUs here */	
 		} else {
 			fprintf(stderr, 
@@ -450,7 +447,7 @@ void usage(void)
 "  mcelog --dump-memory locator]\n"
 "  old can be either locator or name\n"
 "Options:\n"  
-"--p4|--k8|--core2|--generic Set CPU type to decode\n"
+"--p4|--k8|--core2|--generic|--intel-cpu=family,model Set CPU type to decode\n"
 "--cpumhz MHZ        Set CPU Mhz to decode\n"
 "--database fn       Set filename of DIMM database (default %s)\n"
 "--error-trigger cmd,thresh   Run cmd on exceeding thresh errors per DIMM\n"
@@ -512,6 +509,16 @@ int modifier(char *s, char *next)
 		cpu_forced = 1;
 	} else if (!strcmp(s, "--core2")) { 
 		cputype = CPU_CORE2;
+		cpu_forced = 1;
+	} else if (!strcmp(s, "--intel-cpu=")) { 
+		unsigned fam, mod;
+		if (sscanf(s + 12, "%u,%u", &fam, &mod) != 2)
+			usage();
+		select_intel_cputype(fam, mod);
+		if (cputype == CPU_GENERIC) {
+			fprintf(stderr, "Unknown Intel CPU\n");
+			usage();
+		}
 		cpu_forced = 1;
 	} else if (!strcmp(s, "--ignorenodev")) { 
 		ignore_nodev = 1;

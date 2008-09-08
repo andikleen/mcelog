@@ -39,7 +39,11 @@ With
 is specified assume the events are for a Intel Pentium 4 or Intel (older) Xeon.
 With 
 .B \-\-core2
-assume the events are for a Intel Core2 CPU or Intel (newer) Xeon.
+assume the events are for a Intel Core2 CPU or Intel Xeon 3000, 3200, 5100, 5300, 7300 
+series. When
+.B \-\-intel-cpu=family,model
+are specified then the family number and model number of the Intel CPU
+to be decoded should be specified (can be found in /proc/cpuinfo).
 When 
 .B \-\-generic 
 all the fields are dumped without CPU specific decoding.

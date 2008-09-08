@@ -1,0 +1,17 @@
+#include "mcelog.h"
+#include "intel.h"
+
+enum cputype select_intel_cputype(int family, int model)
+{
+	if (family == 15) { 
+		return CPU_P4;
+	} 
+	if (family == 6) { 
+		if (model < 0xf) 
+			return CPU_P6OLD;
+		else if (model == 0xf || model == 0x17) /* Merom/Penryn */
+			return CPU_CORE2;
+	}
+	Eprintf("Unknown Intel CPU type family %x model %x\n", family, model);
+	return family == 6 ? CPU_P6OLD : CPU_GENERIC;
+}

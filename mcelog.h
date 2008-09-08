@@ -81,7 +81,8 @@ void Lprintf(char *fmt, ...) PRINTFLIKE;
 
 enum cputype {
 	CPU_GENERIC,
-	CPU_CORE2,
+	CPU_P6OLD,
+	CPU_CORE2, /* 65nm and 45nm */
 	CPU_K8,
 	CPU_P4
 };
