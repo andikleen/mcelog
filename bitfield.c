@@ -45,3 +45,14 @@ void decode_bitfield(u64 status, struct field *fields)
 	if (linelen > 0) 
 		Wprintf("\n");
 }
+
+void decode_numfield(u64 status, struct numfield *fields)
+{
+	struct numfield *f;
+	for (f = fields; f->name; f++) {
+		u64 mask = (1ULL << (f->end - f->start - 1)) - 1;
+		u64 v = (status >> f->start) & mask;
+		if (v > 0)
+			Wprintf("%s: %Lu\n", f->name, v);		
+	} 
+}

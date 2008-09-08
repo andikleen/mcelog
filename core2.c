@@ -67,9 +67,13 @@ static struct field core2_status[] = {
 	{},
 };
 
+static struct numfield core2_status_numbers[] = { 
+	NUMBER(47, 54, "ECC syndrome"),
+	{}
+};
+
 void core2_decode_model(u64 status)
 {
 	decode_bitfield(status, core2_status);
-	if ((status >> 47) & 0xff)
-		Wprintf("ECC syndrome: %Lx\n", (status >> 47) & 0xff);
+	decode_numfield(status, core2_status_numbers);
 }
