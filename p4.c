@@ -176,7 +176,7 @@ static void decode_mca(__u32 mca)
 		if (mca == 0x400)
 			Wprintf("Internal Timer error\n");
 		else
-			Wprintf("Internal unclassified errors\n");
+			Wprintf("Internal unclassified error: %x\n", mca & 0xffff);
 	} else if (test_prefix(11, mca)) {
 		Wprintf("BUS %s %s %s %s %s Error\n",
 				get_LL_str((mca & BUS_LL_MASK) >> BUS_LL_SHIFT),
