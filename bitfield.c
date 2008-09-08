@@ -20,15 +20,12 @@ void decode_bitfield(u64 status, struct field *fields)
 	struct field *f;
 	int linelen = 0;
 	char *delim = "";
-	u64 parsed = 0;
-
+	
 	for (f = fields; f->str; f++) { 
-		u64 mask = bitmask(f->stringlen - 1);
-		u64 v = (status >> f->start_bit) & mask;
+		u64 v = (status >> f->start_bit) & bitmask(f->stringlen - 1);
 		char *s = NULL;
 		if (v < f->stringlen)
-			s = f->str[v]; 		
-		parsed |= (mask << f->start_bit);
+			s = f->str[v]; 
 		if (!s) { 
 			if (v == 0) 
 				continue;
@@ -47,12 +44,4 @@ void decode_bitfield(u64 status, struct field *fields)
 	}
 	if (linelen > 0) 
 		Wprintf("\n");
-
-	if (status & ~parsed) { 
-		int k;
-		for (k = 0; k < 64; k++) { 
-			if ((status & ~parsed) & (1ULL << k))
-				Wprintf("Unknown bit %u set\n", k);
-		}
-	} 
 }
