@@ -159,7 +159,9 @@ static void decode_mca(__u32 mca)
 		return;
 	}
 
-	if (test_prefix(4, mca)) {
+	if ((mca >> 2) == 3) { 
+		Wprintf("%s Generic memory hierarchy error\n", get_LL_str(mca & 3));
+	} else if (test_prefix(4, mca)) {
 		Wprintf("%s TLB %s Error\n",
 				get_TT_str((mca & TLB_TT_MASK) >> TLB_TT_SHIFT),
 				get_LL_str((mca & TLB_LL_MASK) >> 
