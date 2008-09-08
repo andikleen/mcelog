@@ -287,18 +287,20 @@ static void decode_thermal(struct mce *log, int cpu)
 	} 
 }
 
-void decode_intel_mc(struct mce *log, int cpu)
+void decode_intel_mc(struct mce *log, int cputype)
 {
+	int cpu = log->extcpu ? log->extcpu : log->cpu;
+
 	if (log->bank == MCE_THERMAL_BANK) { 
-		decode_thermal(log, log->cpu);
+		decode_thermal(log, cpu);
 		return;
 	}
 
 	decode_mcg(log->mcgstatus);
-	decode_mci(log->status, log->cpu);
+	decode_mci(log->status, cpu);
 	
 	if (test_prefix(11, (log->status & 0xffffL))) { 
-		if (cpu == CPU_CORE2)
+		if (cputype == CPU_CORE2)
 			core2_decode_model(log->status);
 		else
 			p4_decode_model(log->status & 0xffff0000L);
