@@ -149,10 +149,10 @@ static void decode_mca(__u32 mca)
 		[4] = "FRC error",
 	};
 
-	mca = mca & 0xFFFF;
-
-	if (mca & (1UL << 12))
+	if (mca & (1UL << 12)) {
 		Wprintf("corrected filtering (some unreported errors in same region)\n");
+		mca &= ~(1UL << 12);
+	}
 
 	if (mca < NELE(msg)) {
 		Wprintf("%s\n", msg[mca]); 
