@@ -52,7 +52,10 @@ void decode_numfield(u64 status, struct numfield *fields)
 	for (f = fields; f->name; f++) {
 		u64 mask = (1ULL << (f->end - f->start - 1)) - 1;
 		u64 v = (status >> f->start) & mask;
-		if (v > 0)
-			Wprintf("%s: %Lu\n", f->name, v);		
-	} 
+		if (v > 0) { 
+			char fmt[30];
+			snprintf(fmt, 30, "%%s: %s\n", f->fmt ? f->fmt : "%Lu");
+			Wprintf(fmt, f->name, v);
+		}
+	}
 }
