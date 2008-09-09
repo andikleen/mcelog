@@ -4,3 +4,5 @@ mcelog
 dbquery
 *.orig
 *.rej
+.gdb_history
+.depend
