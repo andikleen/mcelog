@@ -29,6 +29,7 @@
 #include <syslog.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <poll.h>
 #include "mcelog.h"
 #include "k8.h"
 #include "intel.h"
@@ -59,6 +60,7 @@ char *error_trigger;
 unsigned error_thresh = 20;
 int ascii_mode;
 int dump_raw_ascii;
+int daemon_mode;
 
 static void opensyslog(void)
 {
@@ -465,7 +467,8 @@ void usage(void)
 	fprintf(stderr, 
 "Usage:\n"
 "  mcelog [options]  [--ignorenodev] [--dmi] [--syslog] [--filter] [mcelogdevice]\n"
-"Decode machine check error records from kernel\n"
+"Decode machine check error records from kernel.\n"
+"Normally this is invoked from a cronjob or using the kernel trigger.\n"
 "  mcelog [options] [--dmi] --ascii < log\n"
 "Decode machine check ASCII output from kernel logs\n"
 "Manage memory error database\n"
@@ -477,8 +480,9 @@ void usage(void)
 "--cpumhz MHZ        Set CPU Mhz to decode\n"
 "--database fn       Set filename of DIMM database (default %s)\n"
 "--error-trigger cmd,thresh   Run cmd on exceeding thresh errors per DIMM\n"
-"--raw		     (with --ascii) Dump in raw ASCII format for machine processing\n",
-	dimm_db_fn
+"--raw		     (with --ascii) Dump in raw ASCII format for machine processing\n"
+"--daemon            Run in background polling for events (needs newer kernel)\n",
+		dimm_db_fn
 );
 	exit(1);
 }
@@ -592,6 +596,9 @@ int modifier(char *s, char *next)
 		syslog_opt = SYSLOG_LOG|SYSLOG_REMARK;
  	} else if (!strcmp(s, "--dump-raw-ascii") || !strcmp(s, "--raw")) {
  		dump_raw_ascii = 1;
+	} else if (!strcmp(s, "--daemon")) { 
+		daemon_mode = 1;
+		syslog_opt = SYSLOG_ALL;
 	} else
 		return 0;
 	return gotarg;
@@ -644,6 +651,32 @@ int dimm_cmd(char **av)
 	}
 	return 0;	
 }
+
+void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
+{	
+	int len = read(fd, buf, recordlen * loglen); 
+	if (len < 0) 
+		err("read"); 
+
+	int i; 
+	for (i = 0; i < len / recordlen; i++) { 
+		struct mce *mce = (struct mce *)(buf + i*recordlen);
+		if (!mce_filter(mce)) 
+			continue;
+		if (!dump_raw_ascii) {
+			Wprintf("MCE %d\n", i);
+			dump_mce(mce);
+		} else
+			dump_mce_raw_ascii(mce);
+	}
+
+	if (recordlen < sizeof(struct mce))  {
+		Eprintf("warning: %lu bytes ignored in each record",
+				(unsigned long)recordlen - sizeof(struct mce)); 
+		Eprintf("consider an update"); 
+	}
+}
+
 
 int main(int ac, char **av) 
 { 
@@ -699,28 +732,19 @@ int main(int ac, char **av)
 	char *buf = calloc(recordlen, loglen); 
 	if (!buf) 
 		exit(100);
-	
-	int len = read(fd, buf, recordlen * loglen); 
-	if (len < 0) 
-		err("read"); 
 
-	int i; 
-	for (i = 0; i < len / recordlen; i++) { 
-		struct mce *mce = (struct mce *)(buf + i*recordlen);
-		if (!mce_filter(mce)) 
-			continue;
-		if (!dump_raw_ascii) {
-			Wprintf("MCE %d\n", i);
-			dump_mce(mce);
-		} else
-			dump_mce_raw_ascii(mce);
+	if (daemon_mode) {
+		struct pollfd pfd = { .fd = fd, .events = 0, .revents = 0 };
+		if (daemon(0, 0) < 0)
+			err("daemon");
+		for (;;) { 
+			int n = poll(&pfd, 1, 0); 
+			if (n > 0 && (pfd.revents & POLLIN)) 
+				process(fd, recordlen, loglen, buf);
+		}			
+	} else {
+		process(fd, recordlen, loglen, buf);
 	}
-
-	if (recordlen < sizeof(struct mce))  {
-		Eprintf("warning: %lu bytes ignored in each record",
-				(unsigned long)recordlen - sizeof(struct mce)); 
-		Eprintf("consider an update"); 
-	}	
-
+		
 	exit(0); 
 } 

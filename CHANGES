@@ -1,5 +1,6 @@
 <newer changes first>
 
+Implement daemon mode
 Various bug fixes to the decoder
 Add --intel-family=... argument
 Better decoding of core2 events and explicit decoding of pre Core P6 cores

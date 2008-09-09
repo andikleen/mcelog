@@ -22,6 +22,16 @@ mcelog reads /dev/mcelog and prints the stored machine check records
 to stdout. Then the stored machine check records in the kernel
 buffer are deleted.
 
+Mcelog normally runs as a regular cron job to log kernel machine check
+events to disk. On newer kernels it can also be triggered directly
+using the 
+.I /sys/devices/system/machinecheck/machinecheck0/trigger
+trigger.
+In addition mcelog can be used on the command line to decode an existing machine 
+check record in ascii format with the 
+.I \-\-ascii
+option.
+
 When the 
 .B \-\-syslog
 option is specified redirect output to system log. The 
@@ -101,6 +111,16 @@ or
 .I \-\-core2
 ).
 
+With the
+.B \-\-daemon
+option mcelog will run in the background and continuously poll
+for machine checks for the kernel. This gives the fastest reaction
+time, but the normal recommended operating mode is running
+as a cronjob or from the kernel trigger (through
+.I /sys/devices/system/machinecheck/machinecheck0/trigger). 
+This option implies 
+.I \-\-syslog.
+
 .B \-\-database filename
 specifies the memory module error database file. Default is
 /var/lib/memory-errors.  It is only used together with DMI decoding.
@@ -137,9 +157,6 @@ The kernel prefers old messages over new. If the log buffer overflows
 only old ones will be kept.
 
 The exact output depends on the CPU.
-
-This program should be run regularly from cron to collect
-machine check events.
 
 SMBIOS/DMI output is unreliable and sometimes wrong. Not Linux's
 fault - complain to your motherboard vendor. mcelog does some sanity
