@@ -117,6 +117,20 @@ void Wprintf(char *fmt, ...)
 	va_end(ap);
 }
 
+/* For output that should reach both syslog and normal log */
+void Gprintf(char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap,fmt);
+	if (use_syslog) {
+		vlinesyslog(fmt, ap);
+	} else {
+		vprintf(fmt, ap);
+		vlinesyslog(fmt, ap);
+	}
+	va_end(ap);
+}
+
 char *extended_bankname(unsigned bank) 
 {
 	static char buf[64];

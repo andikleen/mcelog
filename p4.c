@@ -278,14 +278,12 @@ static void decode_mcg(__u64 mcgstatus)
 static void decode_thermal(struct mce *log, int cpu)
 {
 	if (log->status & 1) {
-		Wprintf("Processor %d is above trip temperature. Throttling enabled.\n", cpu);
-		Wprintf("Please check your system cooling.\n");
-		Wprintf("CPUs throttled. System performance will be impacted\n");
-		Lprintf("Processor %d overheating. System performance will be impacted\n", cpu);
-		Lprintf("Please check your system cooling\n");
+		Gprintf(
+"Processor %d heated above trip temperature. Throttling enabled.\n", cpu);
+		Gprintf(
+"Please check your system cooling. Performance will be impacted\n");
 	} else { 
-		Wprintf("Processor %d below trip temperature. Throttling disabled\n", cpu);
-		Lprintf("Processor %d below trip temperature. Normal performance again.\n", cpu);
+		Gprintf("Processor %d below trip temperature. Throttling disabled\n", cpu);
 	} 
 }
 
