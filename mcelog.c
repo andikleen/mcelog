@@ -221,10 +221,65 @@ static void print_tsc(int cpunum, __u64 tsc)
 		Wprintf("%Lx", tsc);
 }
 
+struct cpuid1 {
+	unsigned stepping : 4;
+	unsigned model : 4;
+	unsigned family : 4;
+	unsigned type : 2;
+	unsigned res1 : 2;
+	unsigned ext_model : 4;
+	unsigned ext_family : 8; 
+	unsigned res2 : 4;
+};
+
+static void parse_cpuid(u32 cpuid, u32 *family, u32 *model)
+{
+	union { 
+		struct cpuid1 c;
+		u32 v;
+	} c;
+
+	/* Algorithm from IA32 SDM 2a 3-191 */
+	c.v = cpuid;
+	*family = c.c.family; 
+	if (*family == 0xf) 
+		*family += c.c.ext_family;
+	*model = c.c.model;
+	if (*family == 6 || *family == 0xf) 
+		*model += c.c.ext_model << 4;
+}
+
+static void setup_cpuid(u32 cpuvendor, u32 cpuid)
+{
+	u32 family, model;
+
+	parse_cpuid(cpuid, &family, &model);
+
+	switch (cpuvendor) { 
+	case X86_VENDOR_INTEL:
+		cputype = select_intel_cputype(family, model);
+		break;
+	case X86_VENDOR_AMD:
+		if (family >= 15 && family <= 17) { 
+			cputype = CPU_K8;
+			break;
+		}
+		/* FALL THROUGH */
+	default:
+		Eprintf("Unknown CPU type vendor %u family %x model %x", 
+			cpuvendor, family, model);
+		cputype = CPU_GENERIC;
+		break;
+	}
+}
+
 void dump_mce(struct mce *m) 
 {
 	int ismemerr = 0;
 	unsigned cpu = m->extcpu ? m->extcpu : m->cpu;
+
+	if (m->cpuid && !cpu_forced)
+		setup_cpuid(m->cpuvendor, m->cpuid);
 
 	Wprintf("HARDWARE ERROR. This is *NOT* a software problem!\n");
 	Wprintf("Please contact your hardware vendor\n");
