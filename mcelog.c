@@ -249,7 +249,31 @@ static void parse_cpuid(u32 cpuid, u32 *family, u32 *model)
 		*model += c.c.ext_model << 4;
 }
 
-static void setup_cpuid(u32 cpuvendor, u32 cpuid)
+static char *cputype_name[] = {
+	[CPU_GENERIC] = "generic CPU",
+	[CPU_P6OLD] = "Intel PPro/P2/P3/old Xeon",
+	[CPU_CORE2] = "Intel Core", /* 65nm and 45nm */
+	[CPU_K8] = "AMD K8 and derivates",
+	[CPU_P4] = "Intel P4"
+};
+
+static char *cpuvendor_name(u32 cpuvendor)
+{
+	static char *vendor[] = {
+		[0] = "Intel",
+		[1] = "Cyrix",
+		[2] = "AMD",
+		[3] = "UMC", 
+		[4] = "vendor 4",
+		[5] = "Centaur",
+		[6] = "vendor 6",
+		[7] = "Transmeta",
+		[8] = "NSC"
+	};
+	return (cpuvendor < NELE(vendor)) ? vendor[cpuvendor] : "Unknown vendor";
+}
+
+static enum cputype setup_cpuid(u32 cpuvendor, u32 cpuid)
 {
 	u32 family, model;
 
@@ -257,19 +281,28 @@ static void setup_cpuid(u32 cpuvendor, u32 cpuid)
 
 	switch (cpuvendor) { 
 	case X86_VENDOR_INTEL:
-		cputype = select_intel_cputype(family, model);
-		break;
+	        return select_intel_cputype(family, model);
 	case X86_VENDOR_AMD:
-		if (family >= 15 && family <= 17) { 
-			cputype = CPU_K8;
-			break;
-		}
+		if (family >= 15 && family <= 17)
+			return CPU_K8;
 		/* FALL THROUGH */
 	default:
 		Eprintf("Unknown CPU type vendor %u family %x model %x", 
 			cpuvendor, family, model);
-		cputype = CPU_GENERIC;
-		break;
+		return CPU_GENERIC;
+	}
+}
+
+static void mce_cpuid(struct mce *m)
+{
+	if (m->cpuid) {
+		enum cputype t = setup_cpuid(m->cpuvendor, m->cpuid);
+		if (!cpu_forced)
+			cputype = t;
+		else if (t != cputype && t != CPU_GENERIC)
+			Eprintf("Forced cputype %s does not match cpu type %s from mcelog",
+				cputype_name[cputype],
+				cputype_name[t]);
 	}
 }
 
@@ -278,8 +311,7 @@ void dump_mce(struct mce *m)
 	int ismemerr = 0;
 	unsigned cpu = m->extcpu ? m->extcpu : m->cpu;
 
-	if (m->cpuid && !cpu_forced)
-		setup_cpuid(m->cpuvendor, m->cpuid);
+	mce_cpuid(m);
 
 	Wprintf("HARDWARE ERROR. This is *NOT* a software problem!\n");
 	Wprintf("Please contact your hardware vendor\n");
@@ -317,6 +349,14 @@ void dump_mce(struct mce *m)
 	} 
 	/* decode all status bits here */
 	Wprintf("STATUS %Lx MCGSTATUS %Lx\n", m->status, m->mcgstatus);
+	if (m->cpuid) {
+		u32 fam, mod;
+		parse_cpuid(m->cpuid, &fam, &mod);
+		Wprintf("CPUID Vendor %s Family %u Model %u\n",
+			cpuvendor_name(m->cpuvendor), 
+			fam,
+			mod);
+	}
 	resolveaddr(m->addr);
 	if (!ascii_mode && ismemerr) { 
 		if (open_dimm_db(dimm_db_fn) >= 0) 

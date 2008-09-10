@@ -80,6 +80,7 @@ void Eprintf(char *fmt, ...) PRINTFLIKE;
 void Lprintf(char *fmt, ...) PRINTFLIKE;
 void Gprintf(char *fmt, ...) PRINTFLIKE;
 
+/* Don't forget to update mcelog.c:cputype_name[] too */
 enum cputype {
 	CPU_GENERIC,
 	CPU_P6OLD,
