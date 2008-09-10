@@ -30,6 +30,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <poll.h>
+#include <time.h>
 #include "mcelog.h"
 #include "k8.h"
 #include "intel.h"
@@ -306,13 +307,19 @@ static void mce_cpuid(struct mce *m)
 	}
 }
 
+static void print_time(time_t t)
+{
+	if (t)
+		Wprintf("%s", ctime(&t));
+}
+
 void dump_mce(struct mce *m) 
 {
 	int ismemerr = 0;
 	unsigned cpu = m->extcpu ? m->extcpu : m->cpu;
 
 	mce_cpuid(m);
-
+	print_time(m->time);
 	Wprintf("HARDWARE ERROR. This is *NOT* a software problem!\n");
 	Wprintf("Please contact your hardware vendor\n");
 	/* should not happen */
@@ -379,6 +386,8 @@ void dump_mce_raw_ascii(struct mce *m)
 	Wprintf("MCGSTATUS 0x%Lx\n\n", m->mcgstatus);
 	if (m->cpuid)
 		Wprintf("PROCESSOR %u%x\n", m->cpuvendor, m->cpuid);
+	if (m->time)
+		Wprintf("TIME %Lu\n", m->time);
 }
 
 void check_cpu(void)
@@ -547,6 +556,10 @@ void decodefatal(FILE *inf)
 				missing++;
 			else
 				m.cpuvendor = cpuvendor;			
+		}
+		else if (!strncmp(s, "TIME", 4)) { 
+			if ((n = sscanf(s, "TIME %Lu%n", &m.time, &next)) < 1)
+				missing++;
 		} else { 
 			s = skipspace(s);
 			if (*s && data) { 
