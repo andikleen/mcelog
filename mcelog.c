@@ -263,7 +263,7 @@ void dump_mce(struct mce *m)
 	/* decode all status bits here */
 	Wprintf("STATUS %Lx MCGSTATUS %Lx\n", m->status, m->mcgstatus);
 	resolveaddr(m->addr);
-	if (ismemerr) { 
+	if (!ascii_mode && ismemerr) { 
 		if (open_dimm_db(dimm_db_fn) >= 0) 
 			new_error(m->addr, error_thresh, error_trigger);
 	}
