@@ -43,7 +43,12 @@ enum cputype cputype = CPU_GENERIC;
 char *logfn = "/dev/mcelog";
 char *dimm_db_fn = "/var/lib/memory-errors"; 
 
-int use_syslog;
+enum { 
+	SYSLOG_LOG = (1 << 0),
+	SYSLOG_REMARK = (1 << 1), 
+	SYSLOG_ERROR  = (1 << 2),
+	SYSLOG_ALL = SYSLOG_LOG|SYSLOG_REMARK|SYSLOG_ERROR,
+} syslog_opt = SYSLOG_REMARK;
 int syslog_level = LOG_WARNING;
 int do_dmi;
 int ignore_nodev;
@@ -58,7 +63,7 @@ int dump_raw_ascii;
 static void opensyslog(void)
 {
 	static int syslog_opened;
-	if (syslog_opened || ascii_mode)
+	if (syslog_opened)
 		return;
 	syslog_opened = 1;
 	openlog("mcelog", 0, 0);
@@ -69,8 +74,12 @@ void Lprintf(char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	opensyslog();
-	vsyslog(LOG_ERR, fmt, ap);
+	if (syslog_opt & SYSLOG_REMARK) { 
+		opensyslog();
+		vsyslog(LOG_ERR, fmt, ap);
+	} else { 
+		vprintf(fmt, ap);
+	}
 	va_end(ap);
 }
 
@@ -79,7 +88,7 @@ void Eprintf(char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	if (isatty(2) && !use_syslog) {
+	if (!(syslog_opt & SYSLOG_ERROR)) {
 		fputs("mcelog: ", stderr);
 		vfprintf(stderr, fmt, ap);
 		fputc('\n', stderr);
@@ -109,7 +118,8 @@ void Wprintf(char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap,fmt);
-	if (use_syslog) {
+	if (syslog_opt & SYSLOG_ERROR) {
+		opensyslog();
 		vlinesyslog(fmt, ap);
 	} else {
 		vprintf(fmt, ap);
@@ -122,11 +132,13 @@ void Gprintf(char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap,fmt);
-	if (use_syslog) {
+	if (syslog_opt & SYSLOG_LOG) {
 		vlinesyslog(fmt, ap);
-	} else {
+	} else if (syslog_opt & SYSLOG_REMARK) { 
 		vprintf(fmt, ap);
 		vlinesyslog(fmt, ap);
+	} else { 
+		vprintf(fmt, ap);
 	}
 	va_end(ap);
 }
@@ -552,7 +564,7 @@ int modifier(char *s, char *next)
 		dmi_set_verbosity(v);
 	} else if (!strcmp(s, "--syslog")) { 
 		openlog("mcelog", 0, LOG_DAEMON);
-		use_syslog = 1;
+		syslog_opt = SYSLOG_ALL;
 	} else if (!strncmp(s, "--cpumhz", 9)) { 
 		arg = getarg(s + 8, next, &gotarg);
 		if (!cpu_forced) {
@@ -577,7 +589,7 @@ int modifier(char *s, char *next)
 		error_trigger = end + 1; 
 	} else if (!strcmp(s, "--syslog-error")) { 
 		syslog_level = LOG_ERR;
-		use_syslog = 1;
+		syslog_opt = SYSLOG_LOG|SYSLOG_REMARK;
  	} else if (!strcmp(s, "--dump-raw-ascii") || !strcmp(s, "--raw")) {
  		dump_raw_ascii = 1;
 	} else
@@ -644,8 +656,9 @@ int main(int ac, char **av)
 	while (*++av) { 
 		if ((a = modifier(*av, av[1])) > 0) {
 			av += a - 1;
-		} else if (!strcmp(*av, "--ascii")) {
+		} else if (!strcmp(*av, "--ascii")) {			
 			argsleft(av);
+			syslog_opt = 0;
 			checkdmi();
 			decodefatal(stdin); 
 			exit(0);
