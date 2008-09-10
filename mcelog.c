@@ -377,6 +377,8 @@ void dump_mce_raw_ascii(struct mce *m)
 	Wprintf("ADDR 0x%Lx\n", m->addr);
 	Wprintf("STATUS 0x%Lx\n", m->status);
 	Wprintf("MCGSTATUS 0x%Lx\n\n", m->mcgstatus);
+	if (m->cpuid)
+		Wprintf("PROCESSOR %u%x\n", m->cpuvendor, m->cpuid);
 }
 
 void check_cpu(void)
