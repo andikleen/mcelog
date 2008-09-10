@@ -235,10 +235,8 @@ static void decode_tracking(u64 track, int cpu)
 static void decode_mci(__u64 status, int cpu)
 {
 	Wprintf("MCi status:\n");
-	if (!(status & MCI_STATUS_VAL)) {
-		Wprintf("Invalid log\n");
-		return;
-	}
+	if (!(status & MCI_STATUS_VAL))
+		Wprintf("Machine check not valid\n");
 
 	if (status & MCI_STATUS_OVER)
 		Wprintf("Error overflow\n");
