@@ -424,6 +424,7 @@ void decodefatal(FILE *inf)
 	int data = 0;
 	int next = 0;
 	char *s = NULL;
+	unsigned cpuvendor;
 
 	ascii_mode = 1;
 	if (do_dmi)
@@ -499,8 +500,12 @@ void decodefatal(FILE *inf)
 		else if (!strncmp(s, "MISC",4)) { 
 			if ((n = sscanf(s, "MISC %Lx%n", &m.misc, &next)) < 1) 
 				missing++; 
-		}
-		else { 
+		} else if (!strncmp(s, "PROCESSOR", 9)) { 
+			if ((n = sscanf(s, "PROCESSOR %u:%x%n", &cpuvendor, &m.cpuid, &next)) < 2)
+				missing++;
+			else
+				m.cpuvendor = cpuvendor;			
+		} else { 
 			s = skipspace(s);
 			if (*s && data) { 
 				dump_mce_final(&m, symbol, missing); 
