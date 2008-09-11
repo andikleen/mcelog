@@ -735,6 +735,7 @@ void argsleft(char **av)
 
 static void dimm_common(char **av)
 {
+	syslog_opt = 0;
 	checkdmi();
 	checkdimmdb();
 	argsleft(av); 
