@@ -63,6 +63,8 @@ int ascii_mode;
 int dump_raw_ascii;
 int daemon_mode;
 
+static void check_cpu(void);
+
 static void opensyslog(void)
 {
 	static int syslog_opened;
@@ -304,7 +306,9 @@ static void mce_cpuid(struct mce *m)
 			Eprintf("Forced cputype %s does not match cpu type %s from mcelog",
 				cputype_name[cputype],
 				cputype_name[t]);
-	}
+	} else if (cputype == CPU_GENERIC && !cpu_forced) { 
+		check_cpu();
+	}	
 }
 
 static void print_time(time_t t)
@@ -390,7 +394,7 @@ void dump_mce_raw_ascii(struct mce *m)
 		Wprintf("TIME %Lu\n", m->time);
 }
 
-void check_cpu(void)
+static void check_cpu(void)
 { 
 	FILE *f;
 	f = fopen("/proc/cpuinfo","r");
@@ -798,8 +802,6 @@ int main(int ac, char **av)
 	unsigned recordlen = 0;
 	unsigned loglen = 0;
 	int a;
-
-	check_cpu();
 
 	while (*++av) { 
 		if ((a = modifier(*av, av[1])) > 0) {
