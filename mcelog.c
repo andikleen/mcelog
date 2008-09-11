@@ -50,6 +50,7 @@ enum {
 	SYSLOG_REMARK = (1 << 1), 
 	SYSLOG_ERROR  = (1 << 2),
 	SYSLOG_ALL = SYSLOG_LOG|SYSLOG_REMARK|SYSLOG_ERROR,
+	SYSLOG_FORCE = (1 << 3),
 } syslog_opt = SYSLOG_REMARK;
 int syslog_level = LOG_WARNING;
 int do_dmi;
@@ -687,7 +688,7 @@ int modifier(char *s, char *next)
 		dmi_set_verbosity(v);
 	} else if (!strcmp(s, "--syslog")) { 
 		openlog("mcelog", 0, LOG_DAEMON);
-		syslog_opt = SYSLOG_ALL;
+		syslog_opt = SYSLOG_ALL|SYSLOG_FORCE;
 	} else if (!strncmp(s, "--cpumhz", 9)) { 
 		arg = getarg(s + 8, next, &gotarg);
 		if (!cpu_forced) {
@@ -712,12 +713,12 @@ int modifier(char *s, char *next)
 		error_trigger = end + 1; 
 	} else if (!strcmp(s, "--syslog-error")) { 
 		syslog_level = LOG_ERR;
-		syslog_opt = SYSLOG_LOG|SYSLOG_REMARK;
+		syslog_opt = SYSLOG_LOG|SYSLOG_REMARK|SYSLOG_FORCE;
  	} else if (!strcmp(s, "--dump-raw-ascii") || !strcmp(s, "--raw")) {
  		dump_raw_ascii = 1;
 	} else if (!strcmp(s, "--daemon")) { 
 		daemon_mode = 1;
-		syslog_opt = SYSLOG_ALL;
+		syslog_opt = SYSLOG_ALL|SYSLOG_FORCE;
 	} else
 		return 0;
 	return gotarg;
@@ -733,9 +734,15 @@ void argsleft(char **av)
 	}
 }
 
+void no_syslog(void)
+{
+	if (!(syslog_opt & SYSLOG_FORCE))
+		syslog_opt = 0;
+}
+
 static void dimm_common(char **av)
 {
-	syslog_opt = 0;
+	no_syslog();
 	checkdmi();
 	checkdimmdb();
 	argsleft(av); 
@@ -809,7 +816,7 @@ int main(int ac, char **av)
 			av += a - 1;
 		} else if (!strcmp(*av, "--ascii")) {			
 			argsleft(av);
-			syslog_opt = 0;
+			no_syslog();
 			checkdmi();
 			decodefatal(stdin); 
 			exit(0);
