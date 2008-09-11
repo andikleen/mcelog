@@ -32,6 +32,7 @@
 #include <poll.h>
 #include <time.h>
 #include "mcelog.h"
+#include "paths.h"
 #include "k8.h"
 #include "intel.h"
 #include "p4.h"
@@ -42,8 +43,8 @@
 
 enum cputype cputype = CPU_GENERIC;	
 
-char *logfn = "/dev/mcelog";
-char *dimm_db_fn = "/var/lib/memory-errors"; 
+char *logfn = LOG_DEV_FILENAME; 
+char *dimm_db_fn = DIMM_DB_FILENAME;
 
 enum { 
 	SYSLOG_LOG = (1 << 0),
