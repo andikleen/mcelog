@@ -721,7 +721,7 @@ int modifier(char *s, char *next)
 		error_trigger = end + 1; 
 	} else if (!strcmp(s, "--syslog-error")) { 
 		syslog_level = LOG_ERR;
-		syslog_opt = SYSLOG_LOG|SYSLOG_REMARK|SYSLOG_FORCE;
+		syslog_opt = SYSLOG_ALL|SYSLOG_FORCE;
  	} else if (!strcmp(s, "--dump-raw-ascii") || !strcmp(s, "--raw")) {
  		dump_raw_ascii = 1;
 	} else if (!strcmp(s, "--daemon")) { 

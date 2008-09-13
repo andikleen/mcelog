@@ -37,8 +37,14 @@ When the
 option is specified redirect output to system log. The 
 .B \-\-syslog-error
 option causes the errors to be logged as 
-.I LOG_ERR.
-Some one line summies of errors are also always logged to the syslog.
+.I LOG_ERR
+(implies
+.I \-\-syslog
+).
+Some one line summies of errors are also always logged to the syslog by
+default unless mcelog operates in 
+.I \-\-ascii 
+mode.
 
 When the
 .B \-\-logfile=file
