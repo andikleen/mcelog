@@ -603,6 +603,8 @@ void usage(void)
 "--error-trigger cmd,thresh   Run cmd on exceeding thresh errors per DIMM\n"
 "--raw		     (with --ascii) Dump in raw ASCII format for machine processing\n"
 "--daemon            Run in background polling for events (needs newer kernel)\n"
+"--syslog            Log decoded machine checks in syslog (default stdout)\n"	     
+"--syslog-error	     Log decoded machine checks in syslog with error level\n"
 "--logfile=filename  Append log output to logfile instead of stdout\n",
 		dimm_db_fn
 );
