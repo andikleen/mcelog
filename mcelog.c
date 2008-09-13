@@ -602,7 +602,8 @@ void usage(void)
 "--database fn       Set filename of DIMM database (default %s)\n"
 "--error-trigger cmd,thresh   Run cmd on exceeding thresh errors per DIMM\n"
 "--raw		     (with --ascii) Dump in raw ASCII format for machine processing\n"
-"--daemon            Run in background polling for events (needs newer kernel)\n",
+"--daemon            Run in background polling for events (needs newer kernel)\n"
+"--logfile=filename  Append log output to logfile instead of stdout\n",
 		dimm_db_fn
 );
 	exit(1);
@@ -649,7 +650,13 @@ int modifier(char *s, char *next)
 {
 	char *arg;
 	int gotarg = 1;
-	if (!strcmp(s, "--k8")) {
+	if (!strncmp(s, "--logfile=", 10)) {
+		fclose(stdout);
+		if (!freopen(s + 10, "a", &stdout)) {
+			Eprintf("Cannot open log file %s. Exiting.", s + 10);	
+			exit(1);
+		}
+	} else if (!strcmp(s, "--k8")) {
 		cputype = CPU_K8;
 		cpu_forced = 1;
 	} else if (!strcmp(s, "--p4")) {
