@@ -652,7 +652,7 @@ int modifier(char *s, char *next)
 	int gotarg = 1;
 	if (!strncmp(s, "--logfile=", 10)) {
 		fclose(stdout);
-		if (!freopen(s + 10, "a", &stdout)) {
+		if (!freopen(s + 10, "a", stdout)) {
 			Eprintf("Cannot open log file %s. Exiting.", s + 10);	
 			exit(1);
 		}
