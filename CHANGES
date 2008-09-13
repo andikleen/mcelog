@@ -1,5 +1,7 @@
 <newer changes first>
 
+Various bug fixes
+Add --logfile option
 Implement daemon mode
 Various bug fixes to the decoder
 Add --intel-family=... argument
