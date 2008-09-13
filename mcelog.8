@@ -36,11 +36,11 @@ When the
 .B \-\-syslog
 option is specified redirect output to system log. The 
 .B \-\-syslog-error
-option causes the errors to be logged as 
+option causes the normal machine checks to be logged as 
 .I LOG_ERR
 (implies
 .I \-\-syslog
-).
+). Normally only fatal errors or high level remarks are logged with error level.
 Some one line summies of errors are also always logged to the syslog by
 default unless mcelog operates in 
 .I \-\-ascii 
