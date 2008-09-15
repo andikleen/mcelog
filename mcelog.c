@@ -605,6 +605,7 @@ void usage(void)
 "--daemon            Run in background polling for events (needs newer kernel)\n"
 "--syslog            Log decoded machine checks in syslog (default stdout)\n"	     
 "--syslog-error	     Log decoded machine checks in syslog with error level\n"
+"--no-syslog         Never log anything to syslog\n"
 "--logfile=filename  Append log output to logfile instead of stdout\n",
 		dimm_db_fn
 );
@@ -726,9 +727,12 @@ int modifier(char *s, char *next)
 		syslog_opt = SYSLOG_ALL|SYSLOG_FORCE;
  	} else if (!strcmp(s, "--dump-raw-ascii") || !strcmp(s, "--raw")) {
  		dump_raw_ascii = 1;
+	} else if (!strcmp(s, "--no-syslog")) { 
+		syslog_opt = SYSLOG_FORCE;
 	} else if (!strcmp(s, "--daemon")) { 
 		daemon_mode = 1;
-		syslog_opt = SYSLOG_ALL|SYSLOG_FORCE;
+		if (!(syslog_opt & SYSLOG_FORCE))
+			syslog_opt = SYSLOG_ALL|SYSLOG_FORCE;
 	} else
 		return 0;
 	return gotarg;
