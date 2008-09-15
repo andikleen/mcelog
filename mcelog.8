@@ -69,7 +69,10 @@ to be decoded should be specified (can be found in /proc/cpuinfo).
 When 
 .B \-\-generic 
 all the fields are dumped without CPU specific decoding.
-Default is to decode for the CPU mcelog is running on.
+Default is to decode for the CPU mcelog is running on or when the kernel
+is new enough to output the
+.I PROCESSOR
+field with the mce event to decode for the CPU reported by the kernel.
 
 With the
 .B \-\-dmi
@@ -121,7 +124,9 @@ or
 .I \-\-p4 
 or 
 .I \-\-core2
-).
+) on older kernel. On newer kernels which output the 
+.I PROCESSOR
+field this is not needed anymore.
 
 With the
 .B \-\-daemon
