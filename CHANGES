@@ -1,5 +1,6 @@
 <newer changes first>
 
+Add --no-syslog option
 Various bug fixes
 Add --logfile option
 Implement daemon mode
