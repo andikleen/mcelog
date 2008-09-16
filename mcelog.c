@@ -671,11 +671,11 @@ int modifier(char *s, char *next)
 	} else if (!strcmp(s, "--core2")) { 
 		cputype = CPU_CORE2;
 		cpu_forced = 1;
-	} else if (!strcmp(s, "--intel-cpu=")) { 
+	} else if (!strncmp(s, "--intel-cpu=", 12)) { 
 		unsigned fam, mod;
-		if (sscanf(s + 12, "%u,%u", &fam, &mod) != 2)
+		if (sscanf(s + 12, "%i,%i", &fam, &mod) != 2)
 			usage();
-		select_intel_cputype(fam, mod);
+		cputype = select_intel_cputype(fam, mod);
 		if (cputype == CPU_GENERIC) {
 			fprintf(stderr, "Unknown Intel CPU\n");
 			usage();
