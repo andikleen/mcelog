@@ -1,0 +1,123 @@
+/* Copyright (c) 2008 by Intel Corp.
+   Decode Intel Xeon Processor 7400 Model (Dunnington) specific MCEs
+
+   mcelog is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public
+   License as published by the Free Software Foundation; version
+   2.
+
+   mcelog is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should find a copy of v2 of the GNU General Public License somewhere
+   on your Linux system; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+   Author:
+	Andi Kleen
+*/
+
+/* other files 
+
+mcelog.h CPU_DUNNINGTON
+mcelog.c: cputype name
+intel.h CASE_INTEL_CPUS
+intel.c model == 0x1d CPU_DUNNINGTON
+p4.c: if (cpu == CPU_DUNNINGTON) dunnington_decode_model(log->status);
+      add to CORE2 cases
+
+*/
+
+#include <stddef.h>
+#include "mcelog.h"
+#include "bitfield.h"
+#include "dunnington.h"
+
+/* Follows Intel IA32 SDM 3b Appendix E.2.1 ++ */
+
+static struct field dunnington_bus_status[] = {
+	SBITFIELD(16, "Parity error detected during FSB request phase"),
+	FIELD(17, reserved_3bits),
+	SBITFIELD(20, "Hard Failure response received for a local transaction"),
+	SBITFIELD(21, "Parity error on FSB response field detected"),
+	SBITFIELD(22, "Parity data error on inbound data detected"),
+	FIELD(23, reserved_3bits),
+	FIELD(25, reserved_3bits),
+	FIELD(28, reserved_3bits),
+	FIELD(31, reserved_1bit),
+	{}
+};
+
+static char *dnt_front_error[0xf] = {
+	[0x1] = "Inclusion error from core 0",
+	[0x2] = "Inclusion error from core 1",
+	[0x3] = "Write Exclusive error from core 0",
+	[0x4] = "Write Exclusive error from core 1",
+	[0x5] = "Inclusion error from FSB",
+	[0x6] = "SNP stall error from FSB",
+	[0x7] = "Write stall error from FSB",
+	[0x8] = "FSB Arbiter Timeout error",
+	[0xA] = "Inclusion error from core 2",
+	[0xB] = "Write exclusive error from core 2",
+};
+
+static char *dnt_int_error[0xf] = {
+	[0x2] = "Internal timeout error",
+	[0x3] = "Internal timeout error",
+	[0x4] = "Intel Cache Safe Technology Queue full error\n"
+	        "or disabled ways in a set overflow",
+	[0x5] = "Quiet cycle timeout error (correctable)",
+};
+
+struct field dnt_int_status[] = {
+	FIELD(8, dnt_int_error),
+	{}
+};
+
+struct field dnt_front_status[] = {
+	FIELD(0, dnt_front_error),
+	{}
+};
+
+struct field dnt_cecc[] = {
+	SBITFIELD(1, "Correctable ECC event on outgoing core 0 data"),
+	SBITFIELD(2, "Correctable ECC event on outgoing core 1 data"),
+	SBITFIELD(3, "Correctable ECC event on outgoing core 3 data"),
+	{}
+};
+
+struct field dnt_uecc[] = {
+	SBITFIELD(1, "Uncorrectable ECC event on outgoing core 0 data"),
+	SBITFIELD(2, "Uncorrectable ECC event on outgoing core 1 data"),
+	SBITFIELD(3, "Uncorrectable ECC event on outgoing core 3 data"),
+	{}
+};
+
+static void dunnington_decode_bus(u64 status)
+{
+	decode_bitfield(status, dunnington_bus_status);
+}
+
+static void dunnington_decode_internal(u64 status)
+{
+	u32 mca = (status >> 16) & 0xffff;
+	if ((mca & 0xfff0) == 0)
+		decode_bitfield(status, dnt_front_status);
+	else if ((mca & 0xf0ff) == 0)
+		decode_bitfield(status, dnt_int_status);
+	else if ((mca & 0xfff0) == 0xc000)
+		decode_bitfield(status, dnt_cecc);
+	else if ((mca & 0xfff0) == 0xe000)
+		decode_bitfield(status, dnt_uecc);
+}
+
+void dunnington_decode_model(u64 status)
+{
+	if ((status & 0xffff) == 0xe0f)
+		dunnington_decode_bus(status);
+	else if ((status & 0xffff) == (1 << 10))
+		dunnington_decode_internal(status);
+}
+

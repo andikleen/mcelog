@@ -28,6 +28,7 @@
 #include "p4.h"
 #include "core2.h"
 #include "nehalem.h"
+#include "dunnington.h"
 
 /* decode mce for P4/Xeon and Core2 family */
 
@@ -304,6 +305,7 @@ void decode_intel_mc(struct mce *log, int cputype)
 		case CPU_P6OLD:
 			p6old_decode_model(log->status);
 			break;
+		case CPU_DUNNINGTON:
 		case CPU_CORE2:
 			core2_decode_model(log->status);
 			break;
@@ -315,6 +317,9 @@ void decode_intel_mc(struct mce *log, int cputype)
 			break;
 		}
 	}
+
+	if (cputype == CPU_DUNNINGTON)
+		dunnington_decode_model(log->status);
 }
 
 char *intel_bank_name(int num)

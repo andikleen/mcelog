@@ -1,5 +1,6 @@
 <newer changes first>
 
+Add Dunnington (Xeon 7400) decoding support
 Add Nehalem decoding support
 Add --no-syslog option
 Various bug fixes
