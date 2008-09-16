@@ -27,6 +27,7 @@
 #include "mcelog.h"
 #include "p4.h"
 #include "core2.h"
+#include "nehalem.h"
 
 /* decode mce for P4/Xeon and Core2 family */
 
@@ -77,7 +78,6 @@ static char* get_RRRR_str(__u8 rrrr)
 	}
 
 	return "UNKNOWN";
-	
 }
 
 static char* get_PP_str(__u8 pp)
@@ -187,6 +187,8 @@ static void decode_mca(__u32 mca)
 					      BUS_RRRR_SHIFT),
 				get_II_str((mca & BUS_II_MASK) >> BUS_II_SHIFT),
 				get_T_str((mca & BUS_T_MASK) >> BUS_T_SHIFT));
+	} else if (test_prefix(7, mca)) {
+		decode_memory_controller(mca);
 	} else 
 		Wprintf("Unknown Error %x\n", mca);
 }
@@ -307,6 +309,9 @@ void decode_intel_mc(struct mce *log, int cputype)
 			break;
 		case CPU_P4:
 			p4_decode_model(log->status & 0xffff0000L);
+			break;
+		case CPU_NEHALEM:
+			nehalem_decode_model(log->status, log->misc);
 			break;
 		}
 	}

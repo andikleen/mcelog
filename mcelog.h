@@ -86,5 +86,6 @@ enum cputype {
 	CPU_P6OLD,
 	CPU_CORE2, /* 65nm and 45nm */
 	CPU_K8,
-	CPU_P4
+	CPU_P4,
+	CPU_NEHALEM,
 };

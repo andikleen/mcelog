@@ -11,6 +11,8 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_P6OLD;
 		else if (model == 0xf || model == 0x17) /* Merom/Penryn */
 			return CPU_CORE2;
+		else if (model == 0x1a)
+			return CPU_NEHALEM;
 	}
 	Eprintf("Unknown Intel CPU type family %x model %x\n", family, model);
 	return family == 6 ? CPU_P6OLD : CPU_GENERIC;

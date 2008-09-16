@@ -1,5 +1,6 @@
 <newer changes first>
 
+Add Nehalem decoding support
 Add --no-syslog option
 Various bug fixes
 Add --logfile option

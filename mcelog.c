@@ -259,7 +259,8 @@ static char *cputype_name[] = {
 	[CPU_P6OLD] = "Intel PPro/P2/P3/old Xeon",
 	[CPU_CORE2] = "Intel Core", /* 65nm and 45nm */
 	[CPU_K8] = "AMD K8 and derivates",
-	[CPU_P4] = "Intel P4"
+	[CPU_P4] = "Intel P4",
+	[CPU_NEHALEM] = "Intel Nehalem", /* better name? */
 };
 
 static char *cpuvendor_name(u32 cpuvendor)
