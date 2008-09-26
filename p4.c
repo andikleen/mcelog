@@ -20,8 +20,7 @@
         Racing Guo <racing.guo@intel.com>
 	Andi Kleen
 */
-/* 
-   TBD should have an extra trigger/syslog message for yellow status  */
+/* TBD should have an extra trigger for yellow status  */
   
 #include <stdio.h>
 #include "mcelog.h"
