@@ -18,17 +18,6 @@
    Author: Andi Kleen 
 */
 
-/* other files 
-
-mcelog.h CPU_NEHALEM
-intel.h CASE_INTEL_CPUS
-intel.c model == 0x1a CPU_NEHALEM
-p4.c: if (cpu == CPU_NEHALEM) nehalem_decode_model(log->status, log->misc);
-      if (test_prefix(status, 7)) decode_memory_controller(log->status);
-mcelog.c/p4.c:  syslog/trigger for memory controller
-      cputype_name
-*/
-
 #include <string.h>
 #include <stdio.h>
 #include "mcelog.h"

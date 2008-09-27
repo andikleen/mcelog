@@ -19,17 +19,6 @@
 	Andi Kleen
 */
 
-/* other files 
-
-mcelog.h CPU_DUNNINGTON
-mcelog.c: cputype name
-intel.h CASE_INTEL_CPUS
-intel.c model == 0x1d CPU_DUNNINGTON
-p4.c: if (cpu == CPU_DUNNINGTON) dunnington_decode_model(log->status);
-      add to CORE2 cases
-
-*/
-
 #include <stddef.h>
 #include "mcelog.h"
 #include "bitfield.h"
