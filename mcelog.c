@@ -391,11 +391,12 @@ void dump_mce_raw_ascii(struct mce *m)
 	Wprintf("MISC 0x%Lx\n", m->misc);
 	Wprintf("ADDR 0x%Lx\n", m->addr);
 	Wprintf("STATUS 0x%Lx\n", m->status);
-	Wprintf("MCGSTATUS 0x%Lx\n\n", m->mcgstatus);
+	Wprintf("MCGSTATUS 0x%Lx\n", m->mcgstatus);
 	if (m->cpuid)
-		Wprintf("PROCESSOR %u%x\n", m->cpuvendor, m->cpuid);
+		Wprintf("PROCESSOR %u:0x%x\n", m->cpuvendor, m->cpuid);
 	if (m->time)
 		Wprintf("TIME %Lu\n", m->time);
+	Wprintf("\n");
 }
 
 static void check_cpu(void)
