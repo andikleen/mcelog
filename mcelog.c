@@ -876,11 +876,11 @@ int main(int ac, char **av)
 		exit(100);
 
 	if (daemon_mode) {
-		struct pollfd pfd = { .fd = fd, .events = 0, .revents = 0 };
+		struct pollfd pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
 		if (daemon(0, 0) < 0)
 			err("daemon");
 		for (;;) { 
-			int n = poll(&pfd, 1, 0); 
+			int n = poll(&pfd, 1, -1);
 			if (n > 0 && (pfd.revents & POLLIN)) 
 				process(fd, recordlen, loglen, buf);
 		}			
