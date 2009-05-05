@@ -513,11 +513,16 @@ void decodefatal(FILE *inf)
 				   &m.status,
 				   &next);
 			if (n == 1) {
-				n = sscanf(s, "CPU %u %u%n", &cpu, &bank, &next);
+				n = sscanf(s, "CPU %u BANK %u%n", &cpu, &bank, 
+						&next);
+				if (n != 2)
+					n = sscanf(s, "CPU %u %u%n", &cpu,
+						 &bank, &next);
 				m.cpu = cpu;
-				m.bank = bank;
 				if (n < 2) 
 					missing++;
+				else
+					m.bank = bank;
 			} else { 
 				m.cpu = cpu;
 				m.bank = bank;
