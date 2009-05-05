@@ -262,6 +262,7 @@ static char *cputype_name[] = {
 	[CPU_P4] = "Intel P4",
 	[CPU_NEHALEM] = "Intel Nehalem", /* better name? */
 	[CPU_DUNNINGTON] = "Intel Xeon 7400",
+	[CPU_TULSA] = "Intel Xeon 71xx",
 };
 
 static char *cpuvendor_name(u32 cpuvendor)

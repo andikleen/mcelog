@@ -28,6 +28,7 @@
 #include "core2.h"
 #include "nehalem.h"
 #include "dunnington.h"
+#include "tulsa.h"
 
 /* decode mce for P4/Xeon and Core2 family */
 
@@ -48,7 +49,7 @@ static char* get_TT_str(__u8 t)
 
 static char* get_LL_str(__u8 ll)
 {
-	static char* LL[] = {"Level-0", "Level-1", "Level-2", "Generic"};
+	static char* LL[] = {"Level-0", "Level-1", "Level-2", "Level-3"};
 	if (ll > NELE(LL)) {
 		return "UNKNOWN";
 	}
@@ -308,6 +309,7 @@ void decode_intel_mc(struct mce *log, int cputype)
 		case CPU_CORE2:
 			core2_decode_model(log->status);
 			break;
+		case CPU_TULSA:
 		case CPU_P4:
 			p4_decode_model(log->status & 0xffff0000L);
 			break;
@@ -317,8 +319,15 @@ void decode_intel_mc(struct mce *log, int cputype)
 		}
 	}
 
-	if (cputype == CPU_DUNNINGTON)
+	/* Model specific addon information */
+	switch (cputype) { 
+	case CPU_DUNNINGTON:
 		dunnington_decode_model(log->status);
+		break;
+	case CPU_TULSA:
+		tulsa_decode_model(log->status, log->misc);
+		break;
+	}
 }
 
 char *intel_bank_name(int num)

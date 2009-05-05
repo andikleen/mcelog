@@ -89,4 +89,5 @@ enum cputype {
 	CPU_P4,
 	CPU_NEHALEM,
 	CPU_DUNNINGTON,
+	CPU_TULSA,
 };

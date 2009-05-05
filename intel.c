@@ -4,6 +4,8 @@
 enum cputype select_intel_cputype(int family, int model)
 {
 	if (family == 15) { 
+		if (model == 6) 
+			return CPU_TULSA;
 		return CPU_P4;
 	} 
 	if (family == 6) { 
