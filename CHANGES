@@ -1,5 +1,6 @@
 <newer changes first>
 
+Use official Nehalem names
 Support re-parsing mcelog output with --ascii
 Add Intel Tulsa (Xeon 71xx) decoding support
 Add Dunnington (Xeon 7400) decoding support

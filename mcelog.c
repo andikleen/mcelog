@@ -260,7 +260,7 @@ static char *cputype_name[] = {
 	[CPU_CORE2] = "Intel Core", /* 65nm and 45nm */
 	[CPU_K8] = "AMD K8 and derivates",
 	[CPU_P4] = "Intel P4",
-	[CPU_NEHALEM] = "Intel Nehalem", /* better name? */
+	[CPU_NEHALEM] = "Intel Xeon 75xx / Core i7 (\"Nehalem\")",
 	[CPU_DUNNINGTON] = "Intel Xeon 7400",
 	[CPU_TULSA] = "Intel Xeon 71xx",
 };
