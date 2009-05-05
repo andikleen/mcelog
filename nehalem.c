@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include "mcelog.h"
 #include "nehalem.h"
-#include "core2.h"
 #include "bitfield.h"
 
 /* See IA32 SDM Vol3B Appendix E.3.2 ff */
@@ -53,12 +52,12 @@ static struct field qpi_misc[] = {
 static struct numfield qpi_numbers[] = {
 	HEXNUMBER(0, 7, "QPI class and opcode of packet with error"),
 	HEXNUMBER(8, 13, "QPI Request Transaction ID"),
-	NUMBER(16, 18, "QPI Requestor/Home Node ID (RHNID)"),
+	NUMBERFORCE(16, 18, "QPI Requestor/Home Node ID (RHNID)"),
 	HEXNUMBER(19, 23, "QPI miscreserved 19-23"),
 	{},
 };
 
-static struct field memory_controller_status[] = {
+static struct field nhm_memory_status[] = {
 	SBITFIELD(16, "Memory read ECC error"),
 	SBITFIELD(17, "Memory ECC error occurred during scrub"),
 	SBITFIELD(18, "Memory write parity error"),
@@ -71,15 +70,18 @@ static struct field memory_controller_status[] = {
 	{}
 };
 
-static struct numfield memory_controller_numbers[] = {
-	HEXNUMBER(0, 7, "Memory transaction Tracker ID (RTId)"),
-	HEXNUMBER(8, 15, "Memory MISC reserved 8..15"),
-	NUMBER(16, 17, "Memory DIMM ID of error"),
-	NUMBER(18, 19, "Memory channel ID of error"),
-	HEXNUMBER(32, 63, "Memory ECC syndrome"),
+static struct numfield nhm_memory_status_numbers[] = {
 	HEXNUMBER(25, 37, "Memory MISC reserved 25..37"),
-	NUMBER(38, 52, "Memory corrected error count (CORE_ERR_CNT)"),
+	NUMBERFORCE(38, 52, "Memory corrected error count (CORE_ERR_CNT)"),
 	HEXNUMBER(53, 56, "Memory MISC reserved 53..56"),
+	{}
+};
+
+static struct numfield nhm_memory_misc_numbers[] = {
+	HEXNUMBERFORCE(0, 7, "Memory transaction Tracker ID (RTId)"),
+	NUMBERFORCE(16, 17, "Memory DIMM ID of error"),
+	NUMBERFORCE(18, 19, "Memory channel ID of error"),
+	HEXNUMBERFORCE(32, 63, "Memory ECC syndrome"),
 	{}
 };
 
@@ -131,13 +133,11 @@ void decode_memory_controller(u32 status)
 		mmm_mnemonic[(status >> 4) & 7],
 		channel);
 	Wprintf("Transaction: %s\n", mmm_desc[(status >> 4) & 7]);
-	Wprintf("Channel: %s\n", channel);
 }
 
 void nehalem_decode_model(u64 status, u64 misc)
 {
 	u32 mca = status & 0xffff;
-	core2_decode_model(status);
 	if ((mca >> 11) == 1) { 	/* bus and interconnect QPI */
 		decode_bitfield(status, qpi_status);
 		decode_numfield(status, qpi_numbers);
@@ -146,10 +146,11 @@ void nehalem_decode_model(u64 status, u64 misc)
 	} else if (mca == 0x0001) { /* internal unspecified */
 		decode_bitfield(status, internal_error_status);
 		decode_numfield(status, internal_error_numbers);
-	} else if ((mca >> 8) == 1) { /* memory controller */
-		decode_bitfield(status, memory_controller_status);
+	} else if ((mca >> 7) == 1) { /* memory controller */
+		decode_bitfield(status, nhm_memory_status);
+		decode_numfield(status, nhm_memory_status_numbers);
 		if (status & MCI_STATUS_MISCV)
-			decode_numfield(misc, memory_controller_numbers);
+			decode_numfield(misc, nhm_memory_misc_numbers);
 	}
 }
 

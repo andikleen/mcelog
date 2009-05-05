@@ -314,13 +314,16 @@ void decode_intel_mc(struct mce *log, int cputype)
 			p4_decode_model(log->status & 0xffff0000L);
 			break;
 		case CPU_NEHALEM:
-			nehalem_decode_model(log->status, log->misc);
+			core2_decode_model(log->status);
 			break;
 		}
 	}
 
 	/* Model specific addon information */
 	switch (cputype) { 
+	case CPU_NEHALEM:
+		nehalem_decode_model(log->status, log->misc);
+		break;
 	case CPU_DUNNINGTON:
 		dunnington_decode_model(log->status);
 		break;

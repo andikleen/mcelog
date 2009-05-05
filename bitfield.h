@@ -10,13 +10,16 @@ struct numfield {
 	int start, end;
 	char *name;
 	char *fmt;
+	int force;
 };
 
 #define FIELD(start_bit, name) { start_bit, name, NELE(name) }
 #define SBITFIELD(start_bit, string) { start_bit, ((char * [2]) { NULL, string }), 2 }
 
 #define NUMBER(start, end, name) { start, end, name, "%Lu" }
+#define NUMBERFORCE(start, end, name) { start, end, name, "%Lu", 1 }
 #define HEXNUMBER(start, end, name) { start, end, name, "%Lx" }
+#define HEXNUMBERFORCE(start, end, name) { start, end, name, "%Lx", 1 }
 
 void decode_bitfield(u64 status, struct field *fields);
 void decode_numfield(u64 status, struct numfield *fields);
