@@ -55,6 +55,7 @@ static struct numfield qpi_numbers[] = {
 	HEXNUMBER(8, 13, "QPI Request Transaction ID"),
 	NUMBER(16, 18, "QPI Requestor/Home Node ID (RHNID)"),
 	HEXNUMBER(19, 23, "QPI miscreserved 19-23"),
+	{},
 };
 
 static struct field memory_controller_status[] = {
@@ -140,13 +141,15 @@ void nehalem_decode_model(u64 status, u64 misc)
 	if ((mca >> 11) == 1) { 	/* bus and interconnect QPI */
 		decode_bitfield(status, qpi_status);
 		decode_numfield(status, qpi_numbers);
-		decode_bitfield(misc, qpi_misc);
+		if (status & MCI_STATUS_MISCV)
+			decode_bitfield(misc, qpi_misc);
 	} else if (mca == 0x0001) { /* internal unspecified */
 		decode_bitfield(status, internal_error_status);
 		decode_numfield(status, internal_error_numbers);
 	} else if ((mca >> 8) == 1) { /* memory controller */
 		decode_bitfield(status, memory_controller_status);
-		decode_numfield(status, memory_controller_numbers);
+		if (status & MCI_STATUS_MISCV)
+			decode_numfield(misc, memory_controller_numbers);
 	}
 }
 
