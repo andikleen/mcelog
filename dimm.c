@@ -289,11 +289,14 @@ void check_dimm_positions(void)
 }
 
 /* synchronize database with smbios */
-void sync_dimms(void)
+int sync_dimms(void)
 {
+	if (!dmi_dimms)
+		return -1;
 	check_dimm_positions();
 	disable_leftover_dimms();	
-	sync_db(dimm_db);	
+	sync_db(dimm_db);
+	return 0;	
 }
 
 void gc_dimms(void)
@@ -424,7 +427,9 @@ void close_dimm_db(void)
 int open_dimm_db(char *fn)
 {
 	static char *old_db_name;
-	if (dimm_db || dmi_dimms == NULL)
+	if (dmi_dimms < 0)
+		return -1;
+	if (dimm_db)
 		return 0;
 	if (!fn) {
 		fn = old_db_name;
@@ -440,6 +445,7 @@ int open_dimm_db(char *fn)
 			strerror(errno));
 		return -1;
 	}
-	sync_dimms();
+	if (sync_dimms() < 0)
+		return -1;
 	return 0;
 }
