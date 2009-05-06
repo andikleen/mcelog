@@ -192,7 +192,7 @@ static void decode_k8_ls_mc(u64 status, int *err)
 	decode_k8_generic_errcode(status);
 }
 
-static void decode_k8_nb_mc(u64 status, int *err)
+static void decode_k8_nb_mc(u64 status, int *memerr)
 {
 	unsigned short exterrcode = (status >> 16) & 0x0f;
 
@@ -200,10 +200,12 @@ static void decode_k8_nb_mc(u64 status, int *err)
 
 	switch (exterrcode) { 
 	case 0:
+		*memerr = 1;
 		Wprintf("  ECC syndrome = %x\n",
 		       (u32) (status >> 47) & 0xff);
 		break;
 	case 8:	
+		*memerr = 1;
 		Wprintf("  Chipkill ECC syndrome = %x\n",
 		       (u32) ((((status >> 24) & 0xff) << 8) | ((status >> 47) & 0xff)));
 		break;
