@@ -31,6 +31,7 @@
 #include <ctype.h>
 #include <poll.h>
 #include <time.h>
+#include <getopt.h>
 #include "mcelog.h"
 #include "paths.h"
 #include "k8.h"
@@ -603,7 +604,7 @@ void usage(void)
 "Decode machine check ASCII output from kernel logs\n"
 "Manage memory error database\n"
 "  mcelog [options] --drop-old-memory|--reset-memory locator\n"
-"  mcelog --dump-memory locator]\n"
+"  mcelog --dump-memory locator\n"
 "  old can be either locator or name\n"
 "Options:\n"  
 "--p4|--k8|--core2|--generic|--intel-cpu=family,model Set CPU type to decode\n"
@@ -645,44 +646,92 @@ void checkdimmdb(void)
 		exit(1);
 }
 
-char *getarg(char *mod, char *arg, int *gotarg)
-{
-	if (*mod != '\0') {
-		if (mod[0] != '=' || mod[1] == '\0')
-			usage();
-		return mod + 1;
-	}
-	if (arg == NULL) 
-		usage();
-	*gotarg = 2;
-	return arg;
-}
+enum { 
+	O_LOGFILE = 500, 
+	O_K8,
+	O_P4,
+	O_GENERIC,
+	O_CORE2,
+	O_INTEL_CPU,
+	O_FILTER,
+	O_DMI,
+	O_NO_DMI,
+	O_DMI_VERBOSE,
+	O_SYSLOG,
+	O_NO_SYSLOG,
+	O_CPUMHZ,
+	O_DATABASE,
+	O_ERROR_TRIGGER,
+	O_SYSLOG_ERROR,
+	O_RAW,
+	O_DAEMON,
+	O_DUMP_MEMORY,
+	O_RESET_MEMORY,
+	O_DROP_OLD_MEMORY,
+	O_ASCII,
+	O_VERSION,
+};
 
-int modifier(char *s, char *next)
+static struct option options[] = {
+	{ "logfile", 1, NULL, O_LOGFILE },
+	{ "k8", 0, NULL, O_K8 },
+	{ "p4", 0, NULL, O_P4 },
+	{ "generic", 0, NULL, O_GENERIC },
+	{ "core2", 0, NULL, O_CORE2 },
+	{ "intel-cpu", 1, NULL, O_INTEL_CPU },
+	{ "ignorenodev", 0, &ignore_nodev, 1 },
+	{ "filter", 0, &filter_bogus, 1 },
+	{ "dmi", 0, NULL, O_DMI },
+	{ "no-dmi", 0, NULL, O_NO_DMI },
+	{ "dmi-verbose", 1, NULL, O_DMI_VERBOSE },
+	{ "syslog", 0, NULL, O_SYSLOG },
+	{ "cpumhz", 1, NULL, O_CPUMHZ },
+	{ "database", 1, NULL, O_DATABASE },
+	{ "error-trigger", 1, NULL, O_ERROR_TRIGGER },
+	{ "syslog-error", 0, NULL, O_SYSLOG_ERROR },
+	{ "dump-raw-ascii", 0, &dump_raw_ascii, 1 },
+	{ "raw", 0, &dump_raw_ascii, 1 },
+	{ "no-syslog", 0, NULL, O_NO_SYSLOG },
+	{ "daemon", 0, NULL, O_DAEMON },
+	{ "dump-memory", 2, NULL, O_DUMP_MEMORY },
+	{ "reset-memory", 2, NULL, O_RESET_MEMORY },
+	{ "drop-old-memory", 0, NULL, O_DROP_OLD_MEMORY },
+	{ "ascii", 0, NULL, O_ASCII },
+	{ "version", 0, NULL, O_VERSION },
+	{}
+};
+
+int modifier(int opt)
 {
-	char *arg;
-	int gotarg = 1;
-	if (!strncmp(s, "--logfile=", 10)) {
+	int v;
+
+	switch (opt) { 
+	case O_LOGFILE:
 		fclose(stdout);
-		if (!freopen(s + 10, "a", stdout)) {
-			Eprintf("Cannot open log file %s. Exiting.", s + 10);	
+		if (!freopen(optarg, "a", stdout)) {
+			Eprintf("Cannot open log file %s. Exiting.", optarg);	
 			exit(1);
 		}
-	} else if (!strcmp(s, "--k8")) {
+		break;
+	case O_K8:
 		cputype = CPU_K8;
 		cpu_forced = 1;
-	} else if (!strcmp(s, "--p4")) {
+		break;
+	case O_P4:
 		cputype = CPU_P4;
 		cpu_forced = 1;
-	} else if (!strcmp(s, "--generic")) { 
+		break;
+	case O_GENERIC:
 		cputype = CPU_GENERIC;
 		cpu_forced = 1;
-	} else if (!strcmp(s, "--core2")) { 
+		break;
+	case O_CORE2:
 		cputype = CPU_CORE2;
 		cpu_forced = 1;
-	} else if (!strncmp(s, "--intel-cpu=", 12)) { 
+		break;
+	case O_INTEL_CPU: { 
 		unsigned fam, mod;
-		if (sscanf(s + 12, "%i,%i", &fam, &mod) != 2)
+		if (sscanf(optarg, "%i,%i", &fam, &mod) != 2)
 			usage();
 		cputype = select_intel_cputype(fam, mod);
 		if (cputype == CPU_GENERIC) {
@@ -690,70 +739,85 @@ int modifier(char *s, char *next)
 			usage();
 		}
 		cpu_forced = 1;
-	} else if (!strcmp(s, "--ignorenodev")) { 
-		ignore_nodev = 1;
-	} else if (!strcmp(s,"--filter")) { 
-		filter_bogus = 1;			
-	} else if (!strcmp(s, "--dmi")) { 
+		break;
+	}
+	case O_DMI:
 		do_dmi = 1;
 		dmi_forced = 1;
-	} else if (!strcmp(s, "--no-dmi")) { 
+		break;
+	case O_NO_DMI:
 		dmi_forced = 1;
 		do_dmi = 0;
-	} else if (!strncmp(s, "--dmi-verbose", 13)) { 
-		int v;
-		arg = getarg(s + 13, next, &gotarg);
-		if (sscanf(arg, "%i", &v) != 1)
+		break;
+	case O_DMI_VERBOSE:
+		if (sscanf(optarg, "%i", &v) != 1)
 			usage();
 		dmi_set_verbosity(v);
-	} else if (!strcmp(s, "--syslog")) { 
+		break;
+	case O_SYSLOG:
 		openlog("mcelog", 0, LOG_DAEMON);
 		syslog_opt = SYSLOG_ALL|SYSLOG_FORCE;
-	} else if (!strncmp(s, "--cpumhz", 9)) { 
-		arg = getarg(s + 8, next, &gotarg);
+		break;
+	case O_NO_SYSLOG:
+		syslog_opt = SYSLOG_FORCE;
+		break;
+	case O_CPUMHZ:
 		if (!cpu_forced) {
 			fprintf(stderr, 
 				"Specify cputype before --cpumhz=..\n");
 			usage();
 		}
-		if (sscanf(arg, "%lf", &cpumhz) != 1)
+		if (sscanf(optarg, "%lf", &cpumhz) != 1)
 			usage();
-	} else if (!strncmp(s, "--database", 10)) {
-		dimm_db_fn = getarg(s + 10, next, &gotarg);
-		checkdmi();
-		checkdimmdb();
-	} else if (!strncmp(s, "--error-trigger", 16)) { 
-		char *end;
-		arg = getarg(s + 15, next, &gotarg);
-		checkdmi();
-		open_dimm_db(dimm_db_fn);
-		error_thresh = strtoul(arg, &end, 0);
-		if (end == arg || *end != ',') 
-			usage();
-		error_trigger = end + 1; 
-	} else if (!strcmp(s, "--syslog-error")) { 
+		break;
+	case O_SYSLOG_ERROR:
 		syslog_level = LOG_ERR;
 		syslog_opt = SYSLOG_ALL|SYSLOG_FORCE;
- 	} else if (!strcmp(s, "--dump-raw-ascii") || !strcmp(s, "--raw")) {
- 		dump_raw_ascii = 1;
-	} else if (!strcmp(s, "--no-syslog")) { 
-		syslog_opt = SYSLOG_FORCE;
-	} else if (!strcmp(s, "--daemon")) { 
+		break;
+	case O_DAEMON:
 		daemon_mode = 1;
 		if (!(syslog_opt & SYSLOG_FORCE))
 			syslog_opt = SYSLOG_ALL|SYSLOG_FORCE;
-	} else
+		break;
+	case 0:
+		break;
+	default:
 		return 0;
-	return gotarg;
+	}
+	return 1;
 } 
-	
-void argsleft(char **av)
+
+int dimm_modifier(int opt)
 {
-	while (*++av) {
-		int a = modifier(*av, av[1]);
-		if (a == 0) 
+	char *end;
+
+	switch (opt) { 
+	case O_DATABASE:
+		dimm_db_fn = optarg;
+		checkdmi();
+		checkdimmdb();
+		break;
+	case O_ERROR_TRIGGER:
+		checkdmi();
+		open_dimm_db(dimm_db_fn);
+		error_thresh = strtoul(optarg, &end, 0);
+		if (end == optarg || *end != ',') 
 			usage();
-		av += a - 1;
+		error_trigger = end + 1; 
+		break;
+	default:
+		return 0;
+	}
+	return 1;
+}
+
+void argsleft(int ac, char **av)
+{
+	int opt;
+		
+	while ((opt = getopt_long(ac, av, "", options, NULL)) != -1) { 
+		if (modifier(opt) != 1)
+			usage();
 	}
 }
 
@@ -763,39 +827,32 @@ void no_syslog(void)
 		syslog_opt = 0;
 }
 
-static void dimm_common(char **av)
+static void dimm_common(int ac, char **av)
 {
 	no_syslog();
 	checkdmi();
 	checkdimmdb();
-	argsleft(av); 
+	argsleft(ac, av); 
 }
 
-int dimm_cmd(char **av)
+int dimm_cmd(int opt, int ac, char **av)
 {
-	if (!strncmp(*av, "--dump-memory", 13)) { 
-		char *dimm = NULL; 
-		dimm_common(av);
-		if ((*av)[13] == '=') 
-			dimm = (*av) + 14;
-		else if ((*av)[13])
-			usage();
-		if (dimm) 
-			dump_dimm(dimm);
+	char *arg = optarg; 
+	
+	switch (opt) { 
+	case O_DUMP_MEMORY:
+		dimm_common(ac, av);
+		if (arg)
+			dump_dimm(arg);
 		else
 			dump_all_dimms();
 		return 1;
-	} else if (!strncmp(*av, "--reset-memory", 14)) { 
-		char *dimm = NULL;
-		dimm_common(av);
-		if ((*av)[14] == '=')
-			dimm = (*av) + 13;
-		else if ((*av)[14])
-			usage();
-		reset_dimm(dimm);
+	case O_RESET_MEMORY:
+		dimm_common(ac, av);
+		reset_dimm(arg);
 		return 1;
-	} else if (!strcmp(*av, "--drop-old-memory")) { 
-		dimm_common(av);
+	case O_DROP_OLD_MEMORY:
+		dimm_common(ac, av);
 		gc_dimms();
 		return 1;
 	}
@@ -827,36 +884,43 @@ void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 	}
 }
 
+void noargs(int ac, char **av)
+{
+	if (getopt_long(ac, av, "", options, NULL) != -1)
+		usage();
+}
 
 int main(int ac, char **av) 
 { 
 	unsigned recordlen = 0;
 	unsigned loglen = 0;
-	int a;
+	int opt;
 
-	while (*++av) { 
-		if ((a = modifier(*av, av[1])) > 0) {
-			av += a - 1;
-		} else if (!strcmp(*av, "--ascii")) {			
-			argsleft(av);
+	while ((opt = getopt_long(ac, av, "", options, NULL)) != -1) { 
+		if (opt == '?') {
+			usage(); 
+		} else if (modifier(opt) > 0) {
+			continue;
+		} else if (dimm_modifier(opt) > 0) { 
+			continue;
+		} else if (opt == O_ASCII) { 
+			argsleft(ac, av);
 			no_syslog();
 			checkdmi();
 			decodefatal(stdin); 
 			exit(0);
-		} else if (!strcmp(*av, "--version")) { 
+		} else if (opt == O_VERSION) { 
+			noargs(ac, av);
 			fprintf(stderr, "mcelog %s\n", MCELOG_VERSION);
 			exit(0);
-		} else if (dimm_cmd(av)) {
+		} else if (dimm_cmd(opt, ac, av)) {
 			exit(0);
-		} else if (!strncmp(*av, "--", 2)) { 
-			if (av[0][2] == '\0') 
-				break;
-			usage();
-		}
+		} else if (opt == 0)
+			break;		    
 	} 
-	if (*av)
-		logfn = *av++;
-	if (*av)
+	if (av[optind])
+		logfn = av[optind++];
+	if (av[optind])
 		usage();
 	checkdmi();
 		
