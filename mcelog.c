@@ -41,6 +41,7 @@
 #include "dimm.h"
 #include "tsc.h"
 #include "version.h"
+#include "config.h"
 
 enum cputype cputype = CPU_GENERIC;	
 
@@ -616,7 +617,8 @@ void usage(void)
 "--syslog            Log decoded machine checks in syslog (default stdout)\n"	     
 "--syslog-error	     Log decoded machine checks in syslog with error level\n"
 "--no-syslog         Never log anything to syslog\n"
-"--logfile=filename  Append log output to logfile instead of stdout\n",
+"--logfile=filename  Append log output to logfile instead of stdout\n"
+"--config-file filename Read config information from config file instead of " CONFIG_FILENAME "\n",
 		dimm_db_fn
 );
 	exit(1);
@@ -646,7 +648,7 @@ void checkdimmdb(void)
 		exit(1);
 }
 
-enum { 
+enum options { 
 	O_LOGFILE = 500, 
 	O_K8,
 	O_P4,
@@ -670,6 +672,7 @@ enum {
 	O_DROP_OLD_MEMORY,
 	O_ASCII,
 	O_VERSION,
+	O_CONFIG_FILE,
 };
 
 static struct option options[] = {
@@ -698,6 +701,7 @@ static struct option options[] = {
 	{ "drop-old-memory", 0, NULL, O_DROP_OLD_MEMORY },
 	{ "ascii", 0, NULL, O_ASCII },
 	{ "version", 0, NULL, O_VERSION },
+	{ "config-file", 1, NULL, O_CONFIG_FILE },
 	{}
 };
 
@@ -779,6 +783,9 @@ int modifier(int opt)
 		if (!(syslog_opt & SYSLOG_FORCE))
 			syslog_opt = SYSLOG_ALL|SYSLOG_FORCE;
 		break;
+	case O_CONFIG_FILE:
+		/* parsed in config.c */
+		break;
 	case 0:
 		break;
 	default:
@@ -859,6 +866,14 @@ int dimm_cmd(int opt, int ac, char **av)
 	return 0;	
 }
 
+int combined_modifier(int opt)
+{
+	int r = modifier(opt);
+	if (r == 0)
+		r = dimm_modifier(opt);
+	return r;
+}
+
 void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 {	
 	int len = read(fd, buf, recordlen * loglen); 
@@ -890,11 +905,30 @@ void noargs(int ac, char **av)
 		usage();
 }
 
+static void parse_config(char **av)
+{
+	static const char config_fn[] = CONFIG_FILENAME;
+	const char *fn = config_file(av, config_fn);
+	if (!fn)
+		usage();
+	if (parse_config_file(fn) < 0) { 
+		/* If it's the default file don't complain if it isn't there */
+		if (fn != config_fn) {
+			Eprintf("Cannot open config file %s\n", fn);
+			exit(1);
+		}
+		return;
+	}
+	config_options(options, combined_modifier);
+}
+
 int main(int ac, char **av) 
 { 
 	unsigned recordlen = 0;
 	unsigned loglen = 0;
 	int opt;
+
+	parse_config(av);
 
 	while ((opt = getopt_long(ac, av, "", options, NULL)) != -1) { 
 		if (opt == '?') {
