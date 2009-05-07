@@ -445,7 +445,7 @@ char *skipspace(char *s)
 	return s;
 }
 
-char *skipgunk(char *s)
+static char *skipgunk(char *s)
 {
 	s = skipspace(s);
 	if (*s == '<') { 
@@ -624,7 +624,7 @@ void usage(void)
 	exit(1);
 }
 
-void checkdmi(void)
+static void checkdmi(void)
 {
 	static int dmi_checked;
 	if (dmi_checked)
@@ -642,7 +642,7 @@ void checkdmi(void)
 		do_dmi = dmi_sanity_check();
 }
 
-void checkdimmdb(void)
+static void checkdimmdb(void)
 {
 	if (open_dimm_db(dimm_db_fn) < 0) 
 		exit(1);
@@ -705,7 +705,7 @@ static struct option options[] = {
 	{}
 };
 
-int modifier(int opt)
+static int modifier(int opt)
 {
 	int v;
 
@@ -794,7 +794,7 @@ int modifier(int opt)
 	return 1;
 } 
 
-int dimm_modifier(int opt)
+static int dimm_modifier(int opt)
 {
 	char *end;
 
@@ -818,7 +818,7 @@ int dimm_modifier(int opt)
 	return 1;
 }
 
-void argsleft(int ac, char **av)
+static void argsleft(int ac, char **av)
 {
 	int opt;
 		
@@ -828,7 +828,7 @@ void argsleft(int ac, char **av)
 	}
 }
 
-void no_syslog(void)
+static void no_syslog(void)
 {
 	if (!(syslog_opt & SYSLOG_FORCE))
 		syslog_opt = 0;
@@ -842,7 +842,7 @@ static void dimm_common(int ac, char **av)
 	argsleft(ac, av); 
 }
 
-int dimm_cmd(int opt, int ac, char **av)
+static int dimm_cmd(int opt, int ac, char **av)
 {
 	char *arg = optarg; 
 	
@@ -866,7 +866,7 @@ int dimm_cmd(int opt, int ac, char **av)
 	return 0;	
 }
 
-int combined_modifier(int opt)
+static int combined_modifier(int opt)
 {
 	int r = modifier(opt);
 	if (r == 0)
@@ -874,7 +874,7 @@ int combined_modifier(int opt)
 	return r;
 }
 
-void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
+static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 {	
 	int len = read(fd, buf, recordlen * loglen); 
 	if (len < 0) 
@@ -899,7 +899,7 @@ void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 	}
 }
 
-void noargs(int ac, char **av)
+static void noargs(int ac, char **av)
 {
 	if (getopt_long(ac, av, "", options, NULL) != -1)
 		usage();
