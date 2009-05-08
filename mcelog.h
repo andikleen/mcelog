@@ -91,3 +91,12 @@ enum cputype {
 	CPU_DUNNINGTON,
 	CPU_TULSA,
 };
+
+enum option_ranges {
+	O_COMMON = 500,
+	O_DISKDB = 1000,
+};
+
+extern void usage(void);
+extern void no_syslog(void);
+extern void argsleft(int ac, char **av);

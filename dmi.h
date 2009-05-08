@@ -69,8 +69,13 @@ struct dmi_memdev **dmi_find_addr(unsigned long addr);
 void dmi_set_verbosity(int v);
 
 char *dmi_getstring(struct dmi_entry *e, unsigned number);
+extern void checkdmi(void);
+
 /* valid after opendmi: */
 extern struct dmi_memdev **dmi_dimms; 
 extern struct dmi_memdev_addr **dmi_ranges; 
 extern struct dmi_memarray **dmi_arrays; 
 extern struct dmi_memarray_addr **dmi_array_ranges; 
+
+extern int dmi_forced;
+extern int do_dmi;

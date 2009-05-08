@@ -42,11 +42,11 @@
 #include "tsc.h"
 #include "version.h"
 #include "config.h"
+#include "diskdb.h"
 
 enum cputype cputype = CPU_GENERIC;	
 
 char *logfn = LOG_DEV_FILENAME; 
-char *dimm_db_fn = DIMM_DB_FILENAME;
 
 enum { 
 	SYSLOG_LOG = (1 << 0),
@@ -56,13 +56,10 @@ enum {
 	SYSLOG_FORCE = (1 << 3),
 } syslog_opt = SYSLOG_REMARK;
 int syslog_level = LOG_WARNING;
-int do_dmi;
 int ignore_nodev;
 int filter_bogus;
-int cpu_forced, dmi_forced;
+int cpu_forced;
 double cpumhz;
-char *error_trigger;
-unsigned error_thresh = 20;
 int ascii_mode;
 int dump_raw_ascii;
 int daemon_mode;
@@ -376,9 +373,8 @@ void dump_mce(struct mce *m)
 			mod);
 	}
 	resolveaddr(m->addr);
-	if (!ascii_mode && ismemerr) { 
-		if (open_dimm_db(dimm_db_fn) >= 0) 
-			new_error(m->addr, error_thresh, error_trigger);
+	if (!ascii_mode && ismemerr) {
+		diskdb_resolve_addr(m->addr);
 	}
 }
 
@@ -610,46 +606,20 @@ void usage(void)
 "Options:\n"  
 "--p4|--k8|--core2|--generic|--intel-cpu=family,model Set CPU type to decode\n"
 "--cpumhz MHZ        Set CPU Mhz to decode\n"
-"--database fn       Set filename of DIMM database (default %s)\n"
-"--error-trigger cmd,thresh   Run cmd on exceeding thresh errors per DIMM\n"
 "--raw		     (with --ascii) Dump in raw ASCII format for machine processing\n"
 "--daemon            Run in background polling for events (needs newer kernel)\n"
 "--syslog            Log decoded machine checks in syslog (default stdout)\n"	     
 "--syslog-error	     Log decoded machine checks in syslog with error level\n"
 "--no-syslog         Never log anything to syslog\n"
 "--logfile=filename  Append log output to logfile instead of stdout\n"
-"--config-file filename Read config information from config file instead of " CONFIG_FILENAME "\n",
-		dimm_db_fn
-);
+"--config-file filename Read config information from config file instead of " CONFIG_FILENAME "\n"
+		);
+	diskdb_usage();
 	exit(1);
 }
 
-static void checkdmi(void)
-{
-	static int dmi_checked;
-	if (dmi_checked)
-		return;
-	dmi_checked = 1;
-	if (dmi_forced && !do_dmi)
-		return;
-	if (opendmi() < 0) {
-		if (dmi_forced)
-			exit(1);
-		do_dmi = 0;
-		return; 
-	}
-	if (!cpu_forced && !dmi_forced)
-		do_dmi = dmi_sanity_check();
-}
-
-static void checkdimmdb(void)
-{
-	if (open_dimm_db(dimm_db_fn) < 0) 
-		exit(1);
-}
-
 enum options { 
-	O_LOGFILE = 500, 
+	O_LOGFILE = O_COMMON, 
 	O_K8,
 	O_P4,
 	O_GENERIC,
@@ -662,14 +632,9 @@ enum options {
 	O_SYSLOG,
 	O_NO_SYSLOG,
 	O_CPUMHZ,
-	O_DATABASE,
-	O_ERROR_TRIGGER,
 	O_SYSLOG_ERROR,
 	O_RAW,
 	O_DAEMON,
-	O_DUMP_MEMORY,
-	O_RESET_MEMORY,
-	O_DROP_OLD_MEMORY,
 	O_ASCII,
 	O_VERSION,
 	O_CONFIG_FILE,
@@ -794,31 +759,7 @@ static int modifier(int opt)
 	return 1;
 } 
 
-static int dimm_modifier(int opt)
-{
-	char *end;
-
-	switch (opt) { 
-	case O_DATABASE:
-		dimm_db_fn = optarg;
-		checkdmi();
-		checkdimmdb();
-		break;
-	case O_ERROR_TRIGGER:
-		checkdmi();
-		open_dimm_db(dimm_db_fn);
-		error_thresh = strtoul(optarg, &end, 0);
-		if (end == optarg || *end != ',') 
-			usage();
-		error_trigger = end + 1; 
-		break;
-	default:
-		return 0;
-	}
-	return 1;
-}
-
-static void argsleft(int ac, char **av)
+void argsleft(int ac, char **av)
 {
 	int opt;
 		
@@ -828,49 +769,17 @@ static void argsleft(int ac, char **av)
 	}
 }
 
-static void no_syslog(void)
+void no_syslog(void)
 {
 	if (!(syslog_opt & SYSLOG_FORCE))
 		syslog_opt = 0;
-}
-
-static void dimm_common(int ac, char **av)
-{
-	no_syslog();
-	checkdmi();
-	checkdimmdb();
-	argsleft(ac, av); 
-}
-
-static int dimm_cmd(int opt, int ac, char **av)
-{
-	char *arg = optarg; 
-	
-	switch (opt) { 
-	case O_DUMP_MEMORY:
-		dimm_common(ac, av);
-		if (arg)
-			dump_dimm(arg);
-		else
-			dump_all_dimms();
-		return 1;
-	case O_RESET_MEMORY:
-		dimm_common(ac, av);
-		reset_dimm(arg);
-		return 1;
-	case O_DROP_OLD_MEMORY:
-		dimm_common(ac, av);
-		gc_dimms();
-		return 1;
-	}
-	return 0;	
 }
 
 static int combined_modifier(int opt)
 {
 	int r = modifier(opt);
 	if (r == 0)
-		r = dimm_modifier(opt);
+		r = diskdb_modifier(opt);
 	return r;
 }
 
@@ -935,7 +844,7 @@ int main(int ac, char **av)
 			usage(); 
 		} else if (modifier(opt) > 0) {
 			continue;
-		} else if (dimm_modifier(opt) > 0) { 
+		} else if (diskdb_modifier(opt) > 0) { 
 			continue;
 		} else if (opt == O_ASCII) { 
 			argsleft(ac, av);
@@ -947,7 +856,7 @@ int main(int ac, char **av)
 			noargs(ac, av);
 			fprintf(stderr, "mcelog %s\n", MCELOG_VERSION);
 			exit(0);
-		} else if (dimm_cmd(opt, ac, av)) {
+		} else if (diskdb_cmd(opt, ac, av)) {
 			exit(0);
 		} else if (opt == 0)
 			break;		    

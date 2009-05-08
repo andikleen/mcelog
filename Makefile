@@ -9,6 +9,7 @@ all: mcelog dbquery
 
 OBJ := p4.o k8.o mcelog.o dmi.o db.o dimm.o tsc.o core2.o bitfield.o intel.o \
        nehalem.o dunnington.o tulsa.o config.o memutil.o
+OBJ += diskdb.o
 SRC := $(OBJ:.o=.c)
 CLEAN := mcelog dmi tsc dbquery .depend .depend.X dbquery.o
 DOC := mce.pdf smbios.spec

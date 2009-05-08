@@ -32,7 +32,9 @@
 #include "mcelog.h"
 #include "dmi.h"
 
-int verbose = 0;
+static int verbose = 0;
+int dmi_forced;
+int do_dmi;
 
 struct anchor { 
 	char str[4];	/* _SM_ */
@@ -496,4 +498,22 @@ void dmi_decodeaddr(unsigned long addr)
 void dmi_set_verbosity(int v)
 {
 	verbose = v;
+}
+
+void checkdmi(void)
+{
+	static int dmi_checked;
+	if (dmi_checked)
+		return;
+	dmi_checked = 1;
+	if (dmi_forced && !do_dmi)
+		return;
+	if (opendmi() < 0) {
+		if (dmi_forced)
+			exit(1);
+		do_dmi = 0;
+		return; 
+	}
+	if (!dmi_forced)
+		do_dmi = dmi_sanity_check();
 }
