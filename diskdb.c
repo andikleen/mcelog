@@ -52,6 +52,11 @@ void diskdb_resolve_addr(u64 addr)
 void diskdb_usage(void)
 {
 	fprintf(stderr, 
+		"Manage disk DIMM error database\n"
+		"  mcelog [options] --drop-old-memory|--reset-memory locator\n"
+		"  mcelog --dump-memory locator\n"
+		"  old can be either locator or name\n"
+		"Disk database options:"
 		"--database fn       Set filename of DIMM database (default " DIMM_DB_FILENAME ")\n"
 		"--error-trigger cmd,thresh   Run cmd on exceeding thresh errors per DIMM\n");
 }

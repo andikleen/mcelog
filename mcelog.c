@@ -636,10 +636,6 @@ void usage(void)
 "Normally this is invoked from a cronjob or using the kernel trigger.\n"
 "  mcelog [options] [--dmi] --ascii < log\n"
 "Decode machine check ASCII output from kernel logs\n"
-"Manage memory error database\n"
-"  mcelog [options] --drop-old-memory|--reset-memory locator\n"
-"  mcelog --dump-memory locator\n"
-"  old can be either locator or name\n"
 "Options:\n"  
 "--cpu=CPU           Set CPU type CPU to decode\n"
 "--cpumhz MHZ        Set CPU Mhz to decode\n"
@@ -693,20 +689,16 @@ static struct option options[] = {
 	{ "dmi-verbose", 1, NULL, O_DMI_VERBOSE },
 	{ "syslog", 0, NULL, O_SYSLOG },
 	{ "cpumhz", 1, NULL, O_CPUMHZ },
-	{ "database", 1, NULL, O_DATABASE },
-	{ "error-trigger", 1, NULL, O_ERROR_TRIGGER },
 	{ "syslog-error", 0, NULL, O_SYSLOG_ERROR },
 	{ "dump-raw-ascii", 0, &dump_raw_ascii, 1 },
 	{ "raw", 0, &dump_raw_ascii, 1 },
 	{ "no-syslog", 0, NULL, O_NO_SYSLOG },
 	{ "daemon", 0, NULL, O_DAEMON },
-	{ "dump-memory", 2, NULL, O_DUMP_MEMORY },
-	{ "reset-memory", 2, NULL, O_RESET_MEMORY },
-	{ "drop-old-memory", 0, NULL, O_DROP_OLD_MEMORY },
 	{ "ascii", 0, NULL, O_ASCII },
 	{ "version", 0, NULL, O_VERSION },
 	{ "config-file", 1, NULL, O_CONFIG_FILE },
 	{ "cpu", 1, NULL, O_CPU },
+	DISKDB_OPTIONS
 	{}
 };
 

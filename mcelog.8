@@ -1,4 +1,5 @@
-.TH MCELOG 8 "Mar 2004" "SuSE Labs" "Linux's Administrator's Manual"
+.\" disk db commented out for now because it's not usable enough
+.TH MCELOG 8 "May 2009" "SuSE Labs" "Linux's Administrator's Manual"
 .SH NAME
 mcelog \- Print machine check log from x86-64 kernel.
 .SH SYNOPSIS
@@ -6,11 +7,11 @@ mcelog [options] [device]
 .br
 mcelog [options] \-\-ascii
 .br
-mcelog [options] \-\-drop-old-memory
-.br
-mcelog [options] \-\-reset-memory locator
-.br
-mcelog [options] \-\-dump-memory[=locator]
+.\"mcelog [options] \-\-drop-old-memory
+.\".br
+.\"mcelog [options] \-\-reset-memory locator
+.\".br
+.\"mcelog [options] \-\-dump-memory[=locator]
 .br
 mcelog \-\-version
 .SH DESCRIPTION
@@ -133,34 +134,34 @@ as a cronjob or from the kernel trigger (through
 This option implies 
 .I \-\-syslog.
 
-.B \-\-database filename
-specifies the memory module error database file. Default is
-/var/lib/memory-errors.  It is only used together with DMI decoding.
-
-
-.B \-\-error\-trigger=cmd,thresh
-When a memory module accumulates 
-.I thresh
-errors in the err database run command 
-.I cmd. 
-
-.B \-\-drop-old-memory
-Drop old DIMMs in the memory module database that are not plugged in
-anymore.
-
-.B \-\-reset\-memory=locator
-When the DIMMs have suitable unique serial numbers mcelog
-will automatically detect changed DIMMs. When the DIMMs don't
-have those the user will have to use this option when changing
-a DIMM to reset the error count in the error database.
-.I Locator 
-is the memory slot identifier printed on the motherboard.
-
-.B \-\-dump-memory[=locator]
-Dump error database information for memory module located
-at 
-.I locator.
-When no locator is specified dump all.
+.\".B \-\-database filename
+.\"specifies the memory module error database file. Default is
+.\"/var/lib/memory-errors.  It is only used together with DMI decoding.
+.\"
+.\"
+.\".B \-\-error\-trigger=cmd,thresh
+.\"When a memory module accumulates 
+.\".I thresh
+.\"errors in the err database run command 
+.\".I cmd. 
+.\"
+.\".B \-\-drop-old-memory
+.\"Drop old DIMMs in the memory module database that are not plugged in
+.\"anymore.
+.\"
+.\".B \-\-reset\-memory=locator
+.\"When the DIMMs have suitable unique serial numbers mcelog
+.\"will automatically detect changed DIMMs. When the DIMMs don't
+.\"have those the user will have to use this option when changing
+.\"a DIMM to reset the error count in the error database.
+.\".I Locator 
+.\"is the memory slot identifier printed on the motherboard.
+.\"
+.\".B \-\-dump-memory[=locator]
+.\"Dump error database information for memory module located
+.\"at 
+.\".I locator.
+.\"When no locator is specified dump all.
 
 .B \-\-version
 displays the version of mcelog and exits.

@@ -4,16 +4,28 @@ etcprefix :=
 # Define appropiately for your distribution
 # DOCDIR := /usr/share/doc/packages/mcelog
 
-all: mcelog dbquery
+# The on disk database has still many problems (partly in this code and partly
+# due to missing support from BIOS), so it's disabled by default. You can 
+# enable it here by uncommenting the following line
+# CONFIG_DISKDB = 1
+
+all: mcelog
 
 .PHONY: install clean depend
 
-OBJ := p4.o k8.o mcelog.o dmi.o db.o dimm.o tsc.o core2.o bitfield.o intel.o \
+OBJ := p4.o k8.o mcelog.o dmi.o tsc.o core2.o bitfield.o intel.o \
        nehalem.o dunnington.o tulsa.o config.o memutil.o
-OBJ += diskdb.o
+DISKDB_OBJ := diskdb.o dimm.o db.o
 SRC := $(OBJ:.o=.c)
-CLEAN := mcelog dmi tsc dbquery .depend .depend.X dbquery.o
+CLEAN := mcelog dmi tsc dbquery .depend .depend.X dbquery.o ${DISKDB_OBJ}
 DOC := mce.pdf smbios.spec
+
+ifdef CONFIG_DISKDB
+CFLAGS += -DCONFIG_DISKDB=1
+OBJ += ${DISKDB_OBJ}
+
+all: dbquery
+endif
 
 mcelog: ${OBJ}
 
