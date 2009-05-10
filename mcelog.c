@@ -264,6 +264,43 @@ static char *cputype_name[] = {
 	[CPU_TULSA] = "Intel Xeon 71xx",
 };
 
+static struct config_choice cpu_choices[] = {
+	{ "generic", CPU_GENERIC },
+	{ "p6old", CPU_P6OLD },
+	{ "core2", CPU_CORE2 },
+	{ "k8", CPU_K8 },
+	{ "p4", CPU_P4 },
+	{ "dunnington", CPU_DUNNINGTON },
+	{ "xeon74xx", CPU_DUNNINGTON },
+	{ "xeon75xx", CPU_NEHALEM },
+	{ "core_i7", CPU_NEHALEM },
+	{ "nehalem", CPU_NEHALEM },
+	{ "xeon71xx", CPU_TULSA },
+	{ "tulsa", CPU_TULSA },
+	{}
+};
+
+static void print_cputypes(void)
+{
+	struct config_choice *c;
+	fprintf(stderr, "Valid CPUs:");
+	for (c = cpu_choices; c->name; c++)
+		fprintf(stderr, " %s", c->name);
+	fputc('\n', stderr);
+}
+
+static enum cputype lookup_cputype(char *name)
+{
+	struct config_choice *c;
+	for (c = cpu_choices; c->name; c++) {
+		if (!strcasecmp(name, c->name))
+			return c->val;
+	}
+	fprintf(stderr, "Unknown CPU type `%s' specified\n", name);
+	print_cputypes();
+	exit(1);
+}
+
 static char *cpuvendor_name(u32 cpuvendor)
 {
 	static char *vendor[] = {
@@ -604,7 +641,7 @@ void usage(void)
 "  mcelog --dump-memory locator\n"
 "  old can be either locator or name\n"
 "Options:\n"  
-"--p4|--k8|--core2|--generic|--intel-cpu=family,model Set CPU type to decode\n"
+"--cpu=CPU           Set CPU type CPU to decode\n"
 "--cpumhz MHZ        Set CPU Mhz to decode\n"
 "--raw		     (with --ascii) Dump in raw ASCII format for machine processing\n"
 "--daemon            Run in background polling for events (needs newer kernel)\n"
@@ -615,6 +652,7 @@ void usage(void)
 "--config-file filename Read config information from config file instead of " CONFIG_FILENAME "\n"
 		);
 	diskdb_usage();
+	print_cputypes();
 	exit(1);
 }
 
@@ -638,6 +676,7 @@ enum options {
 	O_ASCII,
 	O_VERSION,
 	O_CONFIG_FILE,
+	O_CPU,
 };
 
 static struct option options[] = {
@@ -667,6 +706,7 @@ static struct option options[] = {
 	{ "ascii", 0, NULL, O_ASCII },
 	{ "version", 0, NULL, O_VERSION },
 	{ "config-file", 1, NULL, O_CONFIG_FILE },
+	{ "cpu", 1, NULL, O_CPU },
 	{}
 };
 
@@ -710,6 +750,10 @@ static int modifier(int opt)
 		cpu_forced = 1;
 		break;
 	}
+	case O_CPU:
+		cputype = lookup_cputype(optarg);
+		cpu_forced = 1;
+		break;
 	case O_DMI:
 		do_dmi = 1;
 		dmi_forced = 1;

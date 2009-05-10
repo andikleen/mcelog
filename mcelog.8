@@ -52,27 +52,19 @@ option is specified append log output to the specified file. With the
 .B \-\-no-syslog
 option mcelog will never log anything to the syslog.
 
-When
-.B \-\-k8
-is specified assume the events are for a AMD Opteron or Athlon 64 or Athlon
-FX CPU. 
-With
-.B \-\-p4
-is specified assume the events are for a Intel Pentium 4 or Intel (older) Xeon.
-With 
-.B \-\-core2
-assume the events are for a Intel Core2 CPU or Intel Xeon 3000, 3200, 5100, 5300, 7300 
-series. When
-.B \-\-intel-cpu=family,model
-are specified then the family number and model number of the Intel CPU
-to be decoded should be specified (can be found in /proc/cpuinfo).
-When 
-.B \-\-generic 
-all the fields are dumped without CPU specific decoding.
-Default is to decode for the CPU mcelog is running on or when the kernel
-is new enough to output the
-.I PROCESSOR
-field with the mce event to decode for the CPU reported by the kernel.
+When the
+.B \-\-cpu=cputype
+option is specified set the to be decoded CPU to 
+.I cputype. 
+See 
+.I mcelog \-\-help
+for a list of valid CPUs.
+Note that specifying an incorrect CPU can lead to incorrect decoding output.
+Default is either the CPU of the machine that reported the machine check (needs
+a newer kernel version) or the CPU of the machine mcelog is running on, so normally
+this option doesn't have to be used. Older versions of mcelog had separate
+options for different CPU types. These are still implemented, but deprecated
+and undocumented now.
 
 With the
 .B \-\-dmi

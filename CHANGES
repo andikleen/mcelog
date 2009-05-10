@@ -1,5 +1,6 @@
 <newer changes first>
 
+Add new --cpu=cputype option and deprecate old k8/core2/generic/intel-cpu options
 Use official Nehalem names
 Support re-parsing mcelog output with --ascii
 Add Intel Tulsa (Xeon 71xx) decoding support
