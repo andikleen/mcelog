@@ -1,5 +1,6 @@
 CFLAGS := -g -Wall
 prefix := /usr
+etcprefix :=
 # Define appropiately for your distribution
 # DOCDIR := /usr/share/doc/packages/mcelog
 
@@ -20,6 +21,7 @@ mcelog: ${OBJ}
 install: mcelog
 	cp mcelog ${prefix}/sbin/mcelog
 	cp mcelog.8 ${prefix}/share/man/man8
+	cp mcelog.conf ${etcprefix}/etc
 ifdef DOCDIR
 	cp ${DOC} ${DOCDIR} 
 else

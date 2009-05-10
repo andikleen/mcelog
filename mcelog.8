@@ -110,15 +110,18 @@ by the kernel ("CPU n: Machine Check Exception ...") in ASCII from stdout.
 This is useful to make sense of the hexadecimal numbers in there.
 Note that when the panic comes from a different machine than 
 where mcelog is running on you might need to specify the correct
-architecture (
-.I \-\-k8
-or
-.I \-\-p4 
-or 
-.I \-\-core2
-) on older kernel. On newer kernels which output the 
+cputype on older kernels. On newer kernels which output the 
 .I PROCESSOR
 field this is not needed anymore.
+
+With the
+.B \-\-config-file file
+option mcelog reads the specified config file.
+Default is 
+.I /etc/mcelog.conf
+See also 
+.I CONFIG FILE
+below.
 
 With the
 .B \-\-daemon
@@ -161,6 +164,29 @@ When no locator is specified dump all.
 
 .B \-\-version
 displays the version of mcelog and exits.
+
+.SH CONFIG FILE
+mcelog supports a config file to set defaults. Command line options override
+the config file. By default the config file is read from
+.I /etc/mcelog.conf
+unless overriden with the 
+.I --config-file
+option.
+
+The general format is
+.I optionname = value
+White space is not allowed in value currently, except at the end where it is dropped
+Comments start with #.
+
+All command line options that are not commands can be specified in the config file.
+For example t to enable the 
+.I --no-syslog
+option use 
+.I no-syslog = yes   
+(or no to disable).  When the option has a argument
+use
+.I logfile = /tmp/logfile
+
 .SH NOTES
 The kernel prefers old messages over new. If the log buffer overflows
 only old ones will be kept.
@@ -176,6 +202,8 @@ mcelog will report serious errors to the syslog during decoding.
 
 .SH FILES
 /dev/mcelog (char 10, minor 227) 
+.br
+/etc/mcelog.conf
 .br
 /var/lib/memory-errors
 .br
