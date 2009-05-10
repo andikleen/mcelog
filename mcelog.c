@@ -57,7 +57,7 @@ enum {
 } syslog_opt = SYSLOG_REMARK;
 int syslog_level = LOG_WARNING;
 int ignore_nodev;
-int filter_bogus;
+int filter_bogus = 1;
 int cpu_forced;
 double cpumhz;
 int ascii_mode;
@@ -648,7 +648,8 @@ void usage(void)
 "--dmi               Use SMBIOS information to decode DIMMs (needs root)\n"
 "--no-dmi            Don't use SMBIOS information\n"
 "--dmi-verbose       Dump SMBIOS information (for debugging)\n"
-"--filter            Inhibit known bogus events\n"
+"--filter            Inhibit known bogus events (default on)\n"
+"--no-filter         Don't inhibit known broken events\n"
 "--config-file filename Read config information from config file instead of " CONFIG_FILENAME "\n"
 		);
 	diskdb_usage();
@@ -688,6 +689,7 @@ static struct option options[] = {
 	{ "intel-cpu", 1, NULL, O_INTEL_CPU },
 	{ "ignorenodev", 0, &ignore_nodev, 1 },
 	{ "filter", 0, &filter_bogus, 1 },
+	{ "no-filter", 0, &filter_bogus, 0 },
 	{ "dmi", 0, NULL, O_DMI },
 	{ "no-dmi", 0, NULL, O_NO_DMI },
 	{ "dmi-verbose", 1, NULL, O_DMI_VERBOSE },
