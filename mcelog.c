@@ -378,15 +378,15 @@ void dump_mce(struct mce *m)
 			Wprintf(" (upper bound, found by polled driver)");
 		Wprintf("\n");
 	}
-	if (m->rip) 
+	if (m->ip) 
 		Wprintf("RIP%s %02x:%Lx ", 
 		       !(m->mcgstatus & MCG_STATUS_EIPV) ? " !INEXACT!" : "",
-		       m->cs, m->rip);
+		       m->cs, m->ip);
 	if (m->misc)
 		Wprintf("MISC %Lx ", m->misc);
 	if (m->addr)
 		Wprintf("ADDR %Lx ", m->addr);
-	if (m->rip | m->misc | m->addr)	
+	if (m->ip | m->misc | m->addr)	
 		Wprintf("\n");
 	switch (cputype) { 
 	case CPU_K8:
@@ -423,7 +423,7 @@ void dump_mce_raw_ascii(struct mce *m)
 	Wprintf("CPU %u\n", m->extcpu ? m->extcpu : m->cpu);
 	Wprintf("BANK %d\n", m->bank);
 	Wprintf("TSC 0x%Lx\n", m->tsc);
-	Wprintf("RIP 0x%02x:0x%Lx\n", m->cs, m->rip);
+	Wprintf("RIP 0x%02x:0x%Lx\n", m->cs, m->ip);
 	Wprintf("MISC 0x%Lx\n", m->misc);
 	Wprintf("ADDR 0x%Lx\n", m->addr);
 	Wprintf("STATUS 0x%Lx\n", m->status);
@@ -584,7 +584,7 @@ void decodefatal(FILE *inf)
 
 			n = sscanf(s, "%02x:<%016Lx> {%100s}%n",
 				   &cs,
-				   &m.rip, 
+				   &m.ip, 
 				   symbol, &next); 
 			m.cs = cs;
 			if (n < 2) 
