@@ -149,9 +149,12 @@ With the
 .B \-\-cpumhz=mhz
 option assume the CPU has 
 .I mhz
-frequency for decoding the time of the event. Note this can be unreliable.
-on some systems with CPU frequency scaling or deep C states.
-By default the frequency of the current CPU is used. Newer kernels report
+frequency for decoding the time of the event using the CPU time stamp
+counter. This also forces decoding. Note this can be unreliable.
+on some systems with CPU frequency scaling or deep C states, where
+the CPU time stamp counter does not increase linearly.
+By default the frequency of the current CPU is used when mcelog
+determines it is safe to use. Newer kernels report
 the time directly in the event and don't need this anymore.
 
 .\".B \-\-database filename

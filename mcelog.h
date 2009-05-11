@@ -103,3 +103,5 @@ enum option_ranges {
 extern void usage(void);
 extern void no_syslog(void);
 extern void argsleft(int ac, char **av);
+extern char *processor_flags;
+extern int force_tsc;

@@ -60,11 +60,13 @@ int syslog_level = LOG_WARNING;
 int ignore_nodev;
 int filter_bogus = 1;
 int cpu_forced;
-double cpumhz;
+static double cpumhz;
+static int cpumhz_forced;
 int ascii_mode;
 int dump_raw_ascii;
 int daemon_mode;
 static char *inputfile;
+char *processor_flags;
 
 static void check_cpu(void);
 
@@ -213,18 +215,17 @@ int mce_filter(struct mce *m)
 	}	
 }
 
-static void print_tsc(int cpunum, __u64 tsc) 
+static void print_tsc(int cpunum, __u64 tsc, unsigned long time) 
 { 
-	char buf[200];
-	int ret; 
-	if (cpu_forced) 
-		ret = decode_tsc_forced(buf, cputype, cpumhz, tsc);
-	else
-		ret = decode_tsc_current(buf, cputype, tsc);
-	if (ret >= 0) 
-		Wprintf(buf);
-	else
-		Wprintf("%Lx", tsc);
+	int ret;
+	char *buf = NULL;
+
+	if (cpumhz_forced) 
+		ret = decode_tsc_forced(&buf, cpumhz, tsc);
+	else if (!time) 
+		ret = decode_tsc_current(&buf, cpunum, cputype, cpumhz, tsc);
+	Wprintf("TSC %Lx %s\n", tsc, ret >= 0 ? buf : "");
+	free(buf);
 }
 
 struct cpuid1 {
@@ -373,13 +374,8 @@ void dump_mce(struct mce *m)
 	if (!m->finished)
 		Wprintf("not finished?\n");
 	Wprintf("CPU %d %s ", cpu, bankname(m->bank));
-	if (m->tsc) {
-		Wprintf("TSC ");
-		print_tsc(cpu, m->tsc);
-		if (m->mcgstatus & MCI_STATUS_UC)
-			Wprintf(" (upper bound, found by polled driver)");
-		Wprintf("\n");
-	}
+	if (m->tsc)
+		print_tsc(cpu, m->tsc, m->time);
 	if (m->ip) 
 		Wprintf("RIP%s %02x:%Lx ", 
 		       !(m->mcgstatus & MCG_STATUS_EIPV) ? " !INEXACT!" : "",
@@ -437,30 +433,57 @@ void dump_mce_raw_ascii(struct mce *m)
 	Wprintf("\n");
 }
 
-static void check_cpu(void)
+void check_cpu(void)
 { 
+	enum { 
+		VENDOR = 1, 
+		FAMILY = 2, 
+		MODEL = 4, 
+		MHZ = 8, 
+		FLAGS = 16, 
+		ALL = 0x1f 
+	} seen = 0;
 	FILE *f;
 	f = fopen("/proc/cpuinfo","r");
 	if (f != NULL) { 
-		int found = 0; 
 		int family; 
 		int model;
 		char vendor[64];
 		char *line = NULL;
 		size_t linelen = 0; 
-		while (getdelim(&line, &linelen, '\n', f) > 0 && found < 3) { 
+		double mhz;
+		int n;
+		while (getdelim(&line, &linelen, '\n', f) > 0 && seen != ALL) { 
 			if (sscanf(line, "vendor_id : %63[^\n]", vendor) == 1) 
-				found++; 
+				seen |= VENDOR;
 			if (sscanf(line, "cpu family : %d", &family) == 1)
-				found++;
+				seen |= FAMILY;
 			if (sscanf(line, "model : %d", &model) == 1)
-				found++;
+				seen |= MODEL;
+			/* We use only Mhz of the first CPU, assuming they are the same
+			   (there are more sanity checks later to make this not as wrong
+			   as it sounds) */
+			if (sscanf(line, "cpu MHz : %lf", &mhz) == 1) { 
+				if (!cpumhz_forced)
+					cpumhz = mhz;
+				seen |= MHZ;
+			}
+			n = 0;
+			if (sscanf(line, "flags : %n", &n) == 0 && n > 0) {
+				processor_flags = line + 7;
+				line = NULL;
+				linelen = 0;
+				seen |= FLAGS;
+			}			      
+
 		} 
-		if (found == 3) {
-			if (!strcmp(vendor,"AuthenticAMD") && 
-			    ( family == 15 || family == 16 || family == 17) )
+		if (seen == ALL) {
+			if (cpu_forced) 
+				;
+			else if (!strcmp(vendor,"AuthenticAMD") && 
+			    (family == 15 || family == 16 || family == 17))
 				cputype = CPU_K8;
-			if (!strcmp(vendor,"GenuineIntel"))
+			else if (!strcmp(vendor,"GenuineIntel"))
 				cputype = select_intel_cputype(family, model);
 			/* Add checks for other CPUs here */	
 		} else {
@@ -779,11 +802,7 @@ static int modifier(int opt)
 		syslog_opt = SYSLOG_FORCE;
 		break;
 	case O_CPUMHZ:
-		if (!cpu_forced) {
-			fprintf(stderr, 
-				"Specify cputype before --cpumhz=..\n");
-			usage();
-		}
+		cpumhz_forced = 1;
 		if (sscanf(optarg, "%lf", &cpumhz) != 1)
 			usage();
 		break;

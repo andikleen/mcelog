@@ -21,3 +21,12 @@ enum cputype select_intel_cputype(int family, int model)
 	Eprintf("Unknown Intel CPU type family %x model %x\n", family, model);
 	return family == 6 ? CPU_P6OLD : CPU_GENERIC;
 }
+
+int is_intel_cpu(int cpu)
+{
+	switch (cpu) {
+	CASE_INTEL_CPUS:
+		return 1;
+	} 
+	return 0;
+}
