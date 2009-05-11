@@ -6,3 +6,5 @@ dbquery
 *.rej
 .gdb_history
 .depend
+tsc
+core
