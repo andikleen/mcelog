@@ -230,19 +230,24 @@ const char *config_file(char **av, const char *deffn)
 	return deffn;
 }
 
+/* Use getopt_long struct option array to process config file */
 void config_options(struct option *opts, int (*func)(int))
 {
 	for (; opts->name; opts++) {
 		if (!opts->has_arg) {
-			if (config_bool("global", opts->name) == 1)
-				func(opts->val);
+			if (config_bool("global", opts->name) != 1)
+				continue;
+			if (opts->flag) {
+				*(opts->flag) = opts->val;	
+				continue;
+			}
 		} else {
 			char *s = config_string("global", opts->name);
-			if (s != NULL) {
-				optarg = s;
-				func(opts->val);
-			}
+			if (s == NULL)
+				continue;
+			optarg = s;
 		}
+		func(opts->val);
 	}
 }
 
