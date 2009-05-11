@@ -388,10 +388,10 @@ void dump_mce(struct mce *m)
 		Wprintf("\n");
 	switch (cputype) { 
 	case CPU_K8:
-		ismemerr = decode_k8_mc(m); 
+		decode_k8_mc(m, &ismemerr); 
 		break;
 	CASE_INTEL_CPUS:
-		decode_intel_mc(m, cputype);
+		decode_intel_mc(m, cputype, &ismemerr);
 		break;
 	/* add handlers for other CPUs here */
 	default:
@@ -408,7 +408,7 @@ void dump_mce(struct mce *m)
 			mod);
 	}
 	resolveaddr(m->addr);
-	if (!ascii_mode && ismemerr) {
+	if (!ascii_mode && ismemerr && (m->status & MCI_STATUS_ADDRV)) {
 		diskdb_resolve_addr(m->addr);
 	}
 }

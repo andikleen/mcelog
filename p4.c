@@ -117,7 +117,7 @@ static char* get_II_str(__u8 i)
 	return II[i];
 }
 
-static void decode_mca(__u32 mca)
+static void decode_mca(__u32 mca, int *ismemerr)
 {
 #define TLB_LL_MASK      0x3  /*bit 0, bit 1*/
 #define TLB_LL_SHIFT     0x0
@@ -190,6 +190,7 @@ static void decode_mca(__u32 mca)
 				get_T_str((mca & BUS_T_MASK) >> BUS_T_SHIFT));
 	} else if (test_prefix(7, mca)) {
 		decode_memory_controller(mca);
+		*ismemerr = 1;
 	} else 
 		Wprintf("Unknown Error %x\n", mca);
 }
@@ -235,7 +236,7 @@ static void decode_tracking(u64 track, int cpu)
 	}
 }
 
-static void decode_mci(__u64 status, int cpu)
+static void decode_mci(__u64 status, int cpu, int *ismemerr)
 {
 	Wprintf("MCi status:\n");
 	if (!(status & MCI_STATUS_VAL))
@@ -261,7 +262,7 @@ static void decode_mci(__u64 status, int cpu)
 
 	decode_tracking((status >> 54) & 3, cpu);
 	Wprintf("MCA: ");
-	decode_mca(status & 0xffffL);
+	decode_mca(status & 0xffffL, ismemerr);
 }
 
 static void decode_mcg(__u64 mcgstatus)
@@ -288,7 +289,7 @@ static void decode_thermal(struct mce *log, int cpu)
 	} 
 }
 
-void decode_intel_mc(struct mce *log, int cputype)
+void decode_intel_mc(struct mce *log, int cputype, int *ismemerr)
 {
 	int cpu = log->extcpu ? log->extcpu : log->cpu;
 
@@ -298,7 +299,7 @@ void decode_intel_mc(struct mce *log, int cputype)
 	}
 
 	decode_mcg(log->mcgstatus);
-	decode_mci(log->status, cpu);
+	decode_mci(log->status, cpu, ismemerr);
 
 	if (test_prefix(11, (log->status & 0xffffL))) {
 		switch (cputype) {

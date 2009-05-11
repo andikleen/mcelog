@@ -244,17 +244,15 @@ static decoder_t decoders[] = {
 	[5] = decode_k8_fr_mc,
 }; 
 
-int decode_k8_mc(struct mce *mce)
+void decode_k8_mc(struct mce *mce, int *ismemerr)
 {
-	int ismemerr = 0;
 	if (mce->bank < NELE(decoders))
-		decoders[mce->bank](mce->status, &ismemerr);
+		decoders[mce->bank](mce->status, ismemerr);
 	else if (mce->bank >= K8_MCE_THRESHOLD_BASE &&
 		 mce->bank < K8_MCE_THRESHOLD_TOP)
 		decode_k8_threshold(mce->misc);
 	else
 		Wprintf("  no decoder for unknown bank %u\n", mce->bank);
-	return ismemerr;
 }
 
 char *k8_bank_name(int num)

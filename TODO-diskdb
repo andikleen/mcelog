@@ -14,7 +14,7 @@ serial numbers
 
 Code problems:
 - Missing aging
-- No interface for Intel memory errors
+- For Intel Nehalem CE errors need reverse smbios translation
 - SMBIOS interleaving decoding missing
 - Some crash races in db.c (see comments there)
 - Need lock timeout
