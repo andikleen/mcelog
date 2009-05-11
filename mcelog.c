@@ -366,10 +366,10 @@ void dump_mce(struct mce *m)
 	int ismemerr = 0;
 	unsigned cpu = m->extcpu ? m->extcpu : m->cpu;
 
-	mce_cpuid(m);
-	print_time(m->time);
 	Wprintf("HARDWARE ERROR. This is *NOT* a software problem!\n");
 	Wprintf("Please contact your hardware vendor\n");
+	mce_cpuid(m);
+	print_time(m->time);
 	/* should not happen */
 	if (!m->finished)
 		Wprintf("not finished?\n");
