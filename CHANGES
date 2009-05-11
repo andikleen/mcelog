@@ -1,5 +1,6 @@
 <newer changes first>
 
+Add support for --ascii --file option to specify input file
 Add support for /etc/mcelog.conf config file. This can set all options on the command line
 	and some more.
 Add new --cpu=cputype option and deprecate old k8/core2/generic/intel-cpu options

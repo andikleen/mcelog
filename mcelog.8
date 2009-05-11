@@ -31,7 +31,8 @@ trigger.
 In addition mcelog can be used on the command line to decode an existing machine 
 check record in ascii format with the 
 .I \-\-ascii
-option.
+option. This is typically used to decode the panic console output of a fatal
+machine check, if mcelog was unable to log the data after a warm reboot.
 
 When the 
 .B \-\-syslog
@@ -109,13 +110,21 @@ device instead of the default
 With the 
 .B \-\-ascii
 option mcelog decodes a fatal machine check panic generated
-by the kernel ("CPU n: Machine Check Exception ...") in ASCII from stdout.
-This is useful to make sense of the hexadecimal numbers in there.
+by the kernel ("CPU n: Machine Check Exception ...") in ASCII from standard input
+and exits afterwards.
 Note that when the panic comes from a different machine than 
 where mcelog is running on you might need to specify the correct
 cputype on older kernels. On newer kernels which output the 
 .I PROCESSOR
 field this is not needed anymore.
+
+When the 
+.B \-\-file filename
+option is specified 
+.I mcelog \-\-ascii
+will read the ASCII machine check record from input file 
+.I filename
+instead of standard input.
 
 With the
 .B \-\-config-file file

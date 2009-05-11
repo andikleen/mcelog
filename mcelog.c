@@ -32,6 +32,7 @@
 #include <poll.h>
 #include <time.h>
 #include <getopt.h>
+#include <errno.h>
 #include "mcelog.h"
 #include "paths.h"
 #include "k8.h"
@@ -63,6 +64,7 @@ double cpumhz;
 int ascii_mode;
 int dump_raw_ascii;
 int daemon_mode;
+static char *inputfile;
 
 static void check_cpu(void);
 
@@ -635,12 +637,14 @@ void usage(void)
 "Decode machine check error records from kernel.\n"
 "Normally this is invoked from a cronjob or using the kernel trigger.\n"
 "  mcelog [options] --ascii < log\n"
+"  mcelog [options] --ascii --file log\n"
 "Decode machine check ASCII output from kernel logs\n"
 "Options:\n"  
 "--cpu CPU           Set CPU type CPU to decode (see below for valid types)\n"
 "--cpumhz MHZ        Set CPU Mhz to decode time (output unreliable, not needed on new kernels)\n"
 "--raw		     (with --ascii) Dump in raw ASCII format for machine processing\n"
 "--daemon            Run in background polling for events (needs newer kernel)\n"
+"--file filename     With --ascii read machine check log from filename instead of stdin\n"
 "--syslog            Log decoded machine checks in syslog (default stdout)\n"	     
 "--syslog-error	     Log decoded machine checks in syslog with error level\n"
 "--no-syslog         Never log anything to syslog\n"
@@ -678,6 +682,7 @@ enum options {
 	O_VERSION,
 	O_CONFIG_FILE,
 	O_CPU,
+	O_FILE,
 };
 
 static struct option options[] = {
@@ -701,6 +706,7 @@ static struct option options[] = {
 	{ "no-syslog", 0, NULL, O_NO_SYSLOG },
 	{ "daemon", 0, NULL, O_DAEMON },
 	{ "ascii", 0, NULL, O_ASCII },
+	{ "file", 1, NULL, O_FILE },
 	{ "version", 0, NULL, O_VERSION },
 	{ "config-file", 1, NULL, O_CONFIG_FILE },
 	{ "cpu", 1, NULL, O_CPU },
@@ -790,6 +796,9 @@ static int modifier(int opt)
 		if (!(syslog_opt & SYSLOG_FORCE))
 			syslog_opt = SYSLOG_ALL|SYSLOG_FORCE;
 		break;
+	case O_FILE:
+		inputfile = optarg;
+		break;
 	case O_CONFIG_FILE:
 		/* parsed in config.c */
 		break;
@@ -873,6 +882,25 @@ static void parse_config(char **av)
 	config_options(options, combined_modifier);
 }
 
+static void ascii_command(int ac, char **av)
+{
+	FILE *f = stdin;
+
+	argsleft(ac, av);
+	if (inputfile) { 
+		f = fopen(inputfile, "r");
+		if (!f) {		
+			fprintf(stderr, "Cannot open input file `%s': %s\n",
+				inputfile, strerror(errno));
+			exit(1);
+		}
+		/* f closed by exit */
+	}
+	no_syslog();
+	checkdmi();
+	decodefatal(f); 
+}
+
 int main(int ac, char **av) 
 { 
 	unsigned recordlen = 0;
@@ -889,10 +917,7 @@ int main(int ac, char **av)
 		} else if (diskdb_modifier(opt) > 0) { 
 			continue;
 		} else if (opt == O_ASCII) { 
-			argsleft(ac, av);
-			no_syslog();
-			checkdmi();
-			decodefatal(stdin); 
+			ascii_command(ac, av);
 			exit(0);
 		} else if (opt == O_VERSION) { 
 			noargs(ac, av);
