@@ -110,31 +110,34 @@ void Eprintf(char *fmt, ...)
 }
 
 /* Write to syslog with line buffering */
-static void vlinesyslog(char *fmt, va_list ap)
+static int vlinesyslog(char *fmt, va_list ap)
 {
 	static char line[200];
 	int n;
 	int lend = strlen(line); 
-	vsnprintf(line + lend, sizeof(line)-lend, fmt, ap);
+	int w = vsnprintf(line + lend, sizeof(line)-lend, fmt, ap);
 	while (line[n = strcspn(line, "\n")] != 0) {
 		line[n] = 0;
 		syslog(syslog_level, line);
 		memmove(line, line + n + 1, strlen(line + n + 1) + 1);
-	}	
+	}
+	return w;
 }
 
 /* For decoded machine check output */
-void Wprintf(char *fmt, ...)
+int Wprintf(char *fmt, ...)
 {
+	int n;
 	va_list ap;
 	va_start(ap,fmt);
 	if (syslog_opt & SYSLOG_ERROR) {
 		opensyslog();
-		vlinesyslog(fmt, ap);
+		n = vlinesyslog(fmt, ap);
 	} else {
-		vprintf(fmt, ap);
+		n = vprintf(fmt, ap);
 	}
 	va_end(ap);
+	return n;
 }
 
 /* For output that should reach both syslog and normal log */
@@ -224,7 +227,7 @@ static void print_tsc(int cpunum, __u64 tsc, unsigned long time)
 		ret = decode_tsc_forced(&buf, cpumhz, tsc);
 	else if (!time) 
 		ret = decode_tsc_current(&buf, cpunum, cputype, cpumhz, tsc);
-	Wprintf("TSC %Lx %s\n", tsc, ret >= 0 ? buf : "");
+	Wprintf("TSC %Lx %s", tsc, ret >= 0 ? buf : "");
 	free(buf);
 }
 
@@ -363,6 +366,7 @@ static void print_time(time_t t)
 
 void dump_mce(struct mce *m) 
 {
+	int n;
 	int ismemerr = 0;
 	unsigned cpu = m->extcpu ? m->extcpu : m->cpu;
 
@@ -376,15 +380,17 @@ void dump_mce(struct mce *m)
 	Wprintf("CPU %d %s ", cpu, bankname(m->bank));
 	if (m->tsc)
 		print_tsc(cpu, m->tsc, m->time);
+	Wprintf("\n");
 	if (m->ip) 
-		Wprintf("RIP%s %02x:%Lx ", 
+		n += Wprintf("RIP%s %02x:%Lx\n", 
 		       !(m->mcgstatus & MCG_STATUS_EIPV) ? " !INEXACT!" : "",
 		       m->cs, m->ip);
-	if (m->misc)
-		Wprintf("MISC %Lx ", m->misc);
-	if (m->addr)
-		Wprintf("ADDR %Lx ", m->addr);
-	if (m->ip | m->misc | m->addr)	
+	n = 0;
+	if (m->status & MCI_STATUS_MISCV)
+		n += Wprintf("MISC %Lx ", m->misc);
+	if (m->status & MCI_STATUS_ADDRV)
+		n += Wprintf("ADDR %Lx ", m->addr);		
+	if (n > 0)
 		Wprintf("\n");
 	switch (cputype) { 
 	case CPU_K8:

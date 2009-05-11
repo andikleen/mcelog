@@ -78,7 +78,7 @@ struct mce {
 #define PRINTFLIKE 
 #endif
 
-void Wprintf(char *fmt, ...) PRINTFLIKE;
+int Wprintf(char *fmt, ...) PRINTFLIKE;
 void Eprintf(char *fmt, ...) PRINTFLIKE;
 void Lprintf(char *fmt, ...) PRINTFLIKE;
 void Gprintf(char *fmt, ...) PRINTFLIKE;
