@@ -668,7 +668,7 @@ void usage(void)
 "--raw		     (with --ascii) Dump in raw ASCII format for machine processing\n"
 "--daemon            Run in background polling for events (needs newer kernel)\n"
 "--file filename     With --ascii read machine check log from filename instead of stdin\n"
-"--syslog            Log decoded machine checks in syslog (default stdout)\n"	     
+"--syslog            Log decoded machine checks in syslog (default stdout or syslog for daemon)\n"	     
 "--syslog-error	     Log decoded machine checks in syslog with error level\n"
 "--no-syslog         Never log anything to syslog\n"
 "--logfile filename  Append log output to logfile instead of stdout\n"
