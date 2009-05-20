@@ -71,6 +71,8 @@ struct mce {
 
 #define NELE(x) (sizeof(x)/sizeof(*(x)))
 #define err(x) perror(x),exit(1)
+#define sizeof_field(t, f) (sizeof(((t *)0)->f))
+#define endof_field(t, f) (sizeof(((t *)0)->f) + offsetof(t, f))
 
 #ifdef __GNUC__
 #define PRINTFLIKE __attribute__((format(printf,1,2)))

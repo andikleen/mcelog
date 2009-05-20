@@ -33,6 +33,7 @@
 #include <time.h>
 #include <getopt.h>
 #include <errno.h>
+#include <stddef.h>
 #include "mcelog.h"
 #include "paths.h"
 #include "k8.h"
@@ -358,13 +359,7 @@ static void mce_cpuid(struct mce *m)
 	}	
 }
 
-static void print_time(time_t t)
-{
-	if (t)
-		Wprintf("%s", ctime(&t));
-}
-
-void dump_mce(struct mce *m) 
+void dump_mce(struct mce *m, int recordlen) 
 {
 	int n;
 	int ismemerr = 0;
@@ -373,7 +368,6 @@ void dump_mce(struct mce *m)
 	Wprintf("HARDWARE ERROR. This is *NOT* a software problem!\n");
 	Wprintf("Please contact your hardware vendor\n");
 	mce_cpuid(m);
-	print_time(m->time);
 	/* should not happen */
 	if (!m->finished)
 		Wprintf("not finished?\n");
@@ -381,8 +375,8 @@ void dump_mce(struct mce *m)
 	if (m->tsc)
 		print_tsc(cpu, m->tsc, m->time);
 	Wprintf("\n");
-	if (m->ip) 
-		n += Wprintf("RIP%s %02x:%Lx\n", 
+	if (m->ip)
+		Wprintf("RIP%s %02x:%Lx\n", 
 		       !(m->mcgstatus & MCG_STATUS_EIPV) ? " !INEXACT!" : "",
 		       m->cs, m->ip);
 	n = 0;
@@ -392,6 +386,10 @@ void dump_mce(struct mce *m)
 		n += Wprintf("ADDR %Lx ", m->addr);		
 	if (n > 0)
 		Wprintf("\n");
+	if (m->time) {
+		time_t t = m->time;
+		n += Wprintf("TIME %Lu %s", m->time, ctime(&t));
+	}
 	switch (cputype) { 
 	case CPU_K8:
 		decode_k8_mc(m, &ismemerr); 
@@ -405,7 +403,17 @@ void dump_mce(struct mce *m)
 	} 
 	/* decode all status bits here */
 	Wprintf("STATUS %Lx MCGSTATUS %Lx\n", m->status, m->mcgstatus);
-	if (m->cpuid) {
+	n = 0;
+	if (recordlen >= offsetof(struct mce, cpuid) && m->mcgcap)
+		n += Wprintf("MCGCAP %llx ", m->mcgcap);
+	if (recordlen >= offsetof(struct mce, apicid))
+		n += Wprintf("APICID %x ", m->apicid);
+	if (recordlen >= offsetof(struct mce, socketid))
+		n += Wprintf("SOCKETID %x ", m->socketid);
+	if (n > 0)
+		Wprintf("\n");
+
+	if (recordlen >= offsetof(struct mce, cpuid) && m->cpuid) {
 		u32 fam, mod;
 		parse_cpuid(m->cpuid, &fam, &mod);
 		Wprintf("CPUID Vendor %s Family %u Model %u\n",
@@ -419,7 +427,7 @@ void dump_mce(struct mce *m)
 	}
 }
 
-void dump_mce_raw_ascii(struct mce *m)
+void dump_mce_raw_ascii(struct mce *m, int recordlen)
 {
 	/* should not happen */
 	if (!m->finished)
@@ -432,10 +440,16 @@ void dump_mce_raw_ascii(struct mce *m)
 	Wprintf("ADDR 0x%Lx\n", m->addr);
 	Wprintf("STATUS 0x%Lx\n", m->status);
 	Wprintf("MCGSTATUS 0x%Lx\n", m->mcgstatus);
-	if (m->cpuid)
+	if (recordlen >= offsetof(struct mce, cpuid))
 		Wprintf("PROCESSOR %u:0x%x\n", m->cpuvendor, m->cpuid);
-	if (m->time)
-		Wprintf("TIME %Lu\n", m->time);
+#define CPRINT(str, field) 				\
+	if (recordlen >= offsetof(struct mce, field))	\
+		Wprintf(str "\n", m->field)
+	CPRINT("TIME %llu", time);
+	CPRINT("SOCKETID %u", socketid);
+	CPRINT("APICID %u", apicid);
+	CPRINT("MCGCAP %llx", mcgcap);
+#undef CPRINT
 	Wprintf("\n");
 }
 
@@ -526,18 +540,22 @@ static char *skipgunk(char *s)
 	return skipspace(s);
 }
 
-void dump_mce_final(struct mce *m, char *symbol, int missing)
+void dump_mce_final(struct mce *m, char *symbol, int missing, int recordlen)
 {
 	m->finished = 1;
 	if (!dump_raw_ascii) {
-		dump_mce(m);
+		dump_mce(m, recordlen);
 		if (symbol[0])
 			Wprintf("RIP: %s\n", symbol);
 		if (missing) 
 			Wprintf("(Fields were incomplete)\n");
 	} else
-		dump_mce_raw_ascii(m);
+		dump_mce_raw_ascii(m, recordlen);
 }
+
+#define FIELD(f) \
+	if (recordlen < endof_field(struct mce, f)) \
+		recordlen = endof_field(struct mce, f)
 
 /* Decode ASCII input for fatal messages */
 void decodefatal(FILE *inf)
@@ -552,6 +570,7 @@ void decodefatal(FILE *inf)
 	int next = 0;
 	char *s = NULL;
 	unsigned cpuvendor;
+	int recordlen = 0;
 
 	ascii_mode = 1;
 	if (do_dmi)
@@ -623,7 +642,7 @@ void decodefatal(FILE *inf)
 		} 
 		else if (!strncmp(s, "TSC",3)) { 
 			if ((n = sscanf(s, "TSC %Lx%n", &m.tsc, &next)) < 1) 
-				missing++; 
+				missing++;
 		}
 		else if (!strncmp(s, "ADDR",4)) { 
 			if ((n = sscanf(s, "ADDR %Lx%n", &m.addr, &next)) < 1) 
@@ -632,19 +651,38 @@ void decodefatal(FILE *inf)
 		else if (!strncmp(s, "MISC",4)) { 
 			if ((n = sscanf(s, "MISC %Lx%n", &m.misc, &next)) < 1) 
 				missing++; 
-		} else if (!strncmp(s, "PROCESSOR", 9)) { 
+		} 
+		else if (!strncmp(s, "PROCESSOR", 9)) { 
 			if ((n = sscanf(s, "PROCESSOR %u:%x%n", &cpuvendor, &m.cpuid, &next)) < 2)
 				missing++;
 			else
 				m.cpuvendor = cpuvendor;			
-		}
+			FIELD(cpuvendor);
+		} 
 		else if (!strncmp(s, "TIME", 4)) { 
-			if ((n = sscanf(s, "TIME %Lu%n", &m.time, &next)) < 1)
+			if ((n = sscanf(s, "TIME %llu%n", &m.time, &next)) < 1)
 				missing++;
-		} else { 
+			FIELD(time);
+		} 
+		else if (!strncmp(s, "MCGCAP", 6)) {
+			if ((n = sscanf(s, "MCGCAP %llx%n", &m.mcgcap, &next)) != 1)
+				missing++;
+			FIELD(mcgcap);
+		} 
+		else if (!strncmp(s, "APICID", 6)) {
+			if ((n = sscanf(s, "APICID %x%n", &m.apicid, &next)) != 1)
+				missing++;
+			FIELD(apicid);
+		} 
+		else if (!strncmp(s, "SOCKETID", 8)) {
+			if ((n = sscanf(s, "SOCKETID %u%n", &m.socketid, &next)) != 1)
+				missing++;
+			FIELD(socketid);
+		} 
+		else { 
 			s = skipspace(s);
 			if (*s && data) { 
-				dump_mce_final(&m, symbol, missing); 
+				dump_mce_final(&m, symbol, missing, recordlen); 
 				memset(&m, 0, sizeof(struct mce));
 				data = 0;
 			} 
@@ -656,7 +694,7 @@ void decodefatal(FILE *inf)
 	} 
 	free(line);
 	if (data)
-		dump_mce_final(&m, symbol, missing);
+		dump_mce_final(&m, symbol, missing, recordlen);
 }
 
 void usage(void)
@@ -873,9 +911,9 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 			continue;
 		if (!dump_raw_ascii) {
 			Wprintf("MCE %d\n", i);
-			dump_mce(mce);
+			dump_mce(mce, recordlen);
 		} else
-			dump_mce_raw_ascii(mce);
+			dump_mce_raw_ascii(mce, recordlen);
 	}
 
 	if (recordlen < sizeof(struct mce))  {
