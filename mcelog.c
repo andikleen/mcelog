@@ -569,15 +569,14 @@ void decodefatal(FILE *inf)
 	struct mce m;
 	char *line = NULL; 
 	size_t linelen = 0;
-	int k;
-	int missing = 0; 
+	int missing; 
 	char symbol[100];
-	int data = 0;
-	int next = 0;
-	char *s = NULL;
+	int data;
+	int next;
+	char *s;
 	unsigned cpuvendor;
-	int recordlen = 0;
-	int disclaimer_seen = 0;
+	int recordlen;
+	int disclaimer_seen;
 
 	ascii_mode = 1;
 	if (do_dmi)
@@ -585,7 +584,12 @@ void decodefatal(FILE *inf)
  "WARNING: with --dmi mcelog --ascii must run on the same machine with the\n"
  "     same BIOS/memory configuration as where the machine check occurred.\n");
 
-	k = 0;
+restart:
+	missing = 0;
+	data = 0;
+	next = 0;
+	disclaimer_seen = 0;
+	recordlen = 0;
 	memset(&m, 0, sizeof(struct mce));
 	symbol[0] = '\0';
 	while (next > 0 || getdelim(&line, &linelen, '\n', inf) > 0) { 
@@ -690,14 +694,12 @@ void decodefatal(FILE *inf)
 			disclaimer_seen = 1;
 		else { 
 			s = skipspace(s);
-			if (*s && data) { 
+			if (*s && data)
 				dump_mce_final(&m, symbol, missing, recordlen, disclaimer_seen); 
-				memset(&m, 0, sizeof(struct mce));
-				data = 0;
-				disclaimer_seen = 0;
-			} 
 			if (!dump_raw_ascii)
 				Wprintf("%s", line);
+			if (*s && data)
+				goto restart;
 		} 
 		if (n > 0) 
 			data = 1;
