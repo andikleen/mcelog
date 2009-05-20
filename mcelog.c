@@ -645,6 +645,7 @@ void decodefatal(FILE *inf)
 			s = skipspace(s);
 			if (*s && data) { 
 				dump_mce_final(&m, symbol, missing); 
+				memset(&m, 0, sizeof(struct mce));
 				data = 0;
 			} 
 			if (!dump_raw_ascii)
