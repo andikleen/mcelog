@@ -31,6 +31,7 @@
 
 #include "mcelog.h"
 #include "dmi.h"
+#include "memutil.h"
 
 static int verbose = 0;
 int dmi_forced;
@@ -326,9 +327,7 @@ dmi_collect(int type, int minsize, int *len)
 	struct dmi_entry **r; 
 	struct dmi_entry *e, *next;
 	int i, k;
-	r = calloc(sizeof(struct dmi_entry *), numentries + 1);	
-	if (!r)
-		exit(ENOMEM);
+	r = xalloc(sizeof(struct dmi_entry *) * (numentries + 1));
 	k = 0;
 	e = entries;
 	for (i = 0; i < numentries; i++, e = next) { 
@@ -439,10 +438,7 @@ struct dmi_memdev **dmi_find_addr(unsigned long addr)
 	struct dmi_memdev **devs; 
 	int i, k;
 	
-	devs = calloc(sizeof(void *), (numentries+1));
-	if (!devs)
-		exit(ENOMEM); 
-	
+	devs = xalloc(sizeof(void *) * (numentries+1));
 	k = 0;
 	for (i = 0; dmi_ranges[i]; i++) { 
 		struct dmi_memdev_addr *da = dmi_ranges[i];
