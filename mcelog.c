@@ -157,6 +157,12 @@ void Gprintf(char *fmt, ...)
 	va_end(ap);
 }
 
+static void disclaimer(void)
+{
+	Wprintf("HARDWARE ERROR. This is *NOT* a software problem!\n");
+	Wprintf("Please contact your hardware vendor\n");
+}
+
 char *extended_bankname(unsigned bank) 
 {
 	static char buf[64];
@@ -365,8 +371,6 @@ void dump_mce(struct mce *m, int recordlen)
 	int ismemerr = 0;
 	unsigned cpu = m->extcpu ? m->extcpu : m->cpu;
 
-	Wprintf("HARDWARE ERROR. This is *NOT* a software problem!\n");
-	Wprintf("Please contact your hardware vendor\n");
 	mce_cpuid(m);
 	/* should not happen */
 	if (!m->finished)
@@ -540,10 +544,12 @@ static char *skipgunk(char *s)
 	return skipspace(s);
 }
 
-void dump_mce_final(struct mce *m, char *symbol, int missing, int recordlen)
+void dump_mce_final(struct mce *m, char *symbol, int missing, int recordlen, int dseen)
 {
 	m->finished = 1;
 	if (!dump_raw_ascii) {
+		if (!dseen)
+			disclaimer();
 		dump_mce(m, recordlen);
 		if (symbol[0])
 			Wprintf("RIP: %s\n", symbol);
@@ -571,6 +577,7 @@ void decodefatal(FILE *inf)
 	char *s = NULL;
 	unsigned cpuvendor;
 	int recordlen = 0;
+	int disclaimer_seen = 0;
 
 	ascii_mode = 1;
 	if (do_dmi)
@@ -679,12 +686,15 @@ void decodefatal(FILE *inf)
 				missing++;
 			FIELD(socketid);
 		} 
+		else if (strstr(s, "HARDWARE ERROR"))
+			disclaimer_seen = 1;
 		else { 
 			s = skipspace(s);
 			if (*s && data) { 
-				dump_mce_final(&m, symbol, missing, recordlen); 
+				dump_mce_final(&m, symbol, missing, recordlen, disclaimer_seen); 
 				memset(&m, 0, sizeof(struct mce));
 				data = 0;
+				disclaimer_seen = 0;
 			} 
 			if (!dump_raw_ascii)
 				Wprintf("%s", line);
@@ -694,7 +704,7 @@ void decodefatal(FILE *inf)
 	} 
 	free(line);
 	if (data)
-		dump_mce_final(&m, symbol, missing, recordlen);
+		dump_mce_final(&m, symbol, missing, recordlen, disclaimer_seen);
 }
 
 void usage(void)
@@ -910,6 +920,7 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 		if (!mce_filter(mce)) 
 			continue;
 		if (!dump_raw_ascii) {
+			disclaimer();
 			Wprintf("MCE %d\n", i);
 			dump_mce(mce, recordlen);
 		} else
