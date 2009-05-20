@@ -227,7 +227,7 @@ static void print_tsc(int cpunum, __u64 tsc, unsigned long time)
 		ret = decode_tsc_forced(&buf, cpumhz, tsc);
 	else if (!time) 
 		ret = decode_tsc_current(&buf, cpunum, cputype, cpumhz, tsc);
-	Wprintf("TSC %Lx %s", tsc, ret >= 0 ? buf : "");
+	Wprintf("TSC %Lx %s", tsc, ret >= 0 && buf ? buf : "");
 	free(buf);
 }
 
