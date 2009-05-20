@@ -300,7 +300,7 @@ static int cmp_arr_range(const void *a, const void *b)
 #define COLLECT(var, id, ele) {						  \
 	typedef typeof (**(var)) T;					  \
 	var = (T **)dmi_collect(id,					  \
-		        offsetof(T, ele) + sizeof(((T *)0)->ele),  	  \
+		        offsetof(T, ele) + sizeof_field(T, ele),  	  \
 			&len);						  \
 }
 
