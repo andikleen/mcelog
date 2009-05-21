@@ -929,7 +929,7 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 			dump_mce_raw_ascii(mce, recordlen);
 	}
 
-	if (recordlen < sizeof(struct mce))  {
+	if (recordlen > sizeof(struct mce))  {
 		Eprintf("warning: %lu bytes ignored in each record",
 				(unsigned long)recordlen - sizeof(struct mce)); 
 		Eprintf("consider an update"); 
