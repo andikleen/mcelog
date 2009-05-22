@@ -990,9 +990,7 @@ int main(int ac, char **av)
 	while ((opt = getopt_long(ac, av, "", options, NULL)) != -1) { 
 		if (opt == '?') {
 			usage(); 
-		} else if (modifier(opt) > 0) {
-			continue;
-		} else if (diskdb_modifier(opt) > 0) { 
+		} else if (combined_modifier(opt) > 0) {
 			continue;
 		} else if (opt == O_ASCII) { 
 			ascii_command(ac, av);
