@@ -57,7 +57,7 @@ struct anchor {
 static struct dmi_entry *entries;
 static int numentries;
 static int dmi_length;
-static struct dmi_entry *handle_to_entry[0xffff];
+static struct dmi_entry **handle_to_entry;
 
 struct dmi_memdev **dmi_dimms; 
 struct dmi_memarray **dmi_arrays;
@@ -129,6 +129,7 @@ static void fill_handles(void)
 	int i;
 	struct dmi_entry *e, *next;
 	e = entries;
+	handle_to_entry = xalloc(sizeof(void *) * 0xffff);
 	for (i = 0; i < numentries; i++, e = next) { 
 		if (!check_entry(e, &next))
 			break;
@@ -143,6 +144,8 @@ int opendmi(void)
 {
 	int pagesize = getpagesize();
 	int memfd; 
+	if (entries)
+		return 0;
 	memfd = open("/dev/mem", O_RDONLY);
 	if (memfd < 0) { 
 		Eprintf("Cannot open /dev/mem for DMI decoding: %s",
