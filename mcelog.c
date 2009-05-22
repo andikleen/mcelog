@@ -1025,7 +1025,7 @@ int main(int ac, char **av)
 
 	if (recordlen > sizeof(struct mce))
 		Eprintf(
-    "warning: record length longer than expected. Consider update.");
+    "warning: kernel supplies more information in mce record than expected. Consider update.");
 
 	char *buf = xalloc(recordlen * loglen); 
 	if (daemon_mode) {
