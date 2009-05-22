@@ -1,5 +1,6 @@
 <newer changes first>
 
+Improved man page; now actually describing what a machine check is
 Fix and finally document TSC decoding (still doesn't work everywhere and is obsolete now)
 Add support for --ascii --file option to specify input file
 Add support for /etc/mcelog.conf config file. This can set all options on the command line

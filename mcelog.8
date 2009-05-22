@@ -1,7 +1,7 @@
 .\" disk db commented out for now because it's not usable enough
-.TH MCELOG 8 "May 2009" "SuSE Labs" "Linux's Administrator's Manual"
+.TH MCELOG 8 "May 2009" "" "Linux's Administrator's Manual"
 .SH NAME
-mcelog \- Print machine check log from x86-64 kernel.
+mcelog \- Decode kernel machine check log on x86 machines
 .SH SYNOPSIS
 mcelog [options] [device]
 .br
@@ -15,25 +15,63 @@ mcelog [options] \-\-ascii
 .br
 mcelog \-\-version
 .SH DESCRIPTION
-Linux x86-64 kernels since 2.6.4 don't print recoverable machine check errors
-to the kernel log anymore. Instead they are saved into a special 
-kernel buffer accessible using
-.I /dev/mcelog.
-mcelog reads /dev/mcelog and prints the stored machine check records
-to stdout. Then the stored machine check records in the kernel
-buffer are deleted.
+X86 CPUs report errors detected by the CPU as
+.I machine check events (MCEs). 
+These can be data corruption detected in the CPU caches,
+in main memory by an integrated memory controller, data
+transfer errors on the front side bus or CPU interconnect or other internal
+errors. 
+Possible causes can be cosmic radiation, instable power supplies,
+cooling problems, broken hardware, or bad luck.
 
-Mcelog normally runs as a regular cron job to log kernel machine check
-events to disk. On newer kernels it can also be triggered directly
-using the 
-.I /sys/devices/system/machinecheck/machinecheck0/trigger
-trigger.
-In addition mcelog can be used on the command line to decode an existing machine 
-check record in ascii format with the 
+Most errors can be corrected by the CPU by internal error correction
+mechanisms. Uncorrected errors cause machine check exceptions which
+may panic the machine.
+
+When a corrected error happens the x86 kernel writes a record describing 
+the the MCE into a internal ring buffer available through the
+.I /dev/mcelog
+device
+.I mcelog 
+retrieves errors from 
+.I /dev/mcelog, 
+decodes the into a human readable format and prints them
+on the standard output or optionally into the system log. 
+
+Optionally it can also take more options like keeping statistics or
+triggering shell scripts on specific events.
+
+The normal operating modi for mcelog are running 
+as a regular cron job (traditional way, deprecated), 
+running as a trigger directly executed by the kernel, 
+or running as a daemon with the
+.I \-\-daemon
+option.
+
+When a uncorrected machine check error happens that the kernel
+cannot recover from then it will usually panic the system.
+In this case when there was a warm reset after the panic
+mcelog should pick up the machine check errors after reboot.
+This is not possible after a cold reset.
+
+In addition mcelog can be used on the command line to decode the kernel
+output for a fatal machine check panic in text format using the
 .I \-\-ascii
 option. This is typically used to decode the panic console output of a fatal
-machine check, if mcelog was unable to log the data after a warm reboot.
+machine check, if the system was power cycled or mcelog didn't
+run immediately after reboot.
 
+When the panic triggers a kdump kexec crash kernel the crash
+kernel boot up script should log the machine checks to disk, otherwise
+they might be lost.
+
+Note that after mcelog retrieves an error the kernel doesn't 
+store it anymore (different from 
+.I dmesg(1)),
+so the output should be always saved somewhere and mcelog
+not run in uncontrolled ways.
+
+.SH OPTIONS
 When the 
 .B \-\-syslog
 option is specified redirect output to system log. The 
@@ -43,7 +81,7 @@ option causes the normal machine checks to be logged as
 (implies
 .I \-\-syslog
 ). Normally only fatal errors or high level remarks are logged with error level.
-Some one line summies of errors are also always logged to the syslog by
+High level one line summaries of specific errors are also logged to the syslog by
 default unless mcelog operates in 
 .I \-\-ascii 
 mode.
@@ -193,7 +231,7 @@ displays the version of mcelog and exits.
 mcelog supports a config file to set defaults. Command line options override
 the config file. By default the config file is read from
 .I /etc/mcelog.conf
-unless overriden with the 
+unless overridden with the 
 .I --config-file
 option.
 
@@ -215,26 +253,22 @@ use
 The kernel prefers old messages over new. If the log buffer overflows
 only old ones will be kept.
 
-The exact output depends on the CPU.
-
-SMBIOS/DMI output is unreliable and sometimes wrong. Not Linux's
-fault - complain to your motherboard vendor. mcelog does some sanity
-checks to distingush bad BIOS from good BIOS but it is not 100% 
-fool proof.
+The exact output in the log file depends on the CPU, unless the --raw option is used.
 
 mcelog will report serious errors to the syslog during decoding.
 
 .SH FILES
 /dev/mcelog (char 10, minor 227) 
-.br
+
 /etc/mcelog.conf
-.br
-/var/lib/memory-errors
-.br
-Memory error database
+
+/sys/devices/system/machinecheck/machinecheck0/trigger
+
+.\"/var/lib/memory-errors
 .SH SEE ALSO
 AMD x86-64 architecture programmer's manual, Volume 2, System programming
-.br
-IA32 Intel Architecture Software developer's manual, Volume 3, System programming guide
-.br
+
+Intel 64 and IA32 Architectures Software Developer's manual, Volume 3, System programming guide
+Parts 1 and 2. Machine checks are described in Chapter 14 in Part1 and in Appendix E in Part2.
+
 Datasheet of your CPU.
