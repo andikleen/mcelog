@@ -49,7 +49,7 @@ clean:
 tsc:    tsc.c
 	gcc -o tsc ${CFLAGS} -DSTANDALONE tsc.c ${LDFLAGS}
 
-dbquery: db.o dbquery.o
+dbquery: db.o dbquery.o memutil.o
 
 depend: .depend
 

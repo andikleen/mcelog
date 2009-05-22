@@ -5,10 +5,19 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdarg.h>
 #include "db.h"
 
 #define C(x) if (x) printf(#x " failed: %s\n", strerror(errno))
 #define NEEDGROUP  if (!group) { printf("need group first\n"); break; }
+
+void Eprintf(char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
+}
 
 void usage(void)
 {

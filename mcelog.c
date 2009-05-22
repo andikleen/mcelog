@@ -45,6 +45,7 @@
 #include "version.h"
 #include "config.h"
 #include "diskdb.h"
+#include "memutil.h"
 
 enum cputype cputype = CPU_GENERIC;	
 
@@ -1028,10 +1029,7 @@ int main(int ac, char **av)
 		Eprintf(
     "warning: record length longer than expected. Consider update.");
 
-	char *buf = calloc(recordlen, loglen); 
-	if (!buf) 
-		exit(100);
-
+	char *buf = xalloc(recordlen * loglen); 
 	if (daemon_mode) {
 		struct pollfd pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
 		if (daemon(0, 0) < 0)

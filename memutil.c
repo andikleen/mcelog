@@ -17,6 +17,7 @@
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 #include "mcelog.h"
 #include "memutil.h"
 
@@ -40,4 +41,12 @@ void *xrealloc(void *old, size_t size)
 	if (!m)
 		Enomem();
 	return m;
+}
+
+char *xstrdup(char *str)
+{
+	str = strdup(str);
+	if (!str)
+		Enomem();
+	return str;
 }

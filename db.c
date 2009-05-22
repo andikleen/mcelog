@@ -37,6 +37,7 @@
 #include <assert.h>
 
 #include "db.h"
+#include "memutil.h"
 
 /* file format
 
@@ -94,43 +95,13 @@ static void DBerror(char *fmt, ...)
 	exit(1);
 }
 
-static void oom(void)
-{
-	DBerror("out of memory");
-	exit(ENOMEM);
-}
-
-static void *db_alloc(size_t size)
-{
-	void *p = calloc(size, 1);
-	if (!p)
-		oom();
-	return p;
-}
-
-static void *db_realloc(void *old, size_t new)
-{
-	void *p = realloc(old, new);
-	if (!p) 
-		oom();
-	return p;
-}
-
-#define DB_NEW(p) ((p) = db_alloc(sizeof(*(p))))
-
-static char *db_strdup(char *str)
-{
-	char *s = strdup(str);
-	if (!s) 
-		oom();
-	return s;
-}
+#define DB_NEW(p) ((p) = xalloc(sizeof(*(p))))
 
 static struct group *alloc_group(char *name)
 {
 	struct group *g;
 	DB_NEW(g);
-	g->entries = db_alloc(ENTRY_CHUNK * sizeof(struct entry));
+	g->entries = xalloc(ENTRY_CHUNK * sizeof(struct entry));
 	g->name = name;
 	return g;
 }
@@ -159,7 +130,7 @@ struct database *open_db(char *fn, int wr)
 		free(db);
 		return NULL;
 	}
-	db->fn = db_strdup(fn);
+	db->fn = xstrdup(fn);
 	if (read_db(db) < 0) {
 		free(db->fn);
 		free(db);
@@ -183,7 +154,7 @@ static int read_db(struct database *db)
 			DB_NEW(cmt);
 			*pgroup = cmt;
 			pgroup = &cmt->next;
-			cmt->comment = db_strdup(s + 1);
+			cmt->comment = xstrdup(s + 1);
 			*s = 0;
 		} 	
 		s = cleanline(line);
@@ -197,7 +168,7 @@ static int read_db(struct database *db)
 			n = strcspn(s, "]");
 			if (s[n] == 0)
 				goto parse_error;
-			name = db_alloc(n + 1);
+			name = xalloc(n + 1);
 			memcpy(name, s, n);
 			group = alloc_group(name);
 			*pgroup = group;
@@ -463,7 +434,7 @@ struct group *add_group(struct database *db, char *name, int *existed)
 	if (existed)
 		*existed = (g != NULL);
 	if (!g) {
-		g = alloc_group(db_strdup(name));
+		g = alloc_group(xstrdup(name));
 		g->next = *gprev;
 		*gprev = g;
 	}
@@ -482,7 +453,7 @@ void change_entry(struct database *db, struct group *g,
 	for (e = entries; e->name; e++) { 
 		if (!strcmp(e->name, entry)) { 
 			free(e->val);
-			e->val = db_strdup(newval);
+			e->val = xstrdup(newval);
 			return;
 		}
 	}
@@ -490,12 +461,12 @@ void change_entry(struct database *db, struct group *g,
 	assert(i == g->numentries);
 	if (i > 0 && (i % ENTRY_CHUNK) == 0) { 
 		int new = (i + ENTRY_CHUNK) * sizeof(struct entry);
-		g->entries = db_realloc(g->entries, new);
+		g->entries = xrealloc(g->entries, new);
 	} 
 	entries = &g->entries[0];
 	e = &entries[i];
-	e->name = db_strdup(entry);
-	e->val = db_strdup(newval);
+	e->name = xstrdup(entry);
+	e->val = xstrdup(newval);
 	g->numentries++;
 }
 
@@ -525,7 +496,7 @@ clone_group(struct database *db, struct group *gold, char *newname)
 static char *save_comment(char *c)
 {
 	int len = strlen(c);
-	char *s = db_alloc(len + 2); 	
+	char *s = xalloc(len + 2); 	
 	strcpy(s, c);
 	if (len == 0 || c[len - 1] != '\n')
 		s[len] = '\n';
@@ -605,7 +576,7 @@ struct group *find_entry(struct database *db, struct group *prev,
 void rename_group(struct database *db, struct group *g, char *newname)
 {
 	free(g->name);
-	g->name = db_strdup(newname);
+	g->name = xstrdup(newname);
 	db->dirty = 1;
 }
 
