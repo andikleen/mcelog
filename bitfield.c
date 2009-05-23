@@ -32,7 +32,8 @@ void decode_bitfield(u64 status, struct field *fields)
 			if (v == 0) 
 				continue;
 			s = buf; 
-			snprintf(buf, sizeof buf, "<%u:%Lx>", f->start_bit, v);
+			buf[(sizeof buf)-1] = 0;
+			snprintf(buf, (sizeof buf) - 1, "<%u:%llx>", f->start_bit, v);
 		}
 		len = strlen(s);
 		if (linelen + len > 75) {

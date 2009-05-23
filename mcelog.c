@@ -393,7 +393,7 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 		Wprintf("\n");
 	if (m->time) {
 		time_t t = m->time;
-		n += Wprintf("TIME %Lu %s", m->time, ctime(&t));
+		Wprintf("TIME %Lu %s", m->time, ctime(&t));
 	}
 	switch (cputype) { 
 	case CPU_K8:
@@ -469,15 +469,17 @@ void check_cpu(void)
 		ALL = 0x1f 
 	} seen = 0;
 	FILE *f;
+
 	f = fopen("/proc/cpuinfo","r");
 	if (f != NULL) { 
-		int family; 
-		int model;
-		char vendor[64];
+		int family = 0; 
+		int model = 0;
+		char vendor[64] = { 0 };
 		char *line = NULL;
 		size_t linelen = 0; 
-		double mhz;
 		int n;
+		double mhz;
+
 		while (getdelim(&line, &linelen, '\n', f) > 0 && seen != ALL) { 
 			if (sscanf(line, "vendor_id : %63[^\n]", vendor) == 1) 
 				seen |= VENDOR;
@@ -493,7 +495,6 @@ void check_cpu(void)
 					cpumhz = mhz;
 				seen |= MHZ;
 			}
-			n = 0;
 			if (sscanf(line, "flags : %n", &n) == 0 && n > 0) {
 				processor_flags = line + 7;
 				line = NULL;

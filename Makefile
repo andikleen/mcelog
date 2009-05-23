@@ -25,16 +25,19 @@ all: mcelog
 OBJ := p4.o k8.o mcelog.o dmi.o tsc.o core2.o bitfield.o intel.o \
        nehalem.o dunnington.o tulsa.o config.o memutil.o
 DISKDB_OBJ := diskdb.o dimm.o db.o
-SRC := $(OBJ:.o=.c)
 CLEAN := mcelog dmi tsc dbquery .depend .depend.X dbquery.o ${DISKDB_OBJ}
 DOC := mce.pdf smbios.spec
 
+ADD_DEFINES :=
+
 ifdef CONFIG_DISKDB
-CFLAGS += -DCONFIG_DISKDB=1
+ADD_DEFINES := -DCONFIG_DISKDB=1
 OBJ += ${DISKDB_OBJ}
 
 all: dbquery
 endif
+
+SRC := $(OBJ:.o=.c)
 
 mcelog: ${OBJ}
 
@@ -63,7 +66,7 @@ dbquery: db.o dbquery.o memutil.o
 depend: .depend
 
 %.o: %.c
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(WARNINGS) -o $@ $<
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(WARNINGS) $(ADD_DEFINES) -o $@ $<
 
 .depend: ${SRC}
 	${CC} -MM -I. ${SRC} > .depend.X && mv .depend.X .depend
@@ -71,3 +74,11 @@ depend: .depend
 include .depend
 
 Makefile: .depend
+
+.PHONY: iccverify
+
+# run the icc static verifier over sources. you need the intel compiler installed for this
+DISABLED_DIAGS := -diag-disable 188,271,869,2259,981,12072,181,12331,1572
+
+iccverify:
+	icc -Wall -diag-enable sv3 $(DISABLED_DIAGS) $(ADD_DEFINES) $(SRC)	

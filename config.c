@@ -110,7 +110,6 @@ int parse_config_file(const char *fn)
 	FILE *f;
 	char *line = NULL;
 	size_t linelen = 0;
-	int n;
 
 	char *header;
 	char *name;
@@ -126,7 +125,7 @@ int parse_config_file(const char *fn)
 		return -1;
 
 	hdr = NULL;
-	while ((n = getline(&line, &linelen, f)) > 0) {
+	while (getline(&line, &linelen, f) > 0) {
 		char *s;
 		s = strchr(line, '#');
 		if (s) 

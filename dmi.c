@@ -163,7 +163,6 @@ int opendmi(void)
 		return -1;
 	}   
 
-	a = abase;
 	for (a = abase;;a += 4) { 
 		a = memmem(a, 0xffff, "_SM_", 4);
 		if (!a) {
