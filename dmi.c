@@ -81,9 +81,10 @@ static unsigned checksum(unsigned char *s, int len)
 static int check_entry(struct dmi_entry *e, struct dmi_entry **next) 
 {
 	char *end = (char *)entries + dmi_length;
-	char *s = (char *)e + e->length;
+	char *s;
 	if (!e)
 		return 0;
+ 	s = (char *)e + e->length;
 	if (verbose > 3)
 		printf("entry %lx length %d handle %x\n", 
 			(char*)e - (char*)entries, 
@@ -337,6 +338,7 @@ dmi_collect(int type, int minsize, int *len)
 	r = xalloc(sizeof(struct dmi_entry *) * (numentries + 1));
 	k = 0;
 	e = entries;
+	next = NULL;
 	for (i = 0; i < numentries; i++, e = next) { 
 		if (!check_entry(e, &next))
 			break; 

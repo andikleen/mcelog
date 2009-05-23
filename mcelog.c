@@ -917,6 +917,11 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 	int i; 
 	int len;
 
+	if (recordlen == 0) {
+		Wprintf("no data in mce record\n");
+		return;
+	}
+
 	len = read(fd, buf, recordlen * loglen); 
 	if (len < 0) 
 		err("read"); 
@@ -1027,10 +1032,6 @@ int main(int ac, char **av)
 		err("MCE_GET_RECORD_LEN");
 	if (ioctl(fd, MCE_GET_LOG_LEN, &loglen) < 0)
 		err("MCE_GET_LOG_LEN");
-
-	if (recordlen > sizeof(struct mce))
-		Eprintf(
-    "warning: kernel supplies more information in mce record than expected. Consider update.");
 
 	buf = xalloc(recordlen * loglen); 
 	if (daemon_mode) {
