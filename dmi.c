@@ -142,8 +142,11 @@ static void fill_handles(void)
 
 int opendmi(void)
 {
+	struct anchor *a, *abase;
 	int pagesize = getpagesize();
 	int memfd; 
+	unsigned corr;
+
 	if (entries)
 		return 0;
 	memfd = open("/dev/mem", O_RDONLY);
@@ -153,7 +156,6 @@ int opendmi(void)
 		return -1;
 	}	
 
-	struct anchor *a, *abase;
 	abase = mmap(NULL, 0xffff, PROT_READ, MAP_SHARED, memfd, 0xf0000); 
 	if (abase == (struct anchor *)-1) {
 		Eprintf("Cannot mmap 0xf0000: %s", strerror(errno));
@@ -173,7 +175,7 @@ int opendmi(void)
 	if (verbose) 
 		printf("DMI tables at %x, %u bytes, %u entries\n", 
 			a->table, a->length, a->numentries);
-	unsigned corr = a->table - round_down(a->table, pagesize); 
+	corr = a->table - round_down(a->table, pagesize); 
  	entries = mmap(NULL, round_up(a->length + pagesize, pagesize), 
 		       	PROT_READ, MAP_SHARED, memfd, 
 			round_down(a->table, pagesize));
@@ -238,9 +240,12 @@ static void dump_type_details(unsigned short td)
 			Wprintf("%s ", type_details[i]);
 }
 
-void dump_memdev(struct dmi_memdev *md, unsigned long addr)
+static void dump_memdev(struct dmi_memdev *md, unsigned long addr)
 {
 	char tmp[20];
+	char unit[10];
+	char *s;
+
 	if (md->header.length < 
 			offsetof(struct dmi_memdev, manufacturer)) { 
 		if (verbose > 0)
@@ -249,7 +254,7 @@ void dump_memdev(struct dmi_memdev *md, unsigned long addr)
 			       sizeof(struct dmi_memdev));
 		return;
 	}	
-	char unit[10];
+
 	Wprintf("%s ", LOOKUP(memory_types, md->memory_type, tmp));
 	if (md->form_factor >= 3) 
 		Wprintf("%s ", LOOKUP(form_factors, md->form_factor, tmp));
@@ -260,7 +265,6 @@ void dump_memdev(struct dmi_memdev *md, unsigned long addr)
 		md->total_width, md->data_width, 
 		dmi_dimm_size(md->size, unit), unit);
 
-	char *s;
 #define DUMPSTR(n,x) \
 	if (md->x) { \
 		s = dmi_getstring(&md->header, md->x);	\
@@ -361,15 +365,16 @@ dmi_collect(int type, int minsize, int *len)
 int dmi_sanity_check(void)
 {
 	int i, k;
+	int numdmi_dimms = 0;
+	int numranges = 0;
+
 	if (dmi_ranges[0] == NULL)
 		return 0;
 
-	int numdmi_dimms = 0;
 	for (k = 0; dmi_dimms[k]; k++)
 		numdmi_dimms++;
 
 	/* Do we have multiple ranges? */
-	int numranges = 0;
 	for (k = 1; dmi_ranges[k]; k++) {
 		if (dmi_ranges[k]->start_addr <= dmi_ranges[k-1]->end_addr) { 
 			return 0;

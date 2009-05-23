@@ -1,13 +1,13 @@
 /* Generic bitfield decoder */
 
 struct field {
-	int start_bit;
+	unsigned start_bit;
 	char **str;
-	int stringlen;
+	unsigned stringlen;
 };
 
 struct numfield { 
-	int start, end;
+	unsigned start, end;
 	char *name;
 	char *fmt;
 	int force;

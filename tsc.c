@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <time.h>
 #include "mcelog.h"
+#include "tsc.h"
 #include "intel.h"
 
 static unsigned scale(u64 *tsc, unsigned unit, double mhz)
@@ -77,6 +78,9 @@ static int deep_sleep_states(int cpu)
 {
 	int ret;
 	char *fn;
+	FILE *f;
+	char *line = NULL;
+	size_t linelen = 0;
 
 	/* When cpuidle is active assume there are deep sleep states */
 	asprintf(&fn, "/sys/devices/system/cpu/cpu%d/cpuidle", cpu);
@@ -86,13 +90,11 @@ static int deep_sleep_states(int cpu)
 		return 1;
 
 	asprintf(&fn, "/proc/acpi/processor/CPU%d/power", cpu);
-	FILE *f = fopen(fn, "r");
+	f = fopen(fn, "r");
 	free(fn);
 	if (!f)
 		return 0;
 
-	char *line = NULL;
-	size_t linelen = 0;
 	while ((getline(&line, &linelen, f)) > 0) {
 		int n;
 		if ((sscanf(line, " C%d:", &n)) == 1) {
@@ -131,11 +133,13 @@ static int tsc_reliable(int cputype, int cpunum)
 	return 1;
 }
 
-int decode_tsc_current(char **buf, int cpunum, enum cputype cputype, double mhz, u64 tsc)
+int decode_tsc_current(char **buf, int cpunum, enum cputype cputype, double mhz, 
+		       unsigned long long tsc)
 {
+	double cmhz;
 	if (!tsc_reliable(cputype, cpunum))
 		return -1;
-	double cmhz = cpufreq_mhz(cpunum, mhz);
+	cmhz = cpufreq_mhz(cpunum, mhz);
 	if (cmhz != 0.0)
 		mhz = cmhz;
 	return fmt_tsc(buf, tsc, mhz);

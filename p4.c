@@ -69,10 +69,9 @@ static char* get_RRRR_str(__u8 rrrr)
 		{6, "Prefetch"}, {7, "Eviction"},
 		{8, "Snoop"}
 	};
+	unsigned i;
 
-	int i;
-
-	for (i = 0; i < NELE(RRRR); i++) {
+	for (i = 0; i < (int)NELE(RRRR); i++) {
 		if (RRRR[i].value == rrrr) {
 			return RRRR[i].str;
 		}
@@ -210,7 +209,7 @@ static void p4_decode_model(__u32 model)
 		{22, "Pad strobe glitch"},
 		{23, "Pad address glitch"}
 	};
-	int i;
+	unsigned i;
 
 	Wprintf("Model:");
 	for (i = 0; i < NELE(MD); i++) {

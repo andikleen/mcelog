@@ -1,8 +1,17 @@
-CFLAGS := -g -Wall
+CFLAGS := -g
 prefix := /usr
 etcprefix :=
 # Define appropiately for your distribution
 # DOCDIR := /usr/share/doc/packages/mcelog
+
+# Warning flags added implicitely to CFLAGS in the default rule
+# this is done so that even when CFLAGS are overriden we still get
+# the additional warnings
+# Some warnings require the global optimizer and are only output with 
+# -O2/-Os, so that should be tested occasionally
+WARNINGS := -Wall -Wextra -Wno-missing-field-initializers -Wno-unused-parameter \
+	    -Wstrict-prototypes -Wformat-security -Wmissing-declarations \
+	    -Wdeclaration-after-statement
 
 # The on disk database has still many problems (partly in this code and partly
 # due to missing support from BIOS), so it's disabled by default. You can 
@@ -52,6 +61,9 @@ tsc:    tsc.c
 dbquery: db.o dbquery.o memutil.o
 
 depend: .depend
+
+%.o: %.c
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(WARNINGS) -o $@ $<
 
 .depend: ${SRC}
 	${CC} -MM -I. ${SRC} > .depend.X && mv .depend.X .depend

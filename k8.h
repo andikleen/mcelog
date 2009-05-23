@@ -1,4 +1,4 @@
-char *k8_bank_name(int num);
+char *k8_bank_name(unsigned num);
 void decode_k8_mc(struct mce *mce, int *ismemerr);
 int mce_filter_k8(struct mce *m);
 

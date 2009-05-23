@@ -108,11 +108,6 @@ static void unparseable(char *desc, const char *header, const char *name)
 int parse_config_file(const char *fn)
 {
 	FILE *f;
-
-	f = fopen(fn, "r");
-	if (!f)
-		return -1;
-	
 	char *line = NULL;
 	size_t linelen = 0;
 	int n;
@@ -125,6 +120,10 @@ int parse_config_file(const char *fn)
 	int lineno = 1;
 	int left;
 	unsigned h;
+
+	f = fopen(fn, "r");
+	if (!f)
+		return -1;
 
 	hdr = NULL;
 	while ((n = getline(&line, &linelen, f)) > 0) {

@@ -120,7 +120,7 @@ static int vlinesyslog(char *fmt, va_list ap)
 	int w = vsnprintf(line + lend, sizeof(line)-lend, fmt, ap);
 	while (line[n = strcspn(line, "\n")] != 0) {
 		line[n] = 0;
-		syslog(syslog_level, line);
+		syslog(syslog_level, "%s", line);
 		memmove(line, line + n + 1, strlen(line + n + 1) + 1);
 	}
 	return w;
@@ -164,7 +164,7 @@ static void disclaimer(void)
 	Wprintf("Please contact your hardware vendor\n");
 }
 
-char *extended_bankname(unsigned bank) 
+static char *extended_bankname(unsigned bank) 
 {
 	static char buf[64];
 	switch (bank) { 
@@ -183,7 +183,7 @@ char *extended_bankname(unsigned bank)
 	} 
 }
 
-char *bankname(unsigned bank) 
+static char *bankname(unsigned bank) 
 { 
 	static char numeric[64];
 	if (bank >= MCE_EXTENDED_BANK) 
@@ -201,14 +201,14 @@ char *bankname(unsigned bank)
 	}
 } 
 
-void resolveaddr(unsigned long addr)
+static void resolveaddr(unsigned long addr)
 {
 	if (addr && do_dmi)
 		dmi_decodeaddr(addr);
 	/* Should check for PCI resources here too */
 }
 
-int mce_filter(struct mce *m)
+static int mce_filter(struct mce *m)
 {
 	if (!filter_bogus) 
 		return 1;
@@ -366,7 +366,7 @@ static void mce_cpuid(struct mce *m)
 	}	
 }
 
-void dump_mce(struct mce *m, int recordlen) 
+static void dump_mce(struct mce *m, unsigned recordlen) 
 {
 	int n;
 	int ismemerr = 0;
@@ -432,7 +432,7 @@ void dump_mce(struct mce *m, int recordlen)
 	}
 }
 
-void dump_mce_raw_ascii(struct mce *m, int recordlen)
+static void dump_mce_raw_ascii(struct mce *m, unsigned recordlen)
 {
 	/* should not happen */
 	if (!m->finished)
@@ -521,7 +521,7 @@ void check_cpu(void)
 		fprintf(stderr, "mcelog: warning: Cannot open /proc/cpuinfo\n");
 } 
 
-char *skipspace(char *s)
+static char *skipspace(char *s)
 {
 	while (isspace(*s))
 		++s;
@@ -545,7 +545,8 @@ static char *skipgunk(char *s)
 	return skipspace(s);
 }
 
-void dump_mce_final(struct mce *m, char *symbol, int missing, int recordlen, int dseen)
+static void dump_mce_final(struct mce *m, char *symbol, int missing, int recordlen, 
+			   int dseen)
 {
 	m->finished = 1;
 	if (!dump_raw_ascii) {
@@ -565,7 +566,7 @@ void dump_mce_final(struct mce *m, char *symbol, int missing, int recordlen, int
 		recordlen = endof_field(struct mce, f)
 
 /* Decode ASCII input for fatal messages */
-void decodefatal(FILE *inf)
+static void decodefatal(FILE *inf)
 {
 	struct mce m;
 	char *line = NULL; 
@@ -576,7 +577,7 @@ void decodefatal(FILE *inf)
 	int next;
 	char *s;
 	unsigned cpuvendor;
-	int recordlen;
+	unsigned recordlen;
 	int disclaimer_seen;
 
 	ascii_mode = 1;
@@ -913,12 +914,14 @@ static int combined_modifier(int opt)
 
 static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 {	
-	int len = read(fd, buf, recordlen * loglen); 
+	int i; 
+	int len;
+
+	len = read(fd, buf, recordlen * loglen); 
 	if (len < 0) 
 		err("read"); 
 
-	int i; 
-	for (i = 0; i < len / recordlen; i++) { 
+	for (i = 0; i < len / (int)recordlen; i++) { 
 		struct mce *mce = (struct mce *)(buf + i*recordlen);
 		if (!mce_filter(mce)) 
 			continue;
@@ -984,6 +987,8 @@ int main(int ac, char **av)
 	unsigned recordlen = 0;
 	unsigned loglen = 0;
 	int opt;
+	int fd;
+	char *buf;
 
 	parse_config(av);
 
@@ -1010,7 +1015,7 @@ int main(int ac, char **av)
 		usage();
 	checkdmi();
 		
-	int fd = open(logfn, O_RDONLY); 
+	fd = open(logfn, O_RDONLY); 
 	if (fd < 0) {
 		if (ignore_nodev) 
 			exit(0);
@@ -1027,7 +1032,7 @@ int main(int ac, char **av)
 		Eprintf(
     "warning: kernel supplies more information in mce record than expected. Consider update.");
 
-	char *buf = xalloc(recordlen * loglen); 
+	buf = xalloc(recordlen * loglen); 
 	if (daemon_mode) {
 		struct pollfd pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
 		if (daemon(0, 0) < 0)

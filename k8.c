@@ -255,7 +255,7 @@ void decode_k8_mc(struct mce *mce, int *ismemerr)
 		Wprintf("  no decoder for unknown bank %u\n", mce->bank);
 }
 
-char *k8_bank_name(int num)
+char *k8_bank_name(unsigned num)
 { 
 	static char buf[64];
 	char *s = "unknown";

@@ -20,6 +20,8 @@ void decode_bitfield(u64 status, struct field *fields)
 	struct field *f;
 	int linelen = 0;
 	char *delim = "";
+	char buf[60];
+	int len;
 	
 	for (f = fields; f->str; f++) { 
 		u64 v = (status >> f->start_bit) & bitmask(f->stringlen - 1);
@@ -29,11 +31,10 @@ void decode_bitfield(u64 status, struct field *fields)
 		if (!s) { 
 			if (v == 0) 
 				continue;
-			char buf[60];
 			s = buf; 
 			snprintf(buf, sizeof buf, "<%u:%Lx>", f->start_bit, v);
 		}
-		int len = strlen(s);
+		len = strlen(s);
 		if (linelen + len > 75) {
 			delim = "\n";
 			linelen = 0;
