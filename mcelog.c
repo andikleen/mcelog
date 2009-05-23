@@ -228,7 +228,7 @@ static int mce_filter(struct mce *m)
 
 static void print_tsc(int cpunum, __u64 tsc, unsigned long time) 
 { 
-	int ret;
+	int ret = -1;
 	char *buf = NULL;
 
 	if (cpumhz_forced) 
