@@ -358,7 +358,7 @@ static void mce_cpuid(struct mce *m)
 		if (!cpu_forced)
 			cputype = t;
 		else if (t != cputype && t != CPU_GENERIC)
-			Eprintf("Forced cputype %s does not match cpu type %s from mcelog",
+			Eprintf("Forced cputype %s does not match cpu type %s from mcelog\n",
 				cputype_name[cputype],
 				cputype_name[t]);
 	} else if (cputype == CPU_GENERIC && !cpu_forced) { 
@@ -512,13 +512,12 @@ void check_cpu(void)
 				cputype = select_intel_cputype(family, model);
 			/* Add checks for other CPUs here */	
 		} else {
-			fprintf(stderr, 
-			"mcelog: warning: Cannot parse /proc/cpuinfo\n"); 
+			Eprintf("warning: Cannot parse /proc/cpuinfo\n"); 
 		} 
 		fclose(f);
 		free(line);
 	} else
-		fprintf(stderr, "mcelog: warning: Cannot open /proc/cpuinfo\n");
+		Eprintf("warning: Cannot open /proc/cpuinfo\n");
 } 
 
 static char *skipspace(char *s)
@@ -804,7 +803,7 @@ static int modifier(int opt)
 	case O_LOGFILE:
 		fclose(stdout);
 		if (!freopen(optarg, "a", stdout)) {
-			Eprintf("Cannot open log file %s. Exiting.", optarg);	
+			fprintf(stderr, "Cannot open log file %s. Exiting.\n", optarg);	
 			exit(1);
 		}
 		break;
@@ -939,9 +938,9 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 	}
 
 	if (recordlen > sizeof(struct mce))  {
-		Eprintf("warning: %lu bytes ignored in each record",
+		Eprintf("warning: %lu bytes ignored in each record\n",
 				(unsigned long)recordlen - sizeof(struct mce)); 
-		Eprintf("consider an update"); 
+		Eprintf("consider an update\n"); 
 	}
 }
 
@@ -960,7 +959,7 @@ static void parse_config(char **av)
 	if (parse_config_file(fn) < 0) { 
 		/* If it's the default file don't complain if it isn't there */
 		if (fn != config_fn) {
-			Eprintf("Cannot open config file %s\n", fn);
+			fprintf(stderr, "Cannot open config file %s\n", fn);
 			exit(1);
 		}
 		return;
@@ -1024,7 +1023,7 @@ int main(int ac, char **av)
 	if (fd < 0) {
 		if (ignore_nodev) 
 			exit(0);
-		Eprintf("Cannot open %s", logfn); 
+		fprintf(stderr, "Cannot open %s", logfn); 
 		exit(1);
 	}
 	
