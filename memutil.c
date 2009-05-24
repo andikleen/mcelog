@@ -35,6 +35,14 @@ void *xalloc(size_t size)
 	return m;
 }
 
+void *xalloc_nonzero(size_t size)
+{
+	void *m = malloc(size);
+	if (!m)
+		Enomem();
+	return m;
+}
+
 void *xrealloc(void *old, size_t size)
 {
 	void *m = realloc(old, size);
