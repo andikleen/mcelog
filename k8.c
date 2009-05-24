@@ -264,7 +264,8 @@ char *k8_bank_name(unsigned num)
 	else if (num >= K8_MCE_THRESHOLD_BASE && 
 		 num < K8_MCE_THRESHOLD_TOP)
 		s = k8threshold[num - K8_MCE_THRESHOLD_BASE];
-	sprintf(buf, "%d %s", num, s);
+	buf[sizeof(buf)-1] = 0;
+	snprintf(buf, sizeof(buf) - 1, "%u %s", num, s);
 	return buf;
 }
 

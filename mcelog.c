@@ -358,7 +358,7 @@ static void mce_cpuid(struct mce *m)
 		if (!cpu_forced)
 			cputype = t;
 		else if (t != cputype && t != CPU_GENERIC)
-			Eprintf("Forced cputype %s does not match cpu type %s from mcelog",
+			Eprintf("Forced cputype %s does not match cpu type %s from mcelog\n",
 				cputype_name[cputype],
 				cputype_name[t]);
 	} else if (cputype == CPU_GENERIC && !cpu_forced) { 
@@ -393,7 +393,7 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 		Wprintf("\n");
 	if (m->time) {
 		time_t t = m->time;
-		n += Wprintf("TIME %Lu %s", m->time, ctime(&t));
+		Wprintf("TIME %Lu %s", m->time, ctime(&t));
 	}
 	switch (cputype) { 
 	case CPU_K8:
@@ -469,15 +469,17 @@ void check_cpu(void)
 		ALL = 0x1f 
 	} seen = 0;
 	FILE *f;
+
 	f = fopen("/proc/cpuinfo","r");
 	if (f != NULL) { 
-		int family; 
-		int model;
-		char vendor[64];
+		int family = 0; 
+		int model = 0;
+		char vendor[64] = { 0 };
 		char *line = NULL;
 		size_t linelen = 0; 
-		double mhz;
 		int n;
+		double mhz;
+
 		while (getdelim(&line, &linelen, '\n', f) > 0 && seen != ALL) { 
 			if (sscanf(line, "vendor_id : %63[^\n]", vendor) == 1) 
 				seen |= VENDOR;
@@ -493,7 +495,6 @@ void check_cpu(void)
 					cpumhz = mhz;
 				seen |= MHZ;
 			}
-			n = 0;
 			if (sscanf(line, "flags : %n", &n) == 0 && n > 0) {
 				processor_flags = line + 7;
 				line = NULL;
@@ -512,13 +513,12 @@ void check_cpu(void)
 				cputype = select_intel_cputype(family, model);
 			/* Add checks for other CPUs here */	
 		} else {
-			fprintf(stderr, 
-			"mcelog: warning: Cannot parse /proc/cpuinfo\n"); 
+			Eprintf("warning: Cannot parse /proc/cpuinfo\n"); 
 		} 
 		fclose(f);
 		free(line);
 	} else
-		fprintf(stderr, "mcelog: warning: Cannot open /proc/cpuinfo\n");
+		Eprintf("warning: Cannot open /proc/cpuinfo\n");
 } 
 
 static char *skipspace(char *s)
@@ -804,7 +804,7 @@ static int modifier(int opt)
 	case O_LOGFILE:
 		fclose(stdout);
 		if (!freopen(optarg, "a", stdout)) {
-			Eprintf("Cannot open log file %s. Exiting.", optarg);	
+			fprintf(stderr, "Cannot open log file %s. Exiting.\n", optarg);	
 			exit(1);
 		}
 		break;
@@ -917,6 +917,11 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 	int i; 
 	int len;
 
+	if (recordlen == 0) {
+		Wprintf("no data in mce record\n");
+		return;
+	}
+
 	len = read(fd, buf, recordlen * loglen); 
 	if (len < 0) 
 		err("read"); 
@@ -934,9 +939,9 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 	}
 
 	if (recordlen > sizeof(struct mce))  {
-		Eprintf("warning: %lu bytes ignored in each record",
+		Eprintf("warning: %lu bytes ignored in each record\n",
 				(unsigned long)recordlen - sizeof(struct mce)); 
-		Eprintf("consider an update"); 
+		Eprintf("consider an update\n"); 
 	}
 }
 
@@ -955,7 +960,7 @@ static void parse_config(char **av)
 	if (parse_config_file(fn) < 0) { 
 		/* If it's the default file don't complain if it isn't there */
 		if (fn != config_fn) {
-			Eprintf("Cannot open config file %s\n", fn);
+			fprintf(stderr, "Cannot open config file %s\n", fn);
 			exit(1);
 		}
 		return;
@@ -1019,7 +1024,7 @@ int main(int ac, char **av)
 	if (fd < 0) {
 		if (ignore_nodev) 
 			exit(0);
-		Eprintf("Cannot open %s", logfn); 
+		fprintf(stderr, "Cannot open %s", logfn); 
 		exit(1);
 	}
 	
@@ -1027,10 +1032,6 @@ int main(int ac, char **av)
 		err("MCE_GET_RECORD_LEN");
 	if (ioctl(fd, MCE_GET_LOG_LEN, &loglen) < 0)
 		err("MCE_GET_LOG_LEN");
-
-	if (recordlen > sizeof(struct mce))
-		Eprintf(
-    "warning: kernel supplies more information in mce record than expected. Consider update.");
 
 	buf = xalloc(recordlen * loglen); 
 	if (daemon_mode) {
