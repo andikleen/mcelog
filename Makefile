@@ -23,7 +23,7 @@ all: mcelog
 .PHONY: install clean depend
 
 OBJ := p4.o k8.o mcelog.o dmi.o tsc.o core2.o bitfield.o intel.o \
-       nehalem.o dunnington.o tulsa.o config.o memutil.o
+       nehalem.o dunnington.o tulsa.o config.o memutil.o msg.o
 DISKDB_OBJ := diskdb.o dimm.o db.o
 CLEAN := mcelog dmi tsc dbquery .depend .depend.X dbquery.o ${DISKDB_OBJ}
 DOC := mce.pdf smbios.spec

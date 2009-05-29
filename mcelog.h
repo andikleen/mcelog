@@ -103,8 +103,18 @@ enum option_ranges {
 	O_DISKDB = 1000,
 };
 
+enum syslog_opt { 
+	SYSLOG_LOG = (1 << 0),
+	SYSLOG_REMARK = (1 << 1), 
+	SYSLOG_ERROR  = (1 << 2),
+	SYSLOG_ALL = SYSLOG_LOG|SYSLOG_REMARK|SYSLOG_ERROR,
+	SYSLOG_FORCE = (1 << 3),
+};
+
 extern void usage(void);
 extern void no_syslog(void);
 extern void argsleft(int ac, char **av);
 extern char *processor_flags;
 extern int force_tsc;
+extern enum syslog_opt syslog_opt;
+extern int syslog_level;
