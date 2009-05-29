@@ -930,7 +930,7 @@ int main(int ac, char **av)
 	if (fd < 0) {
 		if (ignore_nodev) 
 			exit(0);
-		fprintf(stderr, "Cannot open %s", logfn); 
+		SYSERRprintf("Cannot open `%s'", logfn);
 		exit(1);
 	}
 	
