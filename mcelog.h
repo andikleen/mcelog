@@ -82,6 +82,7 @@ struct mce {
 
 int Wprintf(char *fmt, ...) PRINTFLIKE;
 void Eprintf(char *fmt, ...) PRINTFLIKE;
+void SYSERRprintf(char *fmt, ...) PRINTFLIKE;
 void Lprintf(char *fmt, ...) PRINTFLIKE;
 void Gprintf(char *fmt, ...) PRINTFLIKE;
 

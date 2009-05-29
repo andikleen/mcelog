@@ -111,6 +111,25 @@ void Eprintf(char *fmt, ...)
 	va_end(ap);
 }
 
+void SYSERRprintf(char *fmt, ...)
+{
+	char *err = strerror(errno);
+	va_list ap;
+	va_start(ap, fmt);
+	if (!(syslog_opt & SYSLOG_ERROR)) {
+		fputs("mcelog: ", stderr);
+		vfprintf(stderr, fmt, ap);
+		fprintf(stderr, ": %s\n", err);
+	} else { 
+		char *fmt2;
+		opensyslog();
+		asprintf(&fmt2, "%s: %s\n", fmt, err);
+		vsyslog(LOG_ERR, fmt2, ap);
+		free(fmt2);
+	}
+	va_end(ap);
+}
+
 /* Write to syslog with line buffering */
 static int vlinesyslog(char *fmt, va_list ap)
 {

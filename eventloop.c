@@ -83,7 +83,7 @@ void eventloop(void)
 		int n = poll(pollfds, max_pollfd, -1);
 		if (n <= 0) {
 			if (n < 0)
-				Eprintf("mcelog: poll error: %s", strerror(errno));
+				SYSERRprintf("poll error");
 			continue;
 		}
 		poll_callbacks(n); 
