@@ -141,7 +141,7 @@ static void print_tsc(int cpunum, __u64 tsc, unsigned long time)
 		ret = decode_tsc_forced(&buf, cpumhz, tsc);
 	else if (!time) 
 		ret = decode_tsc_current(&buf, cpunum, cputype, cpumhz, tsc);
-	Wprintf("TSC %Lx %s", tsc, ret >= 0 && buf ? buf : "");
+	Wprintf("TSC %llx %s", tsc, ret >= 0 && buf ? buf : "");
 	free(buf);
 }
 
@@ -287,14 +287,14 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 		print_tsc(cpu, m->tsc, m->time);
 	Wprintf("\n");
 	if (m->ip)
-		Wprintf("RIP%s %02x:%Lx\n", 
+		Wprintf("RIP%s %02x:%llx\n", 
 		       !(m->mcgstatus & MCG_STATUS_EIPV) ? " !INEXACT!" : "",
 		       m->cs, m->ip);
 	n = 0;
 	if (m->status & MCI_STATUS_MISCV)
-		n += Wprintf("MISC %Lx ", m->misc);
+		n += Wprintf("MISC %llx ", m->misc);
 	if (m->status & MCI_STATUS_ADDRV)
-		n += Wprintf("ADDR %Lx ", m->addr);		
+		n += Wprintf("ADDR %llx ", m->addr);		
 	if (n > 0)
 		Wprintf("\n");
 	if (m->time) {
@@ -313,7 +313,7 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 		break;
 	} 
 	/* decode all status bits here */
-	Wprintf("STATUS %Lx MCGSTATUS %Lx\n", m->status, m->mcgstatus);
+	Wprintf("STATUS %llx MCGSTATUS %llx\n", m->status, m->mcgstatus);
 	n = 0;
 	if (recordlen >= offsetof(struct mce, cpuid) && m->mcgcap)
 		n += Wprintf("MCGCAP %llx ", m->mcgcap);
@@ -345,12 +345,12 @@ static void dump_mce_raw_ascii(struct mce *m, unsigned recordlen)
 		Wprintf("not finished?\n");
 	Wprintf("CPU %u\n", m->extcpu ? m->extcpu : m->cpu);
 	Wprintf("BANK %d\n", m->bank);
-	Wprintf("TSC 0x%Lx\n", m->tsc);
-	Wprintf("RIP 0x%02x:0x%Lx\n", m->cs, m->ip);
-	Wprintf("MISC 0x%Lx\n", m->misc);
-	Wprintf("ADDR 0x%Lx\n", m->addr);
-	Wprintf("STATUS 0x%Lx\n", m->status);
-	Wprintf("MCGSTATUS 0x%Lx\n", m->mcgstatus);
+	Wprintf("TSC 0x%llx\n", m->tsc);
+	Wprintf("RIP 0x%02x:0x%llx\n", m->cs, m->ip);
+	Wprintf("MISC 0x%llx\n", m->misc);
+	Wprintf("ADDR 0x%llx\n", m->addr);
+	Wprintf("STATUS 0x%llx\n", m->status);
+	Wprintf("MCGSTATUS 0x%llx\n", m->mcgstatus);
 	if (recordlen >= offsetof(struct mce, cpuid))
 		Wprintf("PROCESSOR %u:0x%x\n", m->cpuvendor, m->cpuid);
 #define CPRINT(str, field) 				\
@@ -536,11 +536,11 @@ restart:
 			}
 		} 
 		else if (!strncmp(s, "STATUS", 6)) {
-			if ((n = sscanf(s,"STATUS %Lx%n", &m.status, &next)) < 1)
+			if ((n = sscanf(s,"STATUS %llx%n", &m.status, &next)) < 1)
 				missing++;
 		}
 		else if (!strncmp(s, "MCGSTATUS", 6)) {
-			if ((n = sscanf(s,"MCGSTATUS %Lx%n", &m.mcgstatus, &next)) < 1)
+			if ((n = sscanf(s,"MCGSTATUS %llx%n", &m.mcgstatus, &next)) < 1)
 				missing++;
 		}
 		else if (!strncmp(s, "RIP", 3)) { 
@@ -560,15 +560,15 @@ restart:
 				missing++; 
 		} 
 		else if (!strncmp(s, "TSC",3)) { 
-			if ((n = sscanf(s, "TSC %Lx%n", &m.tsc, &next)) < 1) 
+			if ((n = sscanf(s, "TSC %llx%n", &m.tsc, &next)) < 1) 
 				missing++;
 		}
 		else if (!strncmp(s, "ADDR",4)) { 
-			if ((n = sscanf(s, "ADDR %Lx%n", &m.addr, &next)) < 1) 
+			if ((n = sscanf(s, "ADDR %llx%n", &m.addr, &next)) < 1) 
 				missing++;
 		}
 		else if (!strncmp(s, "MISC",4)) { 
-			if ((n = sscanf(s, "MISC %Lx%n", &m.misc, &next)) < 1) 
+			if ((n = sscanf(s, "MISC %llx%n", &m.misc, &next)) < 1) 
 				missing++; 
 		} 
 		else if (!strncmp(s, "PROCESSOR", 9)) { 

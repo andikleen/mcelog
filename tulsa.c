@@ -43,5 +43,5 @@ void tulsa_decode_model(u64 status, u64 misc)
 		decode_numfield(status, ecc_numbers);
 	/* MISC register not documented in the SDM. Let's just dump hex for now. */
 	if (status &  MCI_STATUS_MISCV)
-		Wprintf("MISC format %Lx value %Lx\n", (status >> 40) & 3, misc);
+		Wprintf("MISC format %llx value %llx\n", (status >> 40) & 3, misc);
 }
