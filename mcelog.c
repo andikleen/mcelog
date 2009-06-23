@@ -345,21 +345,21 @@ static void dump_mce_raw_ascii(struct mce *m, unsigned recordlen)
 		Wprintf("not finished?\n");
 	Wprintf("CPU %u\n", m->extcpu ? m->extcpu : m->cpu);
 	Wprintf("BANK %d\n", m->bank);
-	Wprintf("TSC 0x%llx\n", m->tsc);
-	Wprintf("RIP 0x%02x:0x%llx\n", m->cs, m->ip);
-	Wprintf("MISC 0x%llx\n", m->misc);
-	Wprintf("ADDR 0x%llx\n", m->addr);
-	Wprintf("STATUS 0x%llx\n", m->status);
-	Wprintf("MCGSTATUS 0x%llx\n", m->mcgstatus);
+	Wprintf("TSC %#llx\n", m->tsc);
+	Wprintf("RIP %#02x:%#llx\n", m->cs, m->ip);
+	Wprintf("MISC %#llx\n", m->misc);
+	Wprintf("ADDR %#llx\n", m->addr);
+	Wprintf("STATUS %#llx\n", m->status);
+	Wprintf("MCGSTATUS %#llx\n", m->mcgstatus);
 	if (recordlen >= offsetof(struct mce, cpuid))
-		Wprintf("PROCESSOR %u:0x%x\n", m->cpuvendor, m->cpuid);
+		Wprintf("PROCESSOR %u:%#x\n", m->cpuvendor, m->cpuid);
 #define CPRINT(str, field) 				\
 	if (recordlen >= offsetof(struct mce, field))	\
 		Wprintf(str "\n", m->field)
 	CPRINT("TIME %llu", time);
 	CPRINT("SOCKETID %u", socketid);
 	CPRINT("APICID %u", apicid);
-	CPRINT("MCGCAP %llx", mcgcap);
+	CPRINT("MCGCAP %#llx", mcgcap);
 #undef CPRINT
 	Wprintf("\n");
 }
