@@ -93,13 +93,13 @@ static void dunnington_decode_internal(u64 status)
 {
 	u32 mca = (status >> 16) & 0xffff;
 	if ((mca & 0xfff0) == 0)
-		decode_bitfield(status, dnt_front_status);
+		decode_bitfield(mca, dnt_front_status);
 	else if ((mca & 0xf0ff) == 0)
-		decode_bitfield(status, dnt_int_status);
+		decode_bitfield(mca, dnt_int_status);
 	else if ((mca & 0xfff0) == 0xc000)
-		decode_bitfield(status, dnt_cecc);
+		decode_bitfield(mca, dnt_cecc);
 	else if ((mca & 0xfff0) == 0xe000)
-		decode_bitfield(status, dnt_uecc);
+		decode_bitfield(mca, dnt_uecc);
 }
 
 void dunnington_decode_model(u64 status)
