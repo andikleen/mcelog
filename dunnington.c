@@ -73,14 +73,14 @@ struct field dnt_front_status[] = {
 struct field dnt_cecc[] = {
 	SBITFIELD(1, "Correctable ECC event on outgoing core 0 data"),
 	SBITFIELD(2, "Correctable ECC event on outgoing core 1 data"),
-	SBITFIELD(3, "Correctable ECC event on outgoing core 3 data"),
+	SBITFIELD(3, "Correctable ECC event on outgoing core 2 data"),
 	{}
 };
 
 struct field dnt_uecc[] = {
 	SBITFIELD(1, "Uncorrectable ECC event on outgoing core 0 data"),
 	SBITFIELD(2, "Uncorrectable ECC event on outgoing core 1 data"),
-	SBITFIELD(3, "Uncorrectable ECC event on outgoing core 3 data"),
+	SBITFIELD(3, "Uncorrectable ECC event on outgoing core 2 data"),
 	{}
 };
 
