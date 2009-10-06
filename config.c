@@ -105,19 +105,31 @@ static void unparseable(char *desc, const char *header, const char *name)
 			desc, header, sep, name);
 }
 
+/* Remove leading/trailing white space */
+static char *strstrip(char *s)
+{
+	char *p;
+	while (isspace(*s))
+		s++;
+	p = s + strlen(s) - 1;
+	if (p <= s)
+		return s;
+	while (isspace(*p) && p >= s)
+		*p-- = 0;
+	return s;
+}
+
 int parse_config_file(const char *fn)
 {
 	FILE *f;
 	char *line = NULL;
 	size_t linelen = 0;
 
-	char *header;
 	char *name;
 	char *val;
 	struct opt *opt;
 	struct header *hdr;
 	int lineno = 1;
-	int left;
 	unsigned h;
 
 	f = fopen(fn, "r");
@@ -126,15 +138,22 @@ int parse_config_file(const char *fn)
 
 	hdr = NULL;
 	while (getline(&line, &linelen, f) > 0) {
-		char *s;
-		s = strchr(line, '#');
+		char *s = strchr(line, '#');
 		if (s) 
 			*s = 0;
-		if (sscanf(line, " [%a[^]]]%n", &header, &left) == 1) { 
-			nothing(line + left, lineno);
-			hdr = new_header(hdr, header);
-		} else if (sscanf(line, " %as = %as%n", &name, &val, &left) == 2) {
-			nothing(line + left, lineno);	
+		s = strstrip(line);
+		if (*s == '[') {
+			char *p = strchr(s, ']'); 
+			if (p == NULL)
+				parse_error(lineno, "Header without ending ]");
+			nothing(p + 1, lineno);
+			*p = 0;
+			hdr = new_header(hdr, s + 1);
+		} else if ((val = strchr(line, '=')) != NULL) { 
+			*val++ = 0;
+			name = strstrip(s);
+			val = strstrip(val);
+			//printf("\"%s\" = \"%s\"\n", name, val);
 			opt = xalloc(sizeof(struct opt));
 			opt->name = name;
 			opt->val = val;
@@ -150,8 +169,8 @@ int parse_config_file(const char *fn)
 			parse_error(lineno, "config file line not field nor header");
 		}
 		lineno++;
+		line = NULL;
 	}
-	free(line);
 	fclose(f);
 	return 0;
 }

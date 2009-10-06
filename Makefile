@@ -85,3 +85,6 @@ iccverify:
 
 src:
 	echo $(SRC)
+
+config-test: config.c
+	gcc -DTEST=1 config.c -o config-test
