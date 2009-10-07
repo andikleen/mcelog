@@ -86,6 +86,8 @@ void SYSERRprintf(char *fmt, ...) PRINTFLIKE;
 void Lprintf(char *fmt, ...) PRINTFLIKE;
 void Gprintf(char *fmt, ...) PRINTFLIKE;
 
+extern int open_logfile(char *fn);
+
 /* Don't forget to update mcelog.c:cputype_name[] too */
 enum cputype {
 	CPU_GENERIC,

@@ -708,8 +708,7 @@ static int modifier(int opt)
 
 	switch (opt) { 
 	case O_LOGFILE:
-		fclose(stdout);
-		if (!freopen(optarg, "a", stdout)) {
+		if (open_logfile(optarg) < 0) {
 			fprintf(stderr, "Cannot open log file %s. Exiting.\n", optarg);	
 			exit(1);
 		}
