@@ -140,9 +140,10 @@ void nehalem_decode_model(u64 status, u64 misc)
 	u32 mca = status & 0xffff;
 	if ((mca >> 11) == 1) { 	/* bus and interconnect QPI */
 		decode_bitfield(status, qpi_status);
-		decode_numfield(status, qpi_numbers);
-		if (status & MCI_STATUS_MISCV)
+		if (status & MCI_STATUS_MISCV) {
+			decode_numfield(misc, qpi_numbers);
 			decode_bitfield(misc, qpi_misc);
+		}
 	} else if (mca == 0x0001) { /* internal unspecified */
 		decode_bitfield(status, internal_error_status);
 		decode_numfield(status, internal_error_numbers);
