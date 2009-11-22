@@ -23,10 +23,10 @@
 
 #define MAX_POLLFD 10
 
-int max_pollfd;
+static int max_pollfd;
 
 struct pollcb { 
-	void (*cb)(struct pollfd *, void *);
+	poll_cb_t cb;
 	int fd;
 	void *data;
 };
@@ -34,8 +34,7 @@ struct pollcb {
 static struct pollfd pollfds[MAX_POLLFD];
 static struct pollcb pollcbs[MAX_POLLFD];	
 
-int register_pollcb(int fd, int events, void (*cb)(struct pollfd *, void *data), 
-		    void *data)
+int register_pollcb(int fd, int events, poll_cb_t cb, void *data)
 {
 	int i = max_pollfd;
 
@@ -52,16 +51,19 @@ int register_pollcb(int fd, int events, void (*cb)(struct pollfd *, void *data),
 	return 0;
 }
 
-void unregister_pollcb(struct pollfd *pfd)
+/* Could mark free and put into a free list */
+void unregister_pollcb(int fd)
 {
-	int i = pfd - pollfds;
-	int k;
+	int i;
 
-	assert(i >= 0 && i < MAX_POLLFD);
-	for (k = i + 1; k < max_pollfd; k++) {
-		pollfds[k-1] = pollfds[k];
-		pollcbs[k-1] = pollcbs[k];
-	}
+	for (i = 0; i < max_pollfd; i++) 
+		if (pollfds[i].fd == fd)
+			break;
+	assert(i < max_pollfd);
+	memmove(pollfds + i, pollfds + i + 1, 
+		(max_pollfd - i - 1) * sizeof(struct pollfd));
+	memmove(pollcbs + i, pollcbs + i + 1, 
+		(max_pollfd - i - 1) * sizeof(struct pollcb));
 	max_pollfd--;
 }
 
@@ -70,8 +72,10 @@ static void poll_callbacks(int n)
 	int k;
 
 	for (k = 0; k < max_pollfd && n > 0; k++) {
-		if (pollfds[k].revents) { 
-			pollcbs[k].cb(&pollfds[k], pollcbs[k].data);
+		struct pollfd *f = pollfds + k;
+		if (f->revents) { 
+			struct pollcb *c = pollcbs + k;
+			c->cb(f->fd, f->revents, c->data);
 			n--;
 		}
 	}

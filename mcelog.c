@@ -33,6 +33,7 @@
 #include <getopt.h>
 #include <errno.h>
 #include <stddef.h>
+#include <assert.h>
 #include "mcelog.h"
 #include "paths.h"
 #include "k8.h"
@@ -45,6 +46,7 @@
 #include "config.h"
 #include "diskdb.h"
 #include "memutil.h"
+#include "eventloop.h"
 
 enum cputype cputype = CPU_GENERIC;	
 
@@ -892,13 +894,24 @@ static void ascii_command(int ac, char **av)
 	decodefatal(f); 
 }
 
+struct mcefd_data {
+	unsigned loglen;
+	unsigned recordlen;
+	char *buf;
+};
+
+static void process_mcefd(int fd, int revents, void *data)
+{
+	struct mcefd_data *d = (struct mcefd_data *)data;
+	assert((revents & POLLIN) != 0);
+	process(fd, d->recordlen, d->loglen, d->buf);
+}
+
 int main(int ac, char **av) 
 { 
-	unsigned recordlen = 0;
-	unsigned loglen = 0;
+	struct mcefd_data d = {};
 	int opt;
 	int fd;
-	char *buf;
 
 	parse_config(av);
 
@@ -933,23 +946,19 @@ int main(int ac, char **av)
 		exit(1);
 	}
 	
-	if (ioctl(fd, MCE_GET_RECORD_LEN, &recordlen) < 0)
+	if (ioctl(fd, MCE_GET_RECORD_LEN, &d.recordlen) < 0)
 		err("MCE_GET_RECORD_LEN");
-	if (ioctl(fd, MCE_GET_LOG_LEN, &loglen) < 0)
+	if (ioctl(fd, MCE_GET_LOG_LEN, &d.loglen) < 0)
 		err("MCE_GET_LOG_LEN");
 
-	buf = xalloc(recordlen * loglen); 
+	d.buf = xalloc(d.recordlen * d.loglen); 
 	if (daemon_mode) {
-		struct pollfd pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
+		register_pollcb(fd, POLLIN, process_mcefd, &d);
 		if (daemon(0, 0) < 0)
 			err("daemon");
-		for (;;) { 
-			int n = poll(&pfd, 1, -1);
-			if (n > 0 && (pfd.revents & POLLIN)) 
-				process(fd, recordlen, loglen, buf);
-		}			
+		eventloop();
 	} else {
-		process(fd, recordlen, loglen, buf);
+		process(fd, d.recordlen, d.loglen, d.buf);
 	}
 		
 	exit(0); 
