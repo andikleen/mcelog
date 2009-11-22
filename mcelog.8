@@ -29,13 +29,13 @@ mechanisms. Uncorrected errors cause machine check exceptions which
 may panic the machine.
 
 When a corrected error happens the x86 kernel writes a record describing 
-the the MCE into a internal ring buffer available through the
+the MCE into a internal ring buffer available through the
 .I /dev/mcelog
 device
 .I mcelog 
 retrieves errors from 
 .I /dev/mcelog, 
-decodes the into a human readable format and prints them
+decodes them into a human readable format and prints them
 on the standard output or optionally into the system log. 
 
 Optionally it can also take more options like keeping statistics or
@@ -48,7 +48,7 @@ or running as a daemon with the
 .I \-\-daemon
 option.
 
-When a uncorrected machine check error happens that the kernel
+When an uncorrected machine check error happens that the kernel
 cannot recover from then it will usually panic the system.
 In this case when there was a warm reset after the panic
 mcelog should pick up the machine check errors after reboot.
@@ -175,11 +175,8 @@ below.
 
 With the
 .B \-\-daemon
-option mcelog will run in the background and continuously poll
-for machine checks for the kernel. This gives the fastest reaction
-time, but the normal recommended operating mode is running
-as a cronjob or from the kernel trigger (through
-.I /sys/devices/system/machinecheck/machinecheck0/trigger). 
+option mcelog will run in the background. This gives the fastest reaction
+time and is the recommended operating mode.
 This option implies 
 .I \-\-syslog.
 
