@@ -631,7 +631,7 @@ void usage(void)
 "--cpu CPU           Set CPU type CPU to decode (see below for valid types)\n"
 "--cpumhz MHZ        Set CPU Mhz to decode time (output unreliable, not needed on new kernels)\n"
 "--raw		     (with --ascii) Dump in raw ASCII format for machine processing\n"
-"--daemon            Run in background polling for events (needs newer kernel)\n"
+"--daemon            Run in background waiting for events (needs newer kernel)\n"
 "--file filename     With --ascii read machine check log from filename instead of stdin\n"
 "--syslog            Log decoded machine checks in syslog (default stdout or syslog for daemon)\n"	     
 "--syslog-error	     Log decoded machine checks in syslog with error level\n"
