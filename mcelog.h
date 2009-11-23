@@ -69,6 +69,8 @@ struct mce {
 #define MCG_STATUS_EIPV  (1ULL<<1)   /* eip points to correct instruction */
 #define MCG_STATUS_MCIP  (1ULL<<2)   /* machine check in progress */
 
+#define MCG_CMCI_P		(1ULL<<10)   /* CMCI supported */
+
 #define NELE(x) (sizeof(x)/sizeof(*(x)))
 #define err(x) perror(x),exit(1)
 #define sizeof_field(t, f) (sizeof(((t *)0)->f))
@@ -120,3 +122,4 @@ extern char *processor_flags;
 extern int force_tsc;
 extern enum syslog_opt syslog_opt;
 extern int syslog_level;
+extern enum cputype cputype;

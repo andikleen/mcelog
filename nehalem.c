@@ -23,6 +23,7 @@
 #include "mcelog.h"
 #include "nehalem.h"
 #include "bitfield.h"
+#include "memdb.h"
 
 /* See IA32 SDM Vol3B Appendix E.3.2 ff */
 
@@ -152,6 +153,15 @@ void nehalem_decode_model(u64 status, u64 misc)
 		decode_numfield(status, nhm_memory_status_numbers);
 		if (status & MCI_STATUS_MISCV)
 			decode_numfield(misc, nhm_memory_misc_numbers);
+	}
+}
+
+/* Nehalem-EP specific DIMM decoding */
+void nehalem_memerr_misc(struct mce *m, int *channel, int *dimm)
+{
+	if (m->status & MCI_STATUS_MISCV) {
+		*channel = EXTRACT(m->misc, 18, 19);
+		*dimm = EXTRACT(m->misc, 16, 17);
 	}
 }
 

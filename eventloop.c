@@ -15,9 +15,13 @@
    You should find a copy of v2 of the GNU General Public License somewhere
    on your Linux system; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
+#define _GNU_SOURCE 1
 #include <assert.h>
+#include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/fcntl.h>
+#include <signal.h>
 #include "mcelog.h"
 #include "eventloop.h"
 
@@ -34,9 +38,22 @@ struct pollcb {
 static struct pollfd pollfds[MAX_POLLFD];
 static struct pollcb pollcbs[MAX_POLLFD];	
 
+static int closeonexec(int fd)
+{
+	int flags = fcntl(fd, F_GETFD);
+	if (flags < 0 || fcntl(fd, F_SETFD, flags | FD_CLOEXEC) < 0) { 
+		SYSERRprintf("Cannot set FD_CLOEXEC flag on fd");
+		return -1;
+	}
+	return 0;
+}
+
 int register_pollcb(int fd, int events, poll_cb_t cb, void *data)
 {
 	int i = max_pollfd;
+
+	if (closeonexec(fd) < 0)
+		return -1;
 
 	if (i >= MAX_POLLFD) {
 		Eprintf("poll table overflow");
@@ -52,14 +69,10 @@ int register_pollcb(int fd, int events, poll_cb_t cb, void *data)
 }
 
 /* Could mark free and put into a free list */
-void unregister_pollcb(int fd)
+void unregister_pollcb(struct pollfd *pfd)
 {
-	int i;
-
-	for (i = 0; i < max_pollfd; i++) 
-		if (pollfds[i].fd == fd)
-			break;
-	assert(i < max_pollfd);
+	int i = pfd - pollfds;
+	assert(i >= 0 && i < max_pollfd);
 	memmove(pollfds + i, pollfds + i + 1, 
 		(max_pollfd - i - 1) * sizeof(struct pollfd));
 	memmove(pollcbs + i, pollcbs + i + 1, 
@@ -75,18 +88,34 @@ static void poll_callbacks(int n)
 		struct pollfd *f = pollfds + k;
 		if (f->revents) { 
 			struct pollcb *c = pollcbs + k;
-			c->cb(f->fd, f->revents, c->data);
+			c->cb(f, c->data);
 			n--;
 		}
 	}
 }
 
+static int block_signal(int sig, sigset_t *oldmask)
+{
+	sigset_t mask;
+	if (sigprocmask(SIG_BLOCK, NULL, &mask) < 0) 
+		return -1;
+	if (oldmask)
+		*oldmask = mask;
+	sigaddset(&mask, sig);
+	if (sigprocmask(SIG_BLOCK, &mask, NULL) < 0)
+		return -1;
+	return 0;
+}
+
 void eventloop(void)
 {
+	sigset_t oldmask;
+	if (block_signal(SIGCHLD, &oldmask) < 0) 
+		SYSERRprintf("Cannot block SIGCHLD");
 	for (;;) { 
-		int n = poll(pollfds, max_pollfd, -1);
+		int n = ppoll(pollfds, max_pollfd, NULL, &oldmask);
 		if (n <= 0) {
-			if (n < 0)
+			if (n < 0 && errno != EINTR)
 				SYSERRprintf("poll error");
 			continue;
 		}

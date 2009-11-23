@@ -29,6 +29,7 @@
 #include "nehalem.h"
 #include "dunnington.h"
 #include "tulsa.h"
+#include "intel.h"
 
 /* decode mce for P4/Xeon and Core2 family */
 
@@ -331,6 +332,8 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr)
 		tulsa_decode_model(log->status, log->misc);
 		break;
 	}
+
+	intel_memory_error(log);
 }
 
 char *intel_bank_name(int num)

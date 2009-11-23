@@ -47,6 +47,9 @@
 #include "diskdb.h"
 #include "memutil.h"
 #include "eventloop.h"
+#include "memdb.h"
+#include "server.h"
+#include "trigger.h"
 
 enum cputype cputype = CPU_GENERIC;	
 
@@ -272,6 +275,8 @@ static void mce_cpuid(struct mce *m)
 	} else if (cputype == CPU_GENERIC && !cpu_forced) { 
 		check_cpu();
 	}	
+
+	prefill_memdb();
 }
 
 static void dump_mce(struct mce *m, unsigned recordlen) 
@@ -900,11 +905,11 @@ struct mcefd_data {
 	char *buf;
 };
 
-static void process_mcefd(int fd, int revents, void *data)
+static void process_mcefd(struct pollfd *pfd, void *data)
 {
 	struct mcefd_data *d = (struct mcefd_data *)data;
-	assert((revents & POLLIN) != 0);
-	process(fd, d->recordlen, d->loglen, d->buf);
+	assert((pfd->revents & POLLIN) != 0);
+	process(pfd->fd, d->recordlen, d->loglen, d->buf);
 }
 
 int main(int ac, char **av) 
@@ -937,6 +942,7 @@ int main(int ac, char **av)
 	if (av[optind])
 		usage();
 	checkdmi();
+	trigger_setup();
 		
 	fd = open(logfn, O_RDONLY); 
 	if (fd < 0) {
@@ -953,6 +959,7 @@ int main(int ac, char **av)
 
 	d.buf = xalloc(d.recordlen * d.loglen); 
 	if (daemon_mode) {
+		server_setup();
 		register_pollcb(fd, POLLIN, process_mcefd, &d);
 		if (daemon(0, 0) < 0)
 			err("daemon");

@@ -11,5 +11,6 @@ int parse_config_file(const char *fn);
 const char *config_file(char **av, const char *deffn);
 struct option;
 void config_options(struct option *opts, int (*func)(int));
-
+struct bucket_conf;
+int config_trigger(const char *header, const char *name, struct bucket_conf *bc);
 

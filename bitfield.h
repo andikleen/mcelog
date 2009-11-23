@@ -28,3 +28,5 @@ extern char *reserved_3bits[8];
 extern char *reserved_1bit[2];
 extern char *reserved_2bits[4];
 
+#define MASK(x) ((1ULL << (1 + (x))) - 1)
+#define EXTRACT(v, a, b) (((v) >> (a)) & MASK((b)-(a)))

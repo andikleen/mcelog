@@ -26,6 +26,7 @@
 #include "memutil.h"
 #include "mcelog.h"
 #include "config.h"
+#include "leaky-bucket.h"
 
 #ifdef TEST
 #define Eprintf printf
@@ -266,6 +267,35 @@ void config_options(struct option *opts, int (*func)(int))
 		}
 		func(opts->val);
 	}
+}
+
+int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
+{
+	char *s;
+	char *name;
+
+	asprintf(&name, "%s-rate", base);
+	s = config_string("memdb", name);
+	if (s) {
+		if (bucket_conf_init(bc, s) < 0) {
+			unparseable("trigger", header, name);
+			return -1;
+		}
+	}
+	free(name);
+
+	asprintf(&name, "%s-trigger", base);
+	s = config_string("memdb", name);
+	if (s) { 
+		/* no $PATH */
+		if (access(s, R_OK|X_OK) != 0) {
+			SYSERRprintf("Trigger `%s' not executable\n", s);
+			exit(1);
+		}
+		bc->trigger = s;
+	}
+	free(name);
+	return 0;
 }
 
 #ifdef TEST
