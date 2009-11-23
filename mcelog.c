@@ -65,6 +65,7 @@ int dump_raw_ascii;
 int daemon_mode;
 static char *inputfile;
 char *processor_flags;
+static int foreground;
 
 static void check_cpu(void);
 
@@ -650,6 +651,7 @@ void usage(void)
 "--filter            Inhibit known bogus events (default on)\n"
 "--no-filter         Don't inhibit known broken events\n"
 "--config-file filename Read config information from config file instead of " CONFIG_FILENAME "\n"
+"--foreground	     Keep in foreground (for debugging)\n"
 		);
 	diskdb_usage();
 	print_cputypes();
@@ -678,6 +680,7 @@ enum options {
 	O_CONFIG_FILE,
 	O_CPU,
 	O_FILE,
+	O_FOREGROUND,
 };
 
 static struct option options[] = {
@@ -705,6 +708,7 @@ static struct option options[] = {
 	{ "version", 0, NULL, O_VERSION },
 	{ "config-file", 1, NULL, O_CONFIG_FILE },
 	{ "cpu", 1, NULL, O_CPU },
+	{ "foreground", 0, NULL, O_FOREGROUND },
 	DISKDB_OPTIONS
 	{}
 };
@@ -784,10 +788,15 @@ static int modifier(int opt)
 	case O_DAEMON:
 		daemon_mode = 1;
 		if (!(syslog_opt & SYSLOG_FORCE))
-			syslog_opt = SYSLOG_ALL|SYSLOG_FORCE;
+			syslog_opt = SYSLOG_ALL;
 		break;
 	case O_FILE:
 		inputfile = optarg;
+		break;
+	case O_FOREGROUND:
+		foreground = 1;	
+		if (!(syslog_opt & SYSLOG_FORCE))
+			syslog_opt = SYSLOG_FORCE;
 		break;
 	case O_CONFIG_FILE:
 		/* parsed in config.c */
@@ -837,6 +846,8 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 	len = read(fd, buf, recordlen * loglen); 
 	if (len < 0) 
 		err("read"); 
+
+	printf("read %d\n", len);
 
 	for (i = 0; i < len / (int)recordlen; i++) { 
 		struct mce *mce = (struct mce *)(buf + i*recordlen);
@@ -961,7 +972,7 @@ int main(int ac, char **av)
 	if (daemon_mode) {
 		server_setup();
 		register_pollcb(fd, POLLIN, process_mcefd, &d);
-		if (daemon(0, 0) < 0)
+		if (!foreground && daemon(0, 0) < 0)
 			err("daemon");
 		eventloop();
 	} else {

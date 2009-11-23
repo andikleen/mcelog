@@ -1,5 +1,6 @@
 <newer changes first>
 
+Add --foreground option
 Avoid %a scanf extension that broke old glibc version
 Fixes to Tulsa and Dunngton decoding (Youkang Song)
 Fixes to Nehalem decoding and (Ted Barragy, Hidetoshi Seto)

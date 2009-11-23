@@ -178,7 +178,11 @@ With the
 option mcelog will run in the background. This gives the fastest reaction
 time and is the recommended operating mode.
 This option implies 
-.I \-\-syslog.
+.I \-\-syslog. 
+The option 
+.I \-\-foreground
+will prevent mcelog from giving up the terminal in daemon mode. This
+is intended for debugging.
 
 With the
 .B \-\-cpumhz=mhz
