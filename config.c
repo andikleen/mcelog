@@ -154,13 +154,13 @@ int parse_config_file(const char *fn)
 			*val++ = 0;
 			name = strstrip(s);
 			val = strstrip(val);
-			//printf("\"%s\" = \"%s\"\n", name, val);
 			opt = xalloc(sizeof(struct opt));
 			opt->name = name;
 			opt->val = val;
 			h = hash(name);
 			if (!hdr) 
 				hdr = new_header(hdr, "global");
+			//printf("[%s] \"%s\" = \"%s\"\n", hdr->name, name, val);
 			if (hdr->optslast[h] == NULL) 
 				hdr->opts[h] = opt;
 			else
@@ -244,6 +244,14 @@ const char *config_file(char **av, const char *deffn)
 				return av[1];
 			}
 		}
+		if (!strncmp(*av, "--config", 8)) {
+			if ((*av)[8] == '=') {
+				return 9 + *av;
+			} else { 
+				return av[1];
+			}
+		}
+
 	}
 	return deffn;
 }
