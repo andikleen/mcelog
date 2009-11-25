@@ -43,7 +43,8 @@ void intel_memory_error(struct mce *m)
 {
 	u32 mca = m->status & 0xffff;
 	if ((mca >> 7) == 1) { 
-		unsigned corr_err_cnt = (m->mcgcap & MCG_CMCI_P) ? EXTRACT(m->status, 38, 52) : 0;
+		int cmci = 0;
+		unsigned corr_err_cnt = 0;
 		int channel = (mca & 0xf) == 0xf ? -1 : (int)(mca & 0xf);
 		int dimm = -1;
 
@@ -52,9 +53,12 @@ void intel_memory_error(struct mce *m)
 			nehalem_memerr_misc(m, &channel, &dimm);
 			break;
 		default:
+			cmci = !!(m->mcgcap & MCG_CMCI_P);
 			break;
 		} 
-		
+
+		if (cmci)
+ 			corr_err_cnt = EXTRACT(m->status, 38, 52);
 		memory_error(m, channel, dimm, corr_err_cnt);
 	}
 }
