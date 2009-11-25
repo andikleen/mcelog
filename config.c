@@ -23,6 +23,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include <unistd.h>
 #include "memutil.h"
 #include "mcelog.h"
 #include "config.h"
@@ -102,8 +103,9 @@ static void unparseable(char *desc, const char *header, const char *name)
 		header = "";
 		sep = "";
 	}
-	Wprintf("%s config option ``%s%s%s'' unparseable\n", 
+	Eprintf("%s config option ``%s%s%s'' unparseable\n", 
 			desc, header, sep, name);
+	exit(1);
 }
 
 /* Remove leading/trailing white space */

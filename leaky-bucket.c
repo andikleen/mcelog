@@ -65,15 +65,18 @@ int bucket_account(const struct bucket_conf *c, struct leaky_bucket *b,
 	return __bucket_account(c, b, inc, bucket_time());
 }
 
-static int timeconv(char unit)
+static int timeconv(char unit, int *out)
 {
 	unsigned corr = 1;
 	switch (unit) { 
 	case 'd': corr *= 24;
 	case 'h': corr *= 3600;
 	case 'm': corr *= 60;
+	case 0:   break;
+	default: return -1;
 	}
-	return corr;
+	*out = corr;
+	return 0;
 }
 
 /* Format leaky bucket as a string. Caller must free string */
@@ -101,6 +104,7 @@ static int parse_rate(const char *rate, struct bucket_conf *c)
 	char cunit[2], tunit[2];
 	unsigned cap, t;
 	int n;
+	int unit;
 
 	cunit[0] = 0;
 	tunit[0] = 0;
@@ -121,11 +125,14 @@ static int parse_rate(const char *rate, struct bucket_conf *c)
 	case 'g': cap *= 1000;
 	case 'm': cap *= 1000;
 	case 'k': cap *= 1000;
+	case 0:   break;
+	default:  return -1;
 	}
 	c->tunit = tolower(tunit[0]);
-	c->agetime = timeconv(c->tunit) * t;
+	if (timeconv(c->tunit, &unit) < 0)
+		return -1;
+	c->agetime = unit * t;
 	c->capacity = cap;
-	c->agetime = t;
 	return 0;
 }
 
