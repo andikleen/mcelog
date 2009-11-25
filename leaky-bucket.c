@@ -86,7 +86,7 @@ char *bucket_output(const struct bucket_conf *c, struct leaky_bucket *b)
 	if (c->capacity == 0) {
 		asprintf(&buf, "not enabled");
 	} else { 
-		int unit;
+		int unit = 0;
 		//bucket_age(c, b, bucket_time());
 		timeconv(c->tunit, &unit);
 		asprintf(&buf, "%u in %u%c", b->count + b->excess, 
