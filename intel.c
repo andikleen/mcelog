@@ -4,7 +4,7 @@
 #include "nehalem.h"
 #include "memdb.h"
 
-int memory_error_suport;
+int memory_error_support;
 
 enum cputype select_intel_cputype(int family, int model)
 {
