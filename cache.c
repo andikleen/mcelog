@@ -1,0 +1,174 @@
+/* Copyright (C) 2008 Intel Corporation 
+   Author: Andi Kleen
+   Parse sysfs exported CPU cache topology
+
+   mcelog is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public
+   License as published by the Free Software Foundation; version
+   2.
+
+   mcelog is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should find a copy of v2 of the GNU General Public License somewhere
+   on your Linux system; if not, write to the Free Software Foundation, 
+   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
+#define _GNU_SOURCE 1
+#include <string.h>
+#include <dirent.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <assert.h>
+#include <ctype.h>
+#include "mcelog.h"
+#include "memutil.h"
+#include "sysfs.h"
+#include "cache.h"
+
+struct cache { 
+	unsigned level;
+	/* Numerical values must match MCACOD */
+	enum { INSTR, DATA, UNIFIED } type; 
+	unsigned *cpumap;
+	unsigned cpumaplen;
+};
+
+struct cache **caches;
+static unsigned cachelen;
+
+#define PREFIX "/sys/devices/system/cpu"
+#define MIN_CPUS 8
+#define MIN_INDEX 4
+
+static struct map type_map[] = {
+	{ "Instruction", INSTR },
+	{ "Data", DATA },
+	{ "Unified", UNIFIED },
+	{ },
+};
+
+static void more_cpus(int cpu)
+{
+	int old = cachelen;
+	if (!cachelen)
+		cachelen = MIN_CPUS/2;	
+	cachelen *= 2;
+	caches = xrealloc(caches, cachelen * sizeof(struct cache *));
+	memset(caches + old, 0, (cachelen - old) * sizeof(struct cache *));
+}
+
+static unsigned cpumap_len(char *s)
+{
+	unsigned len = strspn(s, "0123456789abcdefABCDEF,");
+	return (len + sizeof(unsigned)*8 - 1) / 8;
+}
+
+static void parse_cpumap(char *map, unsigned *buf, unsigned len)
+{
+	char *s;
+	int c;
+
+	c = 0;
+	s = map + strlen(map);
+	for (;;) { 
+		s = memrchr(map, ',', s - map);
+		if (!s) 
+			s = map;
+		else
+			s++;
+		buf[c++] = strtoul(s, NULL, 16);
+		if (s == map)
+			break;
+		s -= 2;
+	}
+	assert(len == c * sizeof(unsigned));
+}
+
+static void read_cpu_map(struct cache *c, char *cfn)
+{
+	char *map = read_field(cfn, "shared_cpu_map");
+	c->cpumaplen = cpumap_len(map);
+	c->cpumap = xalloc(c->cpumaplen);
+	parse_cpumap(map, c->cpumap, c->cpumaplen);
+}
+
+static int read_caches(void)
+{
+	DIR *cpus = opendir(PREFIX);
+	struct dirent *de;
+	if (!cpus) { 
+		Wprintf("Cannot read cache topology from %s", PREFIX);
+		return -1;
+	}
+	while ((de = readdir(cpus)) != NULL) {
+		unsigned cpu;
+		if (sscanf(de->d_name, "cpu%u", &cpu) == 1) { 
+			struct stat st;
+			char *fn;
+			int i;
+			int numindex;
+
+			asprintf(&fn, "%s/%s/cache", PREFIX, de->d_name);
+			stat(fn, &st);
+			numindex = st.st_nlink - 2;
+			if (numindex < 0)
+				numindex = MIN_INDEX;
+			if (cachelen <= cpu)
+				more_cpus(cpu);
+			caches[cpu] = xalloc(sizeof(struct cache) * 
+					     (numindex+1));
+			for (i = 0; i < numindex; i++) {
+				char *cfn;
+				struct cache *c = caches[cpu] + i;
+				asprintf(&cfn, "%s/index%d", fn, i);
+				c->type = read_field_map(cfn, "type", type_map);
+				c->level = read_field_num(cfn, "level");
+				read_cpu_map(c, cfn);
+				free(cfn);
+			}
+			free(fn);
+		}
+	}
+	if (!caches) { 
+		Wprintf("No caches found in sysfs");
+		return -1;
+	}
+	return 0;
+}
+
+int cache_to_cpus(int cpu, unsigned level, unsigned type, 
+		   int *cpulen, unsigned **cpumap)
+{
+	struct cache *c;
+	if (!caches) {
+		if (read_caches() < 0)
+			return -1;
+	}
+	for (c = caches[cpu]; c->cpumap; c++) { 
+		//printf("%d level %d type %d\n", cpu, c->level, c->type);
+		if (c->level == level && c->type == type) { 
+			*cpumap = c->cpumap;
+			*cpulen = c->cpumaplen;
+			return 0;
+		}
+	}
+	Wprintf("Cannot find sysfs cache for CPU %d", cpu);
+	return -1;
+}
+
+#ifdef TEST
+main()
+{
+	int cpulen;
+	unsigned *cpumap;
+	cache_to_cpus(1, 1, INSTR, &cpulen, &cpumap); printf("%d %x\n", cpulen, cpumap[0]);
+	cache_to_cpus(1, 1, DATA, &cpulen, &cpumap); printf("%d %x\n", cpulen, cpumap[0]);
+	cache_to_cpus(1, 2, UNIFIED, &cpulen, &cpumap); printf("%d %x\n", cpulen, cpumap[0]);
+	cache_to_cpus(0, 1, INSTR, &cpulen, &cpumap); printf("%d %x\n", cpulen, cpumap[0]);
+	cache_to_cpus(0, 1, DATA, &cpulen, &cpumap); printf("%d %x\n", cpulen, cpumap[0]);
+	cache_to_cpus(0, 2, UNIFIED, &cpulen, &cpumap); printf("%d %x\n", cpulen, cpumap[0]);
+}
+#endif
+

@@ -20,8 +20,6 @@
         Racing Guo <racing.guo@intel.com>
 	Andi Kleen
 */
-/* TBD should have an extra trigger for yellow status  */
-  
 #include <stdio.h>
 #include "mcelog.h"
 #include "p4.h"
@@ -30,6 +28,7 @@
 #include "dunnington.h"
 #include "tulsa.h"
 #include "intel.h"
+#include "yellow.h"
 
 /* decode mce for P4/Xeon and Core2 family */
 
@@ -117,7 +116,7 @@ static char* get_II_str(__u8 i)
 	return II[i];
 }
 
-static void decode_mca(__u32 mca, int *ismemerr)
+static void decode_mca(__u32 mca, u64 track, int cpu, int *ismemerr)
 {
 #define TLB_LL_MASK      0x3  /*bit 0, bit 1*/
 #define TLB_LL_SHIFT     0x0
@@ -168,13 +167,15 @@ static void decode_mca(__u32 mca, int *ismemerr)
 				get_LL_str((mca & TLB_LL_MASK) >> 
 					    TLB_LL_SHIFT));
 	} else if (test_prefix(8, mca)) {
-		Wprintf("%s CACHE %s %s Error\n", 
-				get_TT_str((mca & CACHE_TT_MASK) >> 
-					    CACHE_TT_SHIFT),
-				get_LL_str((mca & CACHE_LL_MASK) >> 
-					    CACHE_LL_SHIFT),
+		unsigned typenum = (mca & CACHE_TT_MASK) >> CACHE_TT_SHIFT;
+		unsigned levelnum = (mca & CACHE_LL_MASK) >> CACHE_LL_SHIFT;
+		char *type = get_TT_str(typenum);
+		char *level = get_LL_str(levelnum);
+		Wprintf("%s CACHE %s %s Error\n", type, level,
 				get_RRRR_str((mca & CACHE_RRRR_MASK) >> 
 					      CACHE_RRRR_SHIFT));
+		if (track == 2)
+			run_yellow_trigger(cpu, typenum, levelnum, type, level);
 	} else if (test_prefix(10, mca)) {
 		if (mca == 0x400)
 			Wprintf("Internal Timer error\n");
@@ -220,24 +221,23 @@ static void p4_decode_model(__u32 model)
 	Wprintf("\n");
 }
 
-static void decode_tracking(u64 track, int cpu)
+static void decode_tracking(u64 track)
 {
 	static char *msg[] = { 
 		[1] = "green", 
 		[2] = "yellow\n"
-"Large number of corrected errors. System operating, but you should\n"
-"schedule it for service within a few weeks",
+"Large number of corrected cache errors. System operating, but might lead\n"
+"to uncorrected errors soon",
 		[3] ="res3" };
 	if (track) {
 		Wprintf("Threshold based error status: %s\n", msg[track]);
-		if (track == 2)
-			Lprintf(
-    "CPU %d has large number of corrected errors. Consider replacement", cpu);
 	}
 }
 
-static void decode_mci(__u64 status, int cpu, int *ismemerr)
+static void decode_mci(__u64 status, int cpu, unsigned mcgcap, int *ismemerr)
 {
+	u64 track = 0;
+
 	Wprintf("MCi status:\n");
 	if (!(status & MCI_STATUS_VAL))
 		Wprintf("Machine check not valid\n");
@@ -260,9 +260,12 @@ static void decode_mci(__u64 status, int cpu, int *ismemerr)
 	if (status & MCI_STATUS_PCC)
 		Wprintf("Processor context corrupt\n");
 
-	decode_tracking((status >> 53) & 3, cpu);
+	if ((mcgcap == 0 || (mcgcap & MCG_TES_P)) && !(status & MCI_STATUS_UC)) {
+		track = (status >> 53) & 3;
+		decode_tracking(track);
+	}
 	Wprintf("MCA: ");
-	decode_mca(status & 0xffffL, ismemerr);
+	decode_mca(status & 0xffffL, track, cpu, ismemerr);
 }
 
 static void decode_mcg(__u64 mcgstatus)
@@ -299,7 +302,7 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr)
 	}
 
 	decode_mcg(log->mcgstatus);
-	decode_mci(log->status, cpu, ismemerr);
+	decode_mci(log->status, cpu, log->mcgcap, ismemerr);
 
 	if (test_prefix(11, (log->status & 0xffffL))) {
 		switch (cputype) {

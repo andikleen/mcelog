@@ -70,6 +70,7 @@ struct mce {
 #define MCG_STATUS_MCIP  (1ULL<<2)   /* machine check in progress */
 
 #define MCG_CMCI_P		(1ULL<<10)   /* CMCI supported */
+#define MCG_TES_P		(1ULL<<11)   /* Yellow bit cache threshold supported */
 
 #define NELE(x) (sizeof(x)/sizeof(*(x)))
 #define err(x) perror(x),exit(1)

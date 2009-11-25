@@ -52,6 +52,7 @@
 #include "trigger.h"
 #include "client.h"
 #include "msg.h"
+#include "yellow.h"
 
 enum cputype cputype = CPU_GENERIC;	
 
@@ -972,6 +973,7 @@ int main(int ac, char **av)
 		usage();
 	checkdmi();
 	trigger_setup();
+	yellow_setup();
 		
 	fd = open(logfn, O_RDONLY); 
 	if (fd < 0) {
