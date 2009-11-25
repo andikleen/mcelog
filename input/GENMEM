@@ -1,0 +1,26 @@
+#!/bin/sh
+# GENMEM socketid channel dimm corr-err-cnt uc-flag
+# generate a memory error. All fields are optional.
+# suitable to be fed into mce-inject or mcelog --ascii
+# Note: DIMMs only work when mcelog is in Nehalem mode
+# this cannot be forced through mce-inject, but only on the command line
+# setting ucflag and injecting can panic your system
+socketid=${1:-0}
+channel=${2:-0}
+dimm=${3:-0}
+corr_err_cnt=${4:-0}
+
+if [ ! -z "$5" ] ; then
+	ucflag=$[1 << (61-32)]
+else
+	ucflag=0
+fi
+
+echo "# memory error on socket $socketid ch $channel dimm $dimm"
+echo "CPU 0 2" # XXX use cpu in socket
+echo "PROCESSOR 0:0x106a0"
+echo "SOCKETID $socketid"
+printf "STATUS 0x%08x%08x\n" \
+	$[0x88000000 + ($corr_err_cnt << 6) + $ucflag] $[0xb0 + $channel]
+printf "MISC 0x%08x\n" $[($channel << 18) + ($dimm << 16)]
+

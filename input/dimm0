@@ -1,0 +1,6 @@
+# dimm0, channel0 corrected error
+CPU 0 2
+PROCESSOR 0:0x106a0
+STATUS 0x8800000000000080
+MISC 0
+
