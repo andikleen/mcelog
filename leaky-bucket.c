@@ -87,7 +87,7 @@ char *bucket_output(const struct bucket_conf *c, struct leaky_bucket *b)
 		//bucket_age(c, b, bucket_time());
 		timeconv(c->tunit, &unit);
 		asprintf(&buf, "%u in %u%c", b->count + b->excess, 
-			c->agetime/unix, c->tunit);
+			c->agetime/unit, c->tunit);
 	}
 	return buf;
 }
