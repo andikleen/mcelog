@@ -51,6 +51,7 @@
 #include "server.h"
 #include "trigger.h"
 #include "client.h"
+#include "msg.h"
 
 enum cputype cputype = CPU_GENERIC;	
 
@@ -989,7 +990,7 @@ int main(int ac, char **av)
 	if (daemon_mode) {
 		server_setup();
 		register_pollcb(fd, POLLIN, process_mcefd, &d);
-		if (!foreground && daemon(0, 0) < 0)
+		if (!foreground && daemon(0, need_stdout()) < 0)
 			err("daemon");
 		eventloop();
 	} else {

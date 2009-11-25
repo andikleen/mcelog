@@ -1,5 +1,6 @@
 <newer changes first>
 
+Keep stdout open in daemon mode when no syslog
 Add --foreground option
 Avoid %a scanf extension that broke old glibc version
 Fixes to Tulsa and Dunngton decoding (Youkang Song)

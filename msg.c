@@ -6,10 +6,16 @@
 #include <string.h>
 #include <stdio.h>
 #include "mcelog.h"
+#include "msg.h"
 
 enum syslog_opt syslog_opt = SYSLOG_REMARK;
 int syslog_level = LOG_WARNING;
 static FILE *output_fh;
+
+int need_stdout(void)
+{
+	return !output_fh && (syslog_opt == 0);
+}
 
 int open_logfile(char *fn)
 {
