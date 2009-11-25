@@ -18,7 +18,9 @@ fi
 
 echo "# memory error on socket $socketid ch $channel dimm $dimm"
 echo "CPU 0 2" # XXX use cpu in socket
+echo "# nehalem"
 echo "PROCESSOR 0:0x106a0"
+printf "MCGCAP 0x%x\n" $[1 << 10]
 echo "SOCKETID $socketid"
 printf "STATUS 0x%08x%08x\n" \
 	$[0x88000000 + ($corr_err_cnt << 6) + $ucflag] $[0xb0 + $channel]
