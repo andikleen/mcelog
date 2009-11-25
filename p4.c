@@ -260,7 +260,7 @@ static void decode_mci(__u64 status, int cpu, int *ismemerr)
 	if (status & MCI_STATUS_PCC)
 		Wprintf("Processor context corrupt\n");
 
-	decode_tracking((status >> 54) & 3, cpu);
+	decode_tracking((status >> 53) & 3, cpu);
 	Wprintf("MCA: ");
 	decode_mca(status & 0xffffL, ismemerr);
 }
