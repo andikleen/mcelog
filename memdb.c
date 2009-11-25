@@ -272,9 +272,10 @@ static void dump_dimm(struct memdimm *md, FILE *f, enum printflags flags)
 
 		if (flags & DUMP_BIOS)
 			dump_bios(md, f);
-
-		dump_errtype("corrected memory errors", &md->ce, f, flags, &ce_bucket_conf);
-		dump_errtype("uncorrected memory errors", &md->uc, f, flags, &uc_bucket_conf);
+		dump_errtype("corrected memory errors", &md->ce, f, flags, 
+				&ce_bucket_conf);
+		dump_errtype("uncorrected memory errors", &md->uc, f, flags, 
+				&uc_bucket_conf);
 	}
 }
 

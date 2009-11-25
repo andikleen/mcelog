@@ -38,6 +38,7 @@
 #include "config.h"
 #include "memdb.h"
 #include "memutil.h"
+#include "paths.h"
 
 #define PAIR(x) x, sizeof(x)-1
 
@@ -49,7 +50,7 @@ struct clientcon {
 	size_t outlen;
 };
 
-static char *client_path = "/var/run/mcelog-client";
+static char *client_path = SOCKET_PATH;
 static uid_t access_uid = -1U;
 static gid_t access_gid = -1U;
 static int initial_ping_timeout = 2;
@@ -97,6 +98,7 @@ static void dispatch_dump(FILE *fh, char *s)
 	}			
 
 	dump_memory_errors(fh, printflags);
+	fprintf(fh, "done\n");
 }
 
 static void dispatch_commands(char *line, FILE *fh)

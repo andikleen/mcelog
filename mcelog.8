@@ -5,6 +5,10 @@ mcelog \- Decode kernel machine check log on x86 machines
 .SH SYNOPSIS
 mcelog [options] [device]
 .br
+mcelog [options] \-\-daemon
+.br
+mcelog [options] \-\-client
+.br
 mcelog [options] \-\-ascii
 .br
 .\"mcelog [options] \-\-drop-old-memory
@@ -183,6 +187,10 @@ The option
 .I \-\-foreground
 will prevent mcelog from giving up the terminal in daemon mode. This
 is intended for debugging.
+
+With the 
+.B \-\-client
+option mcelog will query a running daemon for accumulated errors.
 
 With the
 .B \-\-cpumhz=mhz

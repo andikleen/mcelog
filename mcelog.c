@@ -50,6 +50,7 @@
 #include "memdb.h"
 #include "server.h"
 #include "trigger.h"
+#include "client.h"
 
 enum cputype cputype = CPU_GENERIC;	
 
@@ -630,8 +631,11 @@ void usage(void)
 	fprintf(stderr, 
 "Usage:\n"
 "  mcelog [options]  [mcelogdevice]\n"
-"Decode machine check error records from kernel.\n"
-"Normally this is invoked from a cronjob or using the kernel trigger.\n"
+"Decode machine check error records from current kernel.\n"
+"  mcelog [options] --daemon\n"
+"Run mcelog in daemon mode, waiting for errors from the kernel.\n"
+"  mcelog [options] --client\n"
+"Query a currently running mcelog daemon for errors\n"
 "  mcelog [options] --ascii < log\n"
 "  mcelog [options] --ascii --file log\n"
 "Decode machine check ASCII output from kernel logs\n"
@@ -676,6 +680,7 @@ enum options {
 	O_RAW,
 	O_DAEMON,
 	O_ASCII,
+	O_CLIENT,
 	O_VERSION,
 	O_CONFIG_FILE,
 	O_CPU,
@@ -709,6 +714,7 @@ static struct option options[] = {
 	{ "config-file", 1, NULL, O_CONFIG_FILE },
 	{ "cpu", 1, NULL, O_CPU },
 	{ "foreground", 0, NULL, O_FOREGROUND },
+	{ "client", 0, NULL, O_CLIENT },
 	DISKDB_OPTIONS
 	{}
 };
@@ -910,6 +916,14 @@ static void ascii_command(int ac, char **av)
 	decodefatal(f); 
 }
 
+static void client_command(int ac, char **av)
+{
+	argsleft(ac, av);
+	no_syslog();
+	// XXX modifiers
+	ask_server("dump all bios");		
+}
+
 struct mcefd_data {
 	unsigned loglen;
 	unsigned recordlen;
@@ -938,6 +952,9 @@ int main(int ac, char **av)
 			continue;
 		} else if (opt == O_ASCII) { 
 			ascii_command(ac, av);
+			exit(0);
+		} else if (opt == O_CLIENT) { 
+			client_command(ac, av);
 			exit(0);
 		} else if (opt == O_VERSION) { 
 			noargs(ac, av);
