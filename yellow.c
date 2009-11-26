@@ -64,15 +64,18 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls)
 	unsigned *cpumask;
 	int cpumasklen;
 	int i;
+	char *msg;
 
 	// xxx print socket, but need to figure out if it's valid
-	Lprintf("CPU %d has large number of corrected cache errors in %s %s\n", 
+	asprintf(&msg, "CPU %d has large number of corrected cache errors in %s %s", 
 		cpu, ls, ts);
+	Lprintf("%s\n", msg);
 	if (!yellow_trigger)
 		return;
 
 	// xxx socketid
 	// xxx more stuff?
+	asprintf(&env[ei++], "MESSAGE=%s", msg);
 	asprintf(&env[ei++], "CPU=%d", cpu);
 	asprintf(&env[ei++], "LEVEL=%d", lnum);
 	asprintf(&env[ei++], "TYPE=%s", ts);
