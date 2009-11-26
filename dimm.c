@@ -2,7 +2,8 @@
    Manage dimm database.
    this is used to keep track of the error counts per DIMM
    so that we can take action when one starts to experience a 
-   unusual large number of them. Still WIP.
+   unusual large number of them.
+   Note: obsolete, not used anymore, new design is in memdb.c
 
    mcelog is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public

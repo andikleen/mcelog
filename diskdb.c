@@ -1,4 +1,5 @@
 /* High level interface to disk based DIMM database */
+/* Note: obsolete: new design is in memdb.c */
 #include <stdlib.h>
 #include <getopt.h>
 #include <stdio.h>

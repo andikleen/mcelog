@@ -4,6 +4,7 @@
    assumes groups and entries-per-group are max low double digits.
    the in memory presentation could be easily optimized with a few
    hashes, but that shouldn't be needed for now.
+   Note: obsolete, new design uses in memory databases only
 
    mcelog is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public
