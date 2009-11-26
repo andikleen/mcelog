@@ -54,8 +54,6 @@ else
 	echo
 	echo "Consider defining DOCDIR to install additional documentation"
 endif
-	echo
-	echo "call mcelog regularly from your crontab"
 
 clean:
 	rm -f ${CLEAN} ${OBJ} 
