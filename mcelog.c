@@ -318,7 +318,7 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 		decode_k8_mc(m, &ismemerr); 
 		break;
 	CASE_INTEL_CPUS:
-		decode_intel_mc(m, cputype, &ismemerr);
+		decode_intel_mc(m, cputype, &ismemerr, recordlen);
 		break;
 	/* add handlers for other CPUs here */
 	default:

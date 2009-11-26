@@ -21,6 +21,7 @@
 	Andi Kleen
 */
 #include <stdio.h>
+#include <stddef.h>
 #include "mcelog.h"
 #include "p4.h"
 #include "core2.h"
@@ -116,7 +117,7 @@ static char* get_II_str(__u8 i)
 	return II[i];
 }
 
-static void decode_mca(__u32 mca, u64 track, int cpu, int *ismemerr)
+static void decode_mca(__u32 mca, u64 track, int cpu, int *ismemerr, int socket)
 {
 #define TLB_LL_MASK      0x3  /*bit 0, bit 1*/
 #define TLB_LL_SHIFT     0x0
@@ -175,7 +176,7 @@ static void decode_mca(__u32 mca, u64 track, int cpu, int *ismemerr)
 				get_RRRR_str((mca & CACHE_RRRR_MASK) >> 
 					      CACHE_RRRR_SHIFT));
 		if (track == 2)
-			run_yellow_trigger(cpu, typenum, levelnum, type, level);
+			run_yellow_trigger(cpu, typenum, levelnum, type, level, socket);
 	} else if (test_prefix(10, mca)) {
 		if (mca == 0x400)
 			Wprintf("Internal Timer error\n");
@@ -234,7 +235,8 @@ static void decode_tracking(u64 track)
 	}
 }
 
-static void decode_mci(__u64 status, int cpu, unsigned mcgcap, int *ismemerr)
+static void decode_mci(__u64 status, int cpu, unsigned mcgcap, int *ismemerr,
+		       int socket)
 {
 	u64 track = 0;
 
@@ -265,7 +267,7 @@ static void decode_mci(__u64 status, int cpu, unsigned mcgcap, int *ismemerr)
 		decode_tracking(track);
 	}
 	Wprintf("MCA: ");
-	decode_mca(status & 0xffffL, track, cpu, ismemerr);
+	decode_mca(status & 0xffffL, track, cpu, ismemerr, socket);
 }
 
 static void decode_mcg(__u64 mcgstatus)
@@ -292,8 +294,9 @@ static void decode_thermal(struct mce *log, int cpu)
 	} 
 }
 
-void decode_intel_mc(struct mce *log, int cputype, int *ismemerr)
+void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 {
+	int socket = size > offsetof(struct mce, socketid) ? (int)log->socketid : -1;
 	int cpu = log->extcpu ? log->extcpu : log->cpu;
 
 	if (log->bank == MCE_THERMAL_BANK) { 
@@ -302,7 +305,7 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr)
 	}
 
 	decode_mcg(log->mcgstatus);
-	decode_mci(log->status, cpu, log->mcgcap, ismemerr);
+	decode_mci(log->status, cpu, log->mcgcap, ismemerr, socket);
 
 	if (test_prefix(11, (log->status & 0xffffL))) {
 		switch (cputype) {

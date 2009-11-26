@@ -57,7 +57,7 @@ static char *cpulist(char *prefix, unsigned *cpumask, unsigned cpumasklen)
 	return buf;
 }
 
-void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls)
+void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls, int socket)
 {
 	int ei = 0;
 	char *env[MAX_ENV];
@@ -73,8 +73,8 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls)
 	if (!yellow_trigger)
 		return;
 
-	// xxx socketid
-	// xxx more stuff?
+	if (socket >= 0)
+		asprintf(&env[ei++], "SOCKETID=%d", socket);
 	asprintf(&env[ei++], "MESSAGE=%s", msg);
 	asprintf(&env[ei++], "CPU=%d", cpu);
 	asprintf(&env[ei++], "LEVEL=%d", lnum);
