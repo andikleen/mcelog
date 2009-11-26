@@ -1001,6 +1001,7 @@ int main(int ac, char **av)
 	} else {
 		process(fd, d.recordlen, d.loglen, d.buf);
 	}
+	trigger_wait();
 		
 	exit(0); 
 } 

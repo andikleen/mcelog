@@ -22,6 +22,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include "trigger.h"
+#include "eventloop.h"
 #include "list.h"
 #include "mcelog.h"
 #include "memutil.h"
@@ -115,10 +116,23 @@ void trigger_setup(void)
 		.sa_flags = SA_SIGINFO|SA_NOCLDSTOP|SA_RESTART,
 	};
 	sigaction(SIGCHLD, &sa, NULL);
+	event_signal(SIGCHLD);
 
 	config_number("trigger", "children-max", "%d", &children_max);
 
 	s = config_string("trigger", "directory");
 	if (s)
 		trigger_dir = s;
+}
+
+void trigger_wait(void)
+{
+	int sig;
+	sigset_t mask;
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGCHLD);
+	while (num_children > 0) {
+		if (sigwait(&mask, &sig) < 0)
+			SYSERRprintf("sigwait waiting for children");
+	}
 }

@@ -38,6 +38,8 @@ struct pollcb {
 static struct pollfd pollfds[MAX_POLLFD];
 static struct pollcb pollcbs[MAX_POLLFD];	
 
+static sigset_t event_sigs;
+
 static int closeonexec(int fd)
 {
 	int flags = fcntl(fd, F_GETFD);
@@ -94,13 +96,16 @@ static void poll_callbacks(int n)
 	}
 }
 
-static int block_signal(int sig, sigset_t *oldmask)
+/* Run signal handler only directly after event loop */
+int event_signal(int sig)
 {
+	static int first = 1;
 	sigset_t mask;
-	if (sigprocmask(SIG_BLOCK, NULL, &mask) < 0) 
+	if (first && sigprocmask(SIG_BLOCK, NULL, &event_sigs) < 0) 
 		return -1;
-	if (oldmask)
-		*oldmask = mask;
+	first = 0;
+	if (sigprocmask(SIG_BLOCK, NULL, &mask) < 0)
+		return -1;
 	sigaddset(&mask, sig);
 	if (sigprocmask(SIG_BLOCK, &mask, NULL) < 0)
 		return -1;
@@ -109,11 +114,8 @@ static int block_signal(int sig, sigset_t *oldmask)
 
 void eventloop(void)
 {
-	sigset_t oldmask;
-	if (block_signal(SIGCHLD, &oldmask) < 0) 
-		SYSERRprintf("Cannot block SIGCHLD");
 	for (;;) { 
-		int n = ppoll(pollfds, max_pollfd, NULL, &oldmask);
+		int n = ppoll(pollfds, max_pollfd, NULL, &event_sigs);
 		if (n <= 0) {
 			if (n < 0 && errno != EINTR)
 				SYSERRprintf("poll error");
