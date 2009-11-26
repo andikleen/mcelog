@@ -1,9 +1,8 @@
 enum cputype select_intel_cputype(int family, int model);
 int is_intel_cpu(int cpu);
-void intel_memory_error(struct mce *m, unsigned recordlen);
+int mce_filter_intel(struct mce *m, unsigned recordlen);
 
 extern int memory_error_support;
-
 
 #define CASE_INTEL_CPUS \
 	case CPU_P6OLD: \

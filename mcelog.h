@@ -124,3 +124,4 @@ extern int force_tsc;
 extern enum syslog_opt syslog_opt;
 extern int syslog_level;
 extern enum cputype cputype;
+extern int filter_memory_errors;

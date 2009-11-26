@@ -40,7 +40,7 @@ int is_intel_cpu(int cpu)
 	return 0;
 }
 
-void intel_memory_error(struct mce *m, unsigned recordlen)
+static int intel_memory_error(struct mce *m, unsigned recordlen)
 {
 	u32 mca = m->status & 0xffff;
 	if ((mca >> 7) == 1) { 
@@ -63,5 +63,17 @@ void intel_memory_error(struct mce *m, unsigned recordlen)
 		memory_error(m, channel, dimm, corr_err_cnt, recordlen);
 
 		account_page_error(m, channel, dimm, corr_err_cnt);
+
+		return 1;
 	}
+
+	return 0;
+}
+
+/* No bugs known, but filter out memory errors if the user asked for it */
+int mce_filter_intel(struct mce *m, unsigned recordlen)
+{
+	if (intel_memory_error(m, recordlen) == 1) 
+		return !filter_memory_errors;
+	return 1;
 }

@@ -70,6 +70,7 @@ int daemon_mode;
 static char *inputfile;
 char *processor_flags;
 static int foreground;
+int filter_memory_errors;
 
 static void check_cpu(void);
 
@@ -124,7 +125,7 @@ static void resolveaddr(unsigned long addr)
 	/* Should check for PCI resources here too */
 }
 
-static int mce_filter(struct mce *m)
+static int mce_filter(struct mce *m, unsigned recordlen)
 {
 	if (!filter_bogus) 
 		return 1;
@@ -134,8 +135,7 @@ static int mce_filter(struct mce *m)
 		return mce_filter_k8(m);
 		/* add more buggy CPUs here */
 	CASE_INTEL_CPUS:
-		/* No bugs known */
-		return 1;
+		return mce_filter_intel(m, recordlen);
 	default:
 	case CPU_GENERIC:
 		return 1;
@@ -284,13 +284,19 @@ static void mce_cpuid(struct mce *m)
 	prefill_memdb();
 }
 
+static void mce_prepare(struct mce *m)
+{
+	mce_cpuid(m);
+	if (m->time)
+		m->time = time(NULL);
+}
+
 static void dump_mce(struct mce *m, unsigned recordlen) 
 {
 	int n;
 	int ismemerr = 0;
 	unsigned cpu = m->extcpu ? m->extcpu : m->cpu;
 
-	mce_cpuid(m);
 	/* should not happen */
 	if (!m->finished)
 		Wprintf("not finished?\n");
@@ -312,9 +318,7 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 	if (m->time) {
 		time_t t = m->time;
 		Wprintf("TIME %Lu %s", m->time, ctime(&t));
-	} else {
-		m->time = time(NULL);
-	}
+	} 
 	switch (cputype) { 
 	case CPU_K8:
 		decode_k8_mc(m, &ismemerr); 
@@ -844,6 +848,16 @@ static int combined_modifier(int opt)
 	return r;
 }
 
+static void general_setup(void)
+{
+	trigger_setup();
+	yellow_setup();
+	page_setup();
+
+	if (config_bool("global", "filter-memory-errors") == 1)
+		filter_memory_errors = 1;
+}
+
 static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 {	
 	int i; 
@@ -860,7 +874,8 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 
 	for (i = 0; i < len / (int)recordlen; i++) { 
 		struct mce *mce = (struct mce *)(buf + i*recordlen);
-		if (!mce_filter(mce)) 
+		mce_prepare(mce);
+		if (!mce_filter(mce, recordlen)) 
 			continue;
 		if (!dump_raw_ascii) {
 			disclaimer();
@@ -974,9 +989,7 @@ int main(int ac, char **av)
 	if (av[optind])
 		usage();
 	checkdmi();
-	trigger_setup();
-	yellow_setup();
-	page_setup();
+	general_setup();
 		
 	fd = open(logfn, O_RDONLY); 
 	if (fd < 0) {

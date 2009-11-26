@@ -338,8 +338,6 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 		tulsa_decode_model(log->status, log->misc);
 		break;
 	}
-
-	intel_memory_error(log, size);
 }
 
 char *intel_bank_name(int num)
