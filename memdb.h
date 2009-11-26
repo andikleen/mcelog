@@ -15,7 +15,8 @@ void prefill_memdb(void);
 void memdb_config(void);
 void dump_memory_errors(FILE *f, enum printflags flags);
 
-void memory_error(struct mce *m, int channel, int dimm, unsigned corr_err_cnt);
+void memory_error(struct mce *m, int channel, int dimm, unsigned corr_err_cnt,
+			unsigned recordlen);
 
 struct memdimm;
 void memdb_trigger(char *msg, struct memdimm *md,  time_t t,

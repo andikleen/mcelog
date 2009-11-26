@@ -1,0 +1,19 @@
+#!/bin/sh
+#  This shell script can be executed by mcelog in daemon mode when a sockets
+#  exceeds a pre-configured error threshold for memory errors
+# 
+# environment:
+# THRESHOLD     human readable threshold status
+# MESSAGE	Human readable consolidated error message
+# TOTALCOUNT    total count of errors for current socket  of CE/UC depending on
+#		what triggered the event
+# LOCATION	Consolidated location as a single string
+# SOCKETID	Socket ID of CPU that includes the memory controller with the DIMM
+# CECOUNT	Total corrected error count for socket
+# UCCOUNT	Total uncorrected error count for socket
+# LASTEVENT	Time stamp of event that triggered threshold (in time_t format, seconds)
+# THRESHOLD_COUNT Total umber of events in current threshold time period of specific type
+
+logger "CPU Socket $LOCATION exceeded pre-configured error threshold $THRESHOLD"
+
+[ -x /etc/mcelog/socket-memory-error-trigger.local ] && . /etc/mcelog/socket-memory-error-trigger.local

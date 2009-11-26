@@ -40,7 +40,7 @@ int is_intel_cpu(int cpu)
 	return 0;
 }
 
-void intel_memory_error(struct mce *m)
+void intel_memory_error(struct mce *m, unsigned recordlen)
 {
 	u32 mca = m->status & 0xffff;
 	if ((mca >> 7) == 1) { 
@@ -60,7 +60,7 @@ void intel_memory_error(struct mce *m)
 
 		if (cmci)
  			corr_err_cnt = EXTRACT(m->status, 38, 52);
-		memory_error(m, channel, dimm, corr_err_cnt);
+		memory_error(m, channel, dimm, corr_err_cnt, recordlen);
 
 		account_page_error(m, channel, dimm, corr_err_cnt);
 	}

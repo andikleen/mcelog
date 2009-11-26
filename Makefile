@@ -18,7 +18,8 @@ WARNINGS := -Wall -Wextra -Wno-missing-field-initializers -Wno-unused-parameter 
 # enable it here by uncommenting the following line
 # CONFIG_DISKDB = 1
 
-TRIGGERS=cache-error-trigger dimm-error-trigger page-error-trigger
+TRIGGERS=cache-error-trigger dimm-error-trigger page-error-trigger \
+	 socket-memory-error-trigger
 
 all: mcelog
 

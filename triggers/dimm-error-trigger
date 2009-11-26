@@ -1,6 +1,6 @@
 #!/bin/sh
 #  This shell script can be executed by mcelog in daemon mode when a DIMM
-#  exceed a pre-configured error threshold
+#  exceeds a pre-configured error threshold
 # 
 # environment:
 # THRESHOLD     human readable threshold status

@@ -16,6 +16,7 @@
    on your Linux system; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 #define _GNU_SOURCE 1
+#include <stddef.h>
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,15 +44,21 @@ struct memdimm {
 	struct dmi_memdev *memdev;
 };
 
+struct err_triggers {
+	struct bucket_conf ce_bucket_conf;
+	struct bucket_conf uc_bucket_conf;
+};
+
 #define SHASH 17
 
 static int md_numdimms;
 static struct memdimm *md_dimms[SHASH];
 
-static struct bucket_conf ce_bucket_conf;
-static struct bucket_conf uc_bucket_conf;
+static struct err_triggers dimms;
+static struct err_triggers sockets;
 
 static int memdb_enabled;
+static int sockdb_enabled;
 
 #define FNV32_OFFSET 2166136261
 #define FNV32_PRIME 0x01000193
@@ -166,32 +173,31 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 	free(output);
 }
 
-static void account_memdb(struct memdimm *md, struct mce *m, unsigned corr_err_cnt)
+static void 
+account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigned corr_err_cnt)
 {
-	time_t t = m->time ? (time_t)m->time : time(NULL);
-
 	if (corr_err_cnt && --corr_err_cnt > 0) {
 		/* Lost some errors. Assume they were CE */
 		md->ce.count += corr_err_cnt;
-		if (__bucket_account(&ce_bucket_conf, &md->ce.bucket, corr_err_cnt, t)) { 
+		if (__bucket_account(&t->ce_bucket_conf, &md->ce.bucket, corr_err_cnt, m->time)) { 
 			char *msg;
 			asprintf(&msg, "Lost DIMM memory error count %d exceeded threshold", 
 				 corr_err_cnt);
-			memdb_trigger(msg, md, 0, &md->ce, &ce_bucket_conf);
+			memdb_trigger(msg, md, 0, &md->ce, &t->ce_bucket_conf);
 			free(msg);
 		}
 	}
 
 	if (m->status & MCI_STATUS_UC) { 
 		md->uc.count++;
-		if (__bucket_account(&uc_bucket_conf, &md->uc.bucket, 1, t))
+		if (__bucket_account(&t->uc_bucket_conf, &md->uc.bucket, 1, m->time))
 			memdb_trigger("Uncorrected DIMM memory error count exceeded threshold", 
-				      md, t, &md->uc, &uc_bucket_conf);
+				      md, m->time, &md->uc, &t->uc_bucket_conf);
 	} else {
 		md->ce.count++;
-		if (__bucket_account(&ce_bucket_conf, &md->ce.bucket, 1, t))
+		if (__bucket_account(&t->ce_bucket_conf, &md->ce.bucket, 1, m->time))
 			memdb_trigger("Corrected DIMM memory error count exceeded threshold", 
-				      md, t, &md->ce, &ce_bucket_conf);
+				      md, m->time, &md->ce, &t->ce_bucket_conf);
 	}
 }
 
@@ -200,15 +206,20 @@ static void account_memdb(struct memdimm *md, struct mce *m, unsigned corr_err_c
  * triggers if needed.
  * ch/dimm == -1: Unspecified DIMM on the channel
  */
-void memory_error(struct mce *m, int ch, int dimm, unsigned corr_err_cnt)
+void memory_error(struct mce *m, int ch, int dimm, unsigned corr_err_cnt, 
+		unsigned recordlen)
 {
 	struct memdimm *md;
 
-	if (!memdb_enabled)
-		return;
+	if (memdb_enabled && (ch != -1 || dimm != -1)) {
+		md = get_memdimm(m->socketid, ch, dimm);
+		account_memdb(&dimms, md, m, corr_err_cnt);
+	}
 
-	md = get_memdimm(m->socketid, ch, dimm);
-	account_memdb(md, m, corr_err_cnt);
+	if (sockdb_enabled && recordlen > offsetof(struct mce, socketid)) {
+		md = get_memdimm(m->socketid, -1, -1);
+		account_memdb(&sockets, md, m, corr_err_cnt);
+	}
 }
 
 /* Compare two dimms for sorting. */
@@ -262,11 +273,11 @@ static void dump_dimm(struct memdimm *md, FILE *f, enum printflags flags)
 	if (md->ce.count + md->uc.count > 0 || (flags & DUMP_ALL)) {
 		fprintf(f, "SOCKET %u", md->socketid);
 		if (md->channel == -1)
-			fprintf(f, " CHANNEL unknown");
+			fprintf(f, " CHANNEL any");
 		else
 			fprintf(f, " CHANNEL %d", md->channel);
 		if (md->dimm == -1) 
-			fprintf(f, " DIMM unknown");
+			fprintf(f, " DIMM any");
 		else
 			fprintf(f, " DIMM %d", md->dimm);
 		fputc('\n', f);
@@ -274,9 +285,9 @@ static void dump_dimm(struct memdimm *md, FILE *f, enum printflags flags)
 		if (flags & DUMP_BIOS)
 			dump_bios(md, f);
 		dump_errtype("corrected memory errors", &md->ce, f, flags, 
-				&ce_bucket_conf);
+				&dimms.ce_bucket_conf);
 		dump_errtype("uncorrected memory errors", &md->uc, f, flags, 
-				&uc_bucket_conf);
+				&dimms.uc_bucket_conf);
 	}
 }
 
@@ -294,8 +305,10 @@ void dump_memory_errors(FILE *f, enum printflags flags)
 	}
 	qsort(da, md_numdimms, sizeof(void *), cmp_dimm);
 	for (i = 0; i < md_numdimms; i++)  {
-		if (i > 0) 
+		if (i > 0)  
 			fputc('\n', f);
+		else
+			fprintf(f, "Memory errors\n");
 		dump_dimm(da[i], f, flags);
 	}
 	free(da);
@@ -311,8 +324,17 @@ void memdb_config(void)
 	else
 		memdb_enabled = n; 
 
-	config_trigger("dimm", "ce-error", &ce_bucket_conf);
-	config_trigger("dimm", "uc-error", &uc_bucket_conf);
+	config_trigger("dimm", "ce-error", &dimms.ce_bucket_conf);
+	config_trigger("dimm", "uc-error", &dimms.uc_bucket_conf);
+
+	n = config_bool("socket", "socket-tracking-enabled");
+	if (n < 0) 
+		sockdb_enabled = memory_error_support;
+	else
+		sockdb_enabled = n; 
+
+	config_trigger("socket", "mem-ce-error", &sockets.ce_bucket_conf);
+	config_trigger("socket", "mem-uc-error", &sockets.uc_bucket_conf);
 }
 
 /* Prepopulate DIMM database from BIOS information */

@@ -339,7 +339,7 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 		break;
 	}
 
-	intel_memory_error(log);
+	intel_memory_error(log, size);
 }
 
 char *intel_bank_name(int num)

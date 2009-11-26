@@ -1,5 +1,6 @@
 <newer changes first>
 
+Add per socket memory accounting/trigger support
 Add per page memory error accounting and predictive page offlining
 	Support for accounting errors per memory page and offlining
 	pages and executing shell script triggers when error thresholds
