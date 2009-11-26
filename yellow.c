@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include "memutil.h"
 #include "mcelog.h"
 #include "config.h"
@@ -86,6 +88,11 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls)
 
 void yellow_setup(void)
 {
-	yellow_trigger = config_string("cache", "yellow-bit-trigger"); 
+	yellow_trigger = config_string("cache", "cache-threshold-trigger"); 
+	if (yellow_trigger && access(yellow_trigger, R_OK|X_OK) < 0) {
+		SYSERRprintf("Cannot access cache threshold trigger `%s'", 
+				yellow_trigger);
+		exit(1);
+	}
 }
 
