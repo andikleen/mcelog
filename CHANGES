@@ -1,5 +1,11 @@
 <newer changes first>
 
+Add per page memory error accounting and predictive page offlining
+	Support for accounting errors per memory page and offlining
+	pages and executing shell script triggers when error thresholds
+	are exceeded.
+	Offlining requires a new kernel that supports page offlining.
+	Works with specific Intel systems with integrated memory controller
 Add cache error ``yellow bit trigger'' support
 	An cache error threshold indication on Intel CPUs can
 	execute a special trigger program to offline affected CPUs.
