@@ -297,7 +297,7 @@ int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
 	free(name);
 
 	asprintf(&name, "%s-trigger", base);
-	s = config_string("memdb", name);
+	s = config_string(header, name);
 	if (s) { 
 		/* no $PATH */
 		if (access(s, R_OK|X_OK) != 0) {
