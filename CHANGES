@@ -1,5 +1,8 @@
 <newer changes first>
 
+Add cache error ``yellow bit trigger'' support
+	An cache error threshold indication on Intel CPUs can
+	execute a special trigger program to offline affected CPUs.
 Add in memory dimm database in daemon mode
 	Errors are accounted per DIMM and can execute shell scripts when
 	error thresholds are exceeded.
