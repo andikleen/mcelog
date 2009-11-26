@@ -1,4 +1,4 @@
-CFLAGS := -g
+CFLAGS := -g -Os
 prefix := /usr
 etcprefix :=
 # Define appropiately for your distribution
