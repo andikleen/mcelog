@@ -111,7 +111,7 @@ static char *format_location(struct memdimm *md)
 	char numbuf[NUMLEN], numbuf2[NUMLEN];
 	char *location;
 
-	asprintf(&location, "SOCK:%d CH:%s DIMM:%s [%s%s%s]",
+	asprintf(&location, "SOCKET:%d CHANNEL:%s DIMM:%s [%s%s%s]",
 		md->socketid, 
 		md->channel == -1 ? "?" : number(numbuf, md->channel),
 		md->dimm == -1 ? "?" : number(numbuf2, md->dimm),
@@ -134,6 +134,8 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 
 	Gprintf("%s: %s\n", msg, output); 
 	Gprintf("Location %s\n", location);
+	if (bc->trigger == NULL)
+		return;
 	asprintf(&env[ei++], "PATH=%s", getenv("PATH") ?: "/sbin:/usr/sbin:/bin:/usr/bin");
 	asprintf(&env[ei++], "THRESHOLD=%s", output);
 	asprintf(&env[ei++], "TOTALCOUNT=%lu", et->count);

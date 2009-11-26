@@ -16,7 +16,6 @@
    on your Linux system; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 #define _GNU_SOURCE 1
-#include <spawn.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -37,11 +36,12 @@ struct child {
 static LIST_HEAD(childlist);
 static int num_children;
 static int children_max = 4;
+static char *trigger_dir;
 
 // note: trigger must be allocated, e.g. from config
 void run_trigger(char *trigger, char *argv[], char **env)
 {
-	int err;
+	pid_t child;
 	struct child *c;
 	char *fallback_argv[] = {
 		trigger,
@@ -51,26 +51,28 @@ void run_trigger(char *trigger, char *argv[], char **env)
 	if (!argv) 
 		argv = fallback_argv;
 
-	Lprintf("Running trigger `%s'", trigger);	
+	Lprintf("Running trigger `%s'\n", trigger);	
 	if (children_max > 0 && num_children >= children_max) { 
 		Eprintf("Too many trigger children running already\n");
 		return;
 	}
-	num_children++;
 
-	c = xalloc(sizeof(struct child));
-	c->name = trigger;
-	list_add_tail(&c->nd, &childlist);
-
-	// XXX split trigger into argv?
-
-	err = posix_spawnp(&c->child, trigger, NULL, NULL, argv, env);
-	if (err) { 
-		SYSERRprintf("Cannot spawn trigger `%s'", trigger);
-		list_del(&c->nd);
-		free(c);
+	child = fork();
+	if (child < 0) { 
+		SYSERRprintf("Cannot create process for trigger");
 		return;
 	}
+	num_children++;
+	if (child == 0) { 
+		if (trigger_dir)
+			chdir(trigger_dir);
+		execve(trigger, argv, env);	
+		_exit(127);	
+	}
+	c = xalloc(sizeof(struct child));
+	c->name = trigger;
+	c->child = child;
+	list_add_tail(&c->nd, &childlist);
 }
 
 /* Clean up child on SIGCHLD */
@@ -101,16 +103,22 @@ static void child_handler(int sig, siginfo_t *si, void *ctx)
 {
 	int status;
 	if (waitpid(si->si_pid, &status, WNOHANG) < 0) 
-		SYSERRprintf("Cannot collect children %d", si->si_pid);
+		SYSERRprintf("Cannot collect child %d", si->si_pid);
 	finish_child(si->si_pid, status);
 }
  
 void trigger_setup(void)
 {
+	char *s;
 	struct sigaction sa = {
 		.sa_sigaction = child_handler,
 		.sa_flags = SA_SIGINFO|SA_NOCLDSTOP|SA_RESTART,
 	};
-	config_number("trigger", "children-max", "%d", &children_max);
 	sigaction(SIGCHLD, &sa, NULL);
+
+	config_number("trigger", "children-max", "%d", &children_max);
+
+	s = config_string("trigger", "directory");
+	if (s)
+		trigger_dir = s;
 }
