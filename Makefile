@@ -18,6 +18,8 @@ WARNINGS := -Wall -Wextra -Wno-missing-field-initializers -Wno-unused-parameter 
 # enable it here by uncommenting the following line
 # CONFIG_DISKDB = 1
 
+TRIGGERS=cache-error-trigger dimm-error-trigger page-error-trigger
+
 all: mcelog
 
 .PHONY: install clean depend
@@ -49,6 +51,9 @@ install: mcelog
 	install -m 644 -p mcelog.8 ${prefix}/share/man/man8
 	mkdir -p ${etcprefix}/etc/mcelog
 	install -m 644 -p -b mcelog.conf ${etcprefix}/etc/mcelog/mcelog.conf
+	for i in ${TRIGGERS} ; do 						\
+		install -m 755 -p -b triggers/$$i ${etcprefix}/etc/mcelog ; 	\
+	done
 ifdef DOCDIR
 	install -m 644 -p ${DOC} ${DOCDIR} 
 else

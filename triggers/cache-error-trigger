@@ -1,0 +1,29 @@
+#!/bin/bash
+# cache error trigger. This shell script is executed by mcelog in daemon mode
+# when a CPU reports excessive corrected cache errors. This could be a indication
+# for future uncorrected errors.
+# 
+# environment:
+# MESSAGE	  Human readable error message
+# CPU		  Linux CPU number that triggered the error
+# LEVEL		  Cache level affected by error
+# TYPE		  Cache type affected by error (Data,Instruction,Generic)
+# AFFECTED_CPUS   List of CPUs sharing the affected cache
+# SOCKETID	  Socket ID of affected CPU
+#
+# offline the cpus (except CPU #0)
+
+for i in $CPUS_AFFECTED ; do 
+	if [ $i = 0 ] ; then
+		logger "Not offlining CPU 0"	
+		continue
+	fi
+	logger "Offlining CPU $i"
+	F=$(printf "/sys/devices/cpu/system/cpu%d/online" $i)
+	echo 0 > $F
+	if [ "$(< $F)" != "0" ] then
+		logger "Offlining CPU $i failed"
+	fi
+done
+
+[ -x /etc/mcelog/cache-error-trigger.local ] && . /etc/mcelog/cache-error-trigger.local

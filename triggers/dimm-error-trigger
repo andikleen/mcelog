@@ -1,0 +1,23 @@
+#!/bin/sh
+#  This shell script can be executed by mcelog in daemon mode when a DIMM
+#  exceed a pre-configured error threshold
+# 
+# environment:
+# THRESHOLD     human readable threshold status
+# MESSAGE	Human readable consolidated error message
+# TOTALCOUNT    total count of errors for current DIMM of CE/UC depending on
+#		what triggered the event
+# LOCATION	Consolidated location as a single string
+# DMI_LOCATION  DIMM location from DMI/SMBIOS if available
+# DMI_NAME	DIMM identifier from DMI/SMBIOS if available
+# DIMM		DIMM number reported by hardware
+# CHANNEL	Channel number reported by hardware
+# SOCKETID	Socket ID of CPU that includes the memory controller with the DIMM
+# CECOUNT	Total corrected error count for DIMM
+# UCCOUNT	Total uncorrected error count for DIMM
+# LASTEVENT	Time stamp of event that triggered threshold (in time_t format, seconds)
+# THRESHOLD_COUNT Total umber of events in current threshold time period of specific type
+
+logger "DIMM $LOCATION exceeded pre-configured error threshold $THRESHOLD"
+
+[ -x /etc/mcelog/dimm-error-trigger.local ] && . /etc/mcelog/dimm-error-trigger.local
