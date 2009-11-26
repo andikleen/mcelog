@@ -166,27 +166,15 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 	free(output);
 }
 
-/* 
- * A memory error happened, record it in the memdb database and run
- * triggers if needed.
- * ch/dimm == -1: Unspecified DIMM on the channel
- */
-void memory_error(struct mce *m, int ch, int dimm, unsigned corr_err_cnt)
+static void account_memdb(struct memdimm *md, struct mce *m, unsigned corr_err_cnt)
 {
-	time_t t;
-	struct memdimm *md;
-	char *msg;
-
-	if (!memdb_enabled)
-		return;
-
-	t = m->time ? (time_t)m->time : time(NULL);
-	md = get_memdimm(m->socketid, ch, dimm);
+	time_t t = m->time ? (time_t)m->time : time(NULL);
 
 	if (corr_err_cnt && --corr_err_cnt > 0) {
 		/* Lost some errors. Assume they were CE */
 		md->ce.count += corr_err_cnt;
 		if (__bucket_account(&ce_bucket_conf, &md->ce.bucket, corr_err_cnt, t)) { 
+			char *msg;
 			asprintf(&msg, "Lost DIMM memory error count %d exceeded threshold", 
 				 corr_err_cnt);
 			memdb_trigger(msg, md, 0, &md->ce, &ce_bucket_conf);
@@ -205,6 +193,22 @@ void memory_error(struct mce *m, int ch, int dimm, unsigned corr_err_cnt)
 			memdb_trigger("Corrected DIMM memory error count exceeded threshold", 
 				      md, t, &md->ce, &ce_bucket_conf);
 	}
+}
+
+/* 
+ * A memory error happened, record it in the memdb database and run
+ * triggers if needed.
+ * ch/dimm == -1: Unspecified DIMM on the channel
+ */
+void memory_error(struct mce *m, int ch, int dimm, unsigned corr_err_cnt)
+{
+	struct memdimm *md;
+
+	if (!memdb_enabled)
+		return;
+
+	md = get_memdimm(m->socketid, ch, dimm);
+	account_memdb(md, m, corr_err_cnt);
 }
 
 /* Compare two dimms for sorting. */
