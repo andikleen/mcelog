@@ -65,10 +65,15 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls, int soc
 	int cpumasklen;
 	int i;
 	char *msg;
+	char *location;
 
-	// xxx print socket, but need to figure out if it's valid
-	asprintf(&msg, "CPU %d has large number of corrected cache errors in %s %s", 
-		cpu, ls, ts);
+	if (socket >= 0) 
+		asprintf(&location, "CPU %d on socket %d", cpu, socket);
+	else
+		asprintf(&location, "CPU %d", cpu);
+	asprintf(&msg, "%s has large number of corrected cache errors in %s %s", 
+		location, ls, ts);
+	free(location);
 	Lprintf("%s\n", msg);
 	if (!yellow_trigger)
 		return;
