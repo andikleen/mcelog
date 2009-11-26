@@ -856,8 +856,6 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 	if (len < 0) 
 		err("read"); 
 
-	printf("read %d\n", len);
-
 	for (i = 0; i < len / (int)recordlen; i++) { 
 		struct mce *mce = (struct mce *)(buf + i*recordlen);
 		if (!mce_filter(mce)) 
