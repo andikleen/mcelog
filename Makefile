@@ -47,7 +47,8 @@ mcelog: ${OBJ}
 install: mcelog
 	install -m 755 -p mcelog ${prefix}/sbin/mcelog
 	install -m 644 -p mcelog.8 ${prefix}/share/man/man8
-	install -m 644 -p -b mcelog.conf ${etcprefix}/etc/mcelog.conf
+	mkdir -p ${etcprefix}/etc/mcelog
+	install -m 644 -p -b mcelog.conf ${etcprefix}/etc/mcelog/mcelog.conf
 ifdef DOCDIR
 	install -m 644 -p ${DOC} ${DOCDIR} 
 else
