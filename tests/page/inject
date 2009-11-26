@@ -1,0 +1,10 @@
+#!/bin/sh
+PATH=$PATH:$(pwd)/../../../mce-inject
+
+P=$RANDOM
+../../input/GENPAGE $P | mce-inject
+../../input/GENPAGE $P 0 1 1 5 | mce-inject
+../../input/GENPAGE $P | mce-inject
+../../input/GENPAGE | mce-inject
+../../input/GENPAGE | mce-inject
+../../input/GENPAGE | mce-inject

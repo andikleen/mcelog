@@ -1,0 +1,10 @@
+#!/bin/sh
+
+B=$(pwd)/../..
+
+PATH=$PATH:$B/../mce-inject
+
+$B/input/GENMEM 0 1 0 2 | mce-inject
+#$B/input/GENMEM 0 0 0 0 1 | mce-inject
+#$B/input/GENMEM 0 1 0 0 1 | mce-inject
+$B/input/GENMEM 0 2 0 3 | mce-inject
