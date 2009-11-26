@@ -189,7 +189,7 @@ static char *cputype_name[] = {
 	[CPU_CORE2] = "Intel Core", /* 65nm and 45nm */
 	[CPU_K8] = "AMD K8 and derivates",
 	[CPU_P4] = "Intel P4",
-	[CPU_NEHALEM] = "Intel Xeon 75xx / Core i7 (\"Nehalem\")",
+	[CPU_NEHALEM] = "Intel Xeon 55xx / Core i7 (\"Nehalem\")",
 	[CPU_DUNNINGTON] = "Intel Xeon 7400",
 	[CPU_TULSA] = "Intel Xeon 71xx",
 };
@@ -202,7 +202,7 @@ static struct config_choice cpu_choices[] = {
 	{ "p4", CPU_P4 },
 	{ "dunnington", CPU_DUNNINGTON },
 	{ "xeon74xx", CPU_DUNNINGTON },
-	{ "xeon75xx", CPU_NEHALEM },
+	{ "xeon55xx", CPU_NEHALEM },
 	{ "core_i7", CPU_NEHALEM },
 	{ "nehalem", CPU_NEHALEM },
 	{ "xeon71xx", CPU_TULSA },
