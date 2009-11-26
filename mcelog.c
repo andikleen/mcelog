@@ -269,14 +269,17 @@ static enum cputype setup_cpuid(u32 cpuvendor, u32 cpuid)
 
 static void mce_cpuid(struct mce *m)
 {
+	static int warned;
 	if (m->cpuid) {
 		enum cputype t = setup_cpuid(m->cpuvendor, m->cpuid);
 		if (!cpu_forced)
 			cputype = t;
-		else if (t != cputype && t != CPU_GENERIC)
+		else if (t != cputype && t != CPU_GENERIC && !warned) {
 			Eprintf("Forced cputype %s does not match cpu type %s from mcelog\n",
 				cputype_name[cputype],
 				cputype_name[t]);
+			warned = 1;
+		}
 	} else if (cputype == CPU_GENERIC && !cpu_forced) { 
 		check_cpu();
 	}	
