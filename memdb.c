@@ -299,14 +299,14 @@ void memdb_config(void)
 {
 	int n;
 
-	n = config_bool("memdb", "memdb-enabled");
+	n = config_bool("dimm", "dimm-tracking-enabled");
 	if (n < 0) 
 		memdb_enabled = memory_error_support;
 	else
 		memdb_enabled = n; 
 
-	config_trigger("memdb", "ce-error", &ce_bucket_conf);
-	config_trigger("memdb", "uc-error", &uc_bucket_conf);
+	config_trigger("dimm", "ce-error", &ce_bucket_conf);
+	config_trigger("dimm", "uc-error", &uc_bucket_conf);
 }
 
 /* Prepopulate DIMM database from BIOS information */
@@ -323,7 +323,7 @@ void prefill_memdb(void)
 	if (!memdb_enabled)
 		return;
 	initialized = 1;
-	if (config_bool("memdb", "dmi-prepopulate") == 0)
+	if (config_bool("dimm", "dmi-prepopulate") == 0)
 		return;
 	if (opendmi() < 0)
 		return;
