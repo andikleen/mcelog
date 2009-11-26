@@ -1,0 +1,51 @@
+#!/bin/sh
+# GENCACHE cpu level type track
+# generate a memory error. All fields are optional.
+# see SDM 3a chapter 15 for details
+# 
+# level: 
+# 0 level 0
+# 1 level 1
+# 2 level 2
+# 3 level generic
+# 
+# ctype
+# 0 instruction 
+# 1 data
+# 2 generic
+# 
+# track
+# 0 no tracking
+# 1 green: below threshold
+# 2 yellow: above threshold
+# 3 reserved
+
+cpu=${1:-0}
+level=${2:-0}
+ctype=${3:-0}
+track=${4:-1}
+
+case "$ctype" in
+data) ctype=1 ;;
+instr) ctype=1 ;;
+generic) ctype=2 ;;
+[0-3])  ;;
+*) echo "Unknown ctype $ctype" ; exit 1
+esac
+
+case "$track" in
+none) track=0 ;;
+green) track=1 ;; 
+yellow) track=2 ;;
+[0-3]) ;;
+*) echo "Unknown tracking flag $track" ; exit 1
+esac
+
+echo "# cache error on cpu $cpu level $level type $ctype track $track"
+echo "CPU $cpu 2" # XXX use cpu in socket
+echo "# nehalem"
+echo "PROCESSOR 0:0x106a0"
+printf "MCGCAP 0x%x\n" $[1 << 11]
+printf "STATUS 0x%08x%08x\n" \
+	$[0x88000000 + ($track << (53-32))] $[0x100 + $level + ($ctype << 2)]
+
