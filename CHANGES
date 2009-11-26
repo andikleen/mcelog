@@ -1,5 +1,12 @@
 <newer changes first>
 
+Add in memory dimm database in daemon mode
+	Errors are accounted per DIMM and can execute shell scripts when
+	error thresholds are exceeded.
+	This can be all configured using the configuration file.
+	Add mcelog --client to query a running mcelog daemon for errors
+	Works only on specific Intel systems for now with integrated 
+	memory controllers that report DIMM errors.
 Keep stdout open in daemon mode when no syslog
 Add --foreground option
 Avoid %a scanf extension that broke old glibc version
