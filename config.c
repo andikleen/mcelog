@@ -284,8 +284,8 @@ int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
 	char *s;
 	char *name;
 
-	asprintf(&name, "%s-rate", base);
-	s = config_string("memdb", name);
+	asprintf(&name, "%s-threshold", base);
+	s = config_string(header, name);
 	if (s) {
 		if (bucket_conf_init(bc, s) < 0) {
 			unparseable("trigger", header, name);
