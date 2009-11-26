@@ -362,8 +362,9 @@ void prefill_memdb(void)
 		char *bl;
 
 		bl = dmi_getstring(&d->header, d->bank_locator);
-		if (sscanf(bl + strcspn(bl, "_"), "_Node%u_Channel%u_Dimm%u", &socketid, 
-				&channel, &dimm) != 3) {
+		if (!bl || sscanf(bl + strcspn(bl, "_"), 
+				"_Node%u_Channel%u_Dimm%u", &socketid, 
+					&channel, &dimm) != 3) {
 			missed++;
 			continue;
 		}

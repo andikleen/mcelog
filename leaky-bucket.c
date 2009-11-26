@@ -22,8 +22,7 @@
 
 time_t __attribute__((weak)) bucket_time(void)
 {
-	time_t now;
-	return time(&now);
+	return time(NULL);
 }
 
 static void bucket_age(const struct bucket_conf *c, struct leaky_bucket *b,

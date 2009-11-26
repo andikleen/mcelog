@@ -92,6 +92,7 @@ static void read_cpu_map(struct cache *c, char *cfn)
 	c->cpumaplen = cpumap_len(map);
 	c->cpumap = xalloc(c->cpumaplen);
 	parse_cpumap(map, c->cpumap, c->cpumaplen);
+	free(map);
 }
 
 static int read_caches(void)
