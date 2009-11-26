@@ -39,6 +39,7 @@
 #include "memdb.h"
 #include "memutil.h"
 #include "paths.h"
+#include "page.h"
 
 #define PAIR(x) x, sizeof(x)-1
 
@@ -101,6 +102,12 @@ static void dispatch_dump(FILE *fh, char *s)
 	fprintf(fh, "done\n");
 }
 
+static void dispatch_pages(FILE *fh)
+{
+	dump_page_errors(fh);
+	fprintf(fh, "done\n");
+}
+
 static void dispatch_commands(char *line, FILE *fh)
 {
 	char *s;
@@ -109,6 +116,8 @@ static void dispatch_commands(char *line, FILE *fh)
 			line++;
 		if (!strncmp(s, "dump", 4))
 			dispatch_dump(fh, s);
+		else if (!strncmp(s, "pages", 5))
+			dispatch_pages(fh);
 		else if (!strcmp(s, "ping"))
 			fprintf(fh, "pong\n");
 		else if (*s != 0)

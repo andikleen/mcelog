@@ -53,6 +53,7 @@
 #include "client.h"
 #include "msg.h"
 #include "yellow.h"
+#include "page.h"
 
 enum cputype cputype = CPU_GENERIC;	
 
@@ -923,7 +924,8 @@ static void client_command(int ac, char **av)
 	argsleft(ac, av);
 	no_syslog();
 	// XXX modifiers
-	ask_server("dump all bios");		
+	ask_server("dump all bios\n");		
+	ask_server("pages\n");
 }
 
 struct mcefd_data {
@@ -974,6 +976,7 @@ int main(int ac, char **av)
 	checkdmi();
 	trigger_setup();
 	yellow_setup();
+	page_setup();
 		
 	fd = open(logfn, O_RDONLY); 
 	if (fd < 0) {

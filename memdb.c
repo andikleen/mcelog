@@ -29,12 +29,8 @@
 #include "leaky-bucket.h"
 #include "trigger.h"
 #include "intel.h"
+#include "page.h"
 
-struct err_type {
-	struct leaky_bucket bucket;
-	unsigned long count;
-};
-	
 struct memdimm {
 	struct memdimm *next;
 	int channel;			/* -1: unknown */
@@ -73,7 +69,7 @@ static unsigned dimmhash(unsigned socket, int dimm, unsigned ch)
 }
 
 /* Search DIMM in hash table */
-static struct memdimm *get_memdimm(int socketid, int channel, int dimm)
+struct memdimm *get_memdimm(int socketid, int channel, int dimm)
 {
 	struct memdimm *md;
 	unsigned h = dimmhash(socketid, dimm, channel);
@@ -126,8 +122,7 @@ static char *format_location(struct memdimm *md)
 }
 
 /* Run a user defined trigger when a error threshold is crossed. */
-static void 
-memdb_trigger(char *msg, struct memdimm *md,  time_t t,
+void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 		struct err_type *et, struct bucket_conf *bc)
 {
 	struct leaky_bucket *bucket = &et->bucket;

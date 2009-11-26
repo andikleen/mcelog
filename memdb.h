@@ -1,4 +1,10 @@
 #include <stdio.h>
+#include "leaky-bucket.h"
+
+struct err_type {
+	struct leaky_bucket bucket;
+	unsigned long count;
+};
 
 enum printflags {
 	DUMP_ALL,
@@ -11,4 +17,7 @@ void dump_memory_errors(FILE *f, enum printflags flags);
 
 void memory_error(struct mce *m, int channel, int dimm, unsigned corr_err_cnt);
 
-
+struct memdimm;
+void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
+		   struct err_type *et, struct bucket_conf *bc);
+struct memdimm *get_memdimm(int socketid, int channel, int dimm);

@@ -3,6 +3,7 @@
 #include "bitfield.h"
 #include "nehalem.h"
 #include "memdb.h"
+#include "page.h"
 
 int memory_error_support;
 
@@ -60,5 +61,7 @@ void intel_memory_error(struct mce *m)
 		if (cmci)
  			corr_err_cnt = EXTRACT(m->status, 38, 52);
 		memory_error(m, channel, dimm, corr_err_cnt);
+
+		account_page_error(m, channel, dimm, corr_err_cnt);
 	}
 }

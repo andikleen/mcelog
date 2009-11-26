@@ -1,3 +1,6 @@
+#ifndef LEAKY_BUCKET_H
+#define LEAKY_BUCKET_H 1
+
 #include <time.h>
 
 /* Leaky bucket algorithm for triggers */
@@ -24,3 +27,4 @@ int bucket_conf_init(struct bucket_conf *c, const char *rate);
 void bucket_init(struct leaky_bucket *b);
 time_t bucket_time(void);
 
+#endif
