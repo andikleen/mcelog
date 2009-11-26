@@ -1,0 +1,24 @@
+#!/bin/sh
+# GENMPAGE pfn socketid channel dimm corr-err-cnt
+# generate a memory error on a page. All fields are optional.
+# dimm/channel can be out of sync with the address
+# XXX page max 44bit for now
+# suitable to be fed into mce-inject or mcelog --ascii
+# Note: DIMMs only work when mcelog is in Nehalem mode
+# this cannot be forced through mce-inject, but only on the command line
+page=${1:-$RANDOM}
+socketid=${2:-0}
+channel=${3:-0}
+dimm=${4:-0}
+corr_err_cnt=${5:-0}
+
+printf "# memory error on page %08x000 socket $socketid ch $channel dimm $dimm \n" $page
+echo "CPU 0 2" # XXX use cpu in socket
+echo "# nehalem"
+echo "PROCESSOR 0:0x106a0"
+echo "SOCKETID $socketid"
+printf "STATUS 0x%08x%08x\n" \
+	$[0x88000000 + (1 << (58-32)) + ($corr_err_cnt << 6)] $[0xb0 + $channel]
+printf "MISC 0x%08x\n" $[($channel << 18) + ($dimm << 16)]
+printf "ADDR 0x%08x000\n" $page
+
