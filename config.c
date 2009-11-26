@@ -98,13 +98,15 @@ static void nothing(char *s, int line)
 
 static void unparseable(char *desc, const char *header, const char *name)
 {
-	char *sep = ":";
-	if (!strcmp(header, "global")) {
-		header = "";
-		sep = "";
+	char *field;
+
+	if (!strcmp(header, "global")) { 
+		asprintf(&field, "%s", name);
+	} else { 
+		asprintf(&field, "[%s] %s", header, name);
 	}
-	Eprintf("%s config option ``%s%s%s'' unparseable\n", 
-			desc, header, sep, name);
+	Eprintf("%s config option `%s' unparseable\n", desc, field);
+	free(field);
 	exit(1);
 }
 
