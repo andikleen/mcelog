@@ -169,7 +169,7 @@ void account_page_error(struct mce *m, int channel, int dimm, unsigned corr_err_
 	if (!(m->status & MCI_STATUS_ADDRV)  || (m->status & MCI_STATUS_UC))
 		return;
 
-	t = m->time ? (time_t)m->time : time(NULL);
+	t = m->time;
 	addr &= ~((u64)PAGE_SIZE - 1);
 	mp = mempage_lookup(addr);
 	if (!mp) {

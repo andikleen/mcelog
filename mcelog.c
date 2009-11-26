@@ -312,6 +312,8 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 	if (m->time) {
 		time_t t = m->time;
 		Wprintf("TIME %Lu %s", m->time, ctime(&t));
+	} else {
+		m->time = time(NULL);
 	}
 	switch (cputype) { 
 	case CPU_K8:
