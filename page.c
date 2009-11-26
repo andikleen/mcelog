@@ -227,8 +227,8 @@ void page_setup(void)
 {
 	int n;
 	
-	config_trigger("page", "page-memory-ce", &page_trigger_conf);
-	n = config_choice("page", "page-memory-ce-action", offline_choice);
+	config_trigger("page", "memory-ce", &page_trigger_conf);
+	n = config_choice("page", "memory-ce-action", offline_choice);
 	if (n >= 0)
 		offline = n;
 	if (offline > OFFLINE_ACCOUNT && !sysfs_offline_interface()) { 
