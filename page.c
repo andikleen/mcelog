@@ -18,7 +18,10 @@
 
 /* NB 
    investigate other data structures. Primary consideration would 
-   be space efficiency. rbtree nodes are rather large. */
+   be space efficiency. rbtree nodes are rather large. 
+
+   Do we need aging? Right now the only way to get rid of old nodes
+   is to restart. */
 #define _GNU_SOURCE 1 
 #include <stdlib.h>
 #include <stdio.h>
@@ -107,7 +110,13 @@ static struct mempage *mempage_insert(u64 addr, struct mempage *mp)
 
 /* Following arrays need to be all kept in sync with the enum */
 
-enum otype { OFFLINE_OFF, OFFLINE_ACCOUNT, OFFLINE_SOFT, OFFLINE_HARD, OFFLINE_SOFT_THEN_HARD };
+enum otype { 
+	OFFLINE_OFF, 
+	OFFLINE_ACCOUNT, 
+	OFFLINE_SOFT, 
+	OFFLINE_HARD,
+	OFFLINE_SOFT_THEN_HARD 
+};
 
 static const char *kernel_offline[] = { 
 	[OFFLINE_SOFT] = "/sys/devices/system/memory/soft_offline_page",
@@ -128,15 +137,19 @@ static enum otype offline = OFFLINE_OFF;
 
 static int do_memory_offline(u64 addr, enum otype type)
 {
+	int e;
 	int n;
 	char *buf;
+
 	int fd = open(kernel_offline[type], O_WRONLY);
 	if (fd < 0)
 		return -1;
 	n = asprintf(&buf, "%llx", addr);
 	n = write(fd, buf, n);
+	e = errno;
 	close(fd);
 	free(buf);
+	errno = e;
 	return n;
 }
 
@@ -156,6 +169,18 @@ static int memory_offline(u64 addr)
 static int sysfs_offline_interface(void)
 {
 	return access(kernel_offline[offline], W_OK) == 0;
+}
+
+static void offline_action(struct mempage *mp, u64 addr)
+{
+	if (offline <= OFFLINE_ACCOUNT)
+		return;
+	Lprintf("Offlining page %llx\n", addr);
+	if (memory_offline(addr) < 0) {
+		Lprintf("Offlining page %llx failed: %s\n", addr, strerror(errno));
+		mp->offlined = PAGE_OFFLINE_FAILED;
+	} else
+		mp->offlined = PAGE_OFFLINE;
 }
 
 void account_page_error(struct mce *m, int channel, int dimm, unsigned corr_err_cnt)
@@ -181,21 +206,20 @@ void account_page_error(struct mce *m, int channel, int dimm, unsigned corr_err_
 	if (__bucket_account(&page_trigger_conf, &mp->ce.bucket, 1+corr_err_cnt, t)) { 
 		struct memdimm *md;
 		char *msg;
+		char *thresh;
 
+		if (mp->offlined != PAGE_ONLINE)
+			return;
+		/* Only do triggers and messages for online pages */
+		thresh = bucket_output(&page_trigger_conf, &mp->ce.bucket);
 		md = get_memdimm(m->socketid, channel, dimm);
-		asprintf(&msg, "Corrected memory errors on page %llx exceeded threshold", addr);
+		asprintf(&msg, "Corrected memory errors on page %llx exceed threshold %s",
+			addr, thresh);
+		free(thresh);
 		memdb_trigger(msg, md, t, &mp->ce, &page_trigger_conf);
 		free(msg);
 		mp->triggered = 1;
-		if (offline > OFFLINE_ACCOUNT && mp->offlined == PAGE_ONLINE) { 
-			Lprintf("Offlining page %llx due to excessive memory errors\n",
-		    	   addr);
-			if (memory_offline(addr) < 0) {
-				Lprintf("Offlining page %llx failed: %s\n", addr, strerror(errno));
-				mp->offlined = PAGE_OFFLINE_FAILED;
-			} else
-				mp->offlined = PAGE_OFFLINE;
-		}
+		offline_action(mp, addr);
 	}
 }
 
