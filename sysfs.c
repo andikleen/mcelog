@@ -25,9 +25,6 @@
 #include "sysfs.h"
 #include "memutil.h"
 
-#define warning(x, fmt...) printf(x "\n",  ## fmt)
-#define xalloc(x) calloc(x,1)
-
 char *read_field(char *base, char *name)
 {
 	char *fn, *val;
@@ -57,9 +54,9 @@ char *read_field(char *base, char *name)
 	return  val;
 
 bad:
-	warning("Cannot read sysfs field %s/%s: %s", base, name, strerror(errno));
-	free(buf);
-	return xalloc(1);
+	SYSERRprintf("Cannot read sysfs field %s/%s", base, name);
+	*buf = 0;
+	return buf;
 }
 
 unsigned read_field_num(char *base, char *name)
@@ -69,7 +66,7 @@ unsigned read_field_num(char *base, char *name)
 	int n = sscanf(val, "%u", &num);
 	free(val);
 	if (n != 1) { 
-		warning("Cannot parse number in sysfs field %s/%s", base,name);
+		Eprintf("Cannot parse number in sysfs field %s/%s\n", base,name);
 		return 0;
 	}
 	return num;
@@ -86,6 +83,6 @@ unsigned read_field_map(char *base, char *name, struct map *map)
 	free(val);
 	if (map->name)
 		return map->value;
-	warning("sysfs field %s/%s has unknown string value `%s'", base, name, val);
+	Eprintf("sysfs field %s/%s has unknown string value `%s'\n", base, name, val);
 	return -1;
 }
