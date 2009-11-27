@@ -126,7 +126,7 @@ static void dispatch_commands(char *line, FILE *fh)
 }
 
 /* assumes commands don't cross records */
-static void process_cmd(int fd, struct clientcon *cc)
+static void process_cmd(struct clientcon *cc)
 {
 	FILE *fh;
 
@@ -169,7 +169,7 @@ static int access_check(int fd, struct msghdr *msg)
 /* retrieve commands from client */
 static int client_input(int fd, struct clientcon *cc)
 {
-	char ctlbuf[256];
+	char ctlbuf[512];
 	struct iovec miov;
 	struct msghdr msg = {
 		.msg_iov = &miov,
@@ -226,7 +226,7 @@ static void client_event(struct pollfd *pfd, void *data)
 		n = client_input(pfd->fd, cc);
 		if (n < 0)
 			goto error;
-		process_cmd(pfd->fd, cc);
+		process_cmd(cc);
 		free_inbuf(cc);
 	}
 	pfd->events = cc->outbuf ? POLLOUT : POLLIN;
