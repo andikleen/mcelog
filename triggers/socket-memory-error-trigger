@@ -16,4 +16,4 @@
 
 logger "CPU Socket $LOCATION exceeded pre-configured error threshold $THRESHOLD"
 
-[ -x /etc/mcelog/socket-memory-error-trigger.local ] && . /etc/mcelog/socket-memory-error-trigger.local
+[ -x ./socket-memory-error-trigger.local ] && . ./socket-memory-error-trigger.local

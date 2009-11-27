@@ -1,6 +1,6 @@
 #!/bin/sh
 #  This shell script can be executed by mcelog in daemon mode when a page
-#  in memory exceeds a pre-configured error threshold
+#  in memory exceeds a pre-configured corrected error threshold.
 #  mcelog internally also supports offlining the page through the kernel.
 # 
 # environment:
@@ -21,4 +21,4 @@
 
 logger "$MESSAGE"
 
-[ -x /etc/mcelog/page-error-trigger.local ] && . /etc/mcelog/page-error-trigger.local
+[ -x ./page-error-trigger.local ] && . ./page-error-trigger.local

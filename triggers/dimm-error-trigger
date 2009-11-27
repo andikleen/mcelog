@@ -20,4 +20,4 @@
 
 logger "DIMM $LOCATION exceeded pre-configured error threshold $THRESHOLD"
 
-[ -x /etc/mcelog/dimm-error-trigger.local ] && . /etc/mcelog/dimm-error-trigger.local
+[ -x ./dimm-error-trigger.local ] && . ./dimm-error-trigger.local

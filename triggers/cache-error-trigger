@@ -11,8 +11,10 @@
 # AFFECTED_CPUS   List of CPUs sharing the affected cache
 # SOCKETID	  Socket ID of affected CPU
 #
-# offline the cpus (except CPU #0)
 
+#
+# offline the CPUs (except CPU #0) sharing the affected cache
+#
 for i in $CPUS_AFFECTED ; do 
 	if [ $i = 0 ] ; then
 		logger "Not offlining CPU 0"	
@@ -26,4 +28,4 @@ for i in $CPUS_AFFECTED ; do
 	fi
 done
 
-[ -x /etc/mcelog/cache-error-trigger.local ] && . /etc/mcelog/cache-error-trigger.local
+[ -x ./cache-error-trigger.local ] && . ./cache-error-trigger.local
