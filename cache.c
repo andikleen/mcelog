@@ -147,7 +147,7 @@ int cache_to_cpus(int cpu, unsigned level, unsigned type,
 		if (read_caches() < 0)
 			return -1;
 	}
-	for (c = caches[cpu]; c->cpumap; c++) { 
+	for (c = caches[cpu]; c && c->cpumap; c++) { 
 		//printf("%d level %d type %d\n", cpu, c->level, c->type);
 		if (c->level == level && c->type == type) { 
 			*cpumap = c->cpumap;
