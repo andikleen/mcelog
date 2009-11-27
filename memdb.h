@@ -7,8 +7,8 @@ struct err_type {
 };
 
 enum printflags {
-	DUMP_ALL,
-	DUMP_BIOS,
+	DUMP_ALL  = (1 << 0),
+	DUMP_BIOS = (1 << 1),
 };	
 
 void prefill_memdb(void);
