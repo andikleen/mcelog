@@ -123,8 +123,11 @@ void trigger_setup(void)
 	config_number("trigger", "children-max", "%d", &children_max);
 
 	s = config_string("trigger", "directory");
-	if (s)
+	if (s) { 
+		if (access(s, R_OK|X_OK) < 0) 
+			SYSERRprintf("Cannot access trigger directory `%s'", s);
 		trigger_dir = s;
+	}
 }
 
 void trigger_wait(void)
