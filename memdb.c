@@ -107,9 +107,9 @@ enum {
 	MAX_ENV = 20,
 };
 
-static char *number(char *buf, long number)
+static char *number(char *buf, long num)
 {
-	snprintf(buf, NUMLEN, "%ld", number);
+	snprintf(buf, NUMLEN, "%ld", num);
 	return buf;
 }
 
