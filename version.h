@@ -1,2 +1,2 @@
-#define MCELOG_VERSION "0.9pre"
+#define MCELOG_VERSION "1.0pre"
 
