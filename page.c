@@ -138,7 +138,7 @@ static enum otype offline = OFFLINE_OFF;
 
 static int do_memory_offline(u64 addr, enum otype type)
 {
-	return sysfs_write(kernel_offline[type], "%llx", addr);
+	return sysfs_write(kernel_offline[type], "%#llx", addr);
 }
 
 static int memory_offline(u64 addr)
