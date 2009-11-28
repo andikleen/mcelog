@@ -36,7 +36,7 @@
 #endif
 
 /* ISSUES: 
-   doesn't support white space in fields
+   doesn't detect misspelled options (this would require a major revamp!)
    doesn't merge/detect duplicated headers */
 
 #define SHASH 11
