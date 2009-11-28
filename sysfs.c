@@ -1,6 +1,6 @@
 /* Copyright (C) 2008 Intel Corporation 
    Author: Andi Kleen
-   Read sysfs values
+   Read/Write sysfs values
 
    mcelog is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public
