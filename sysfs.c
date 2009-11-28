@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/fcntl.h>
+#include <stdarg.h>
 #include <errno.h>
 #include "mcelog.h"
 #include "sysfs.h"
@@ -85,4 +86,29 @@ unsigned read_field_map(char *base, char *name, struct map *map)
 		return map->value;
 	Eprintf("sysfs field %s/%s has unknown string value `%s'\n", base, name, val);
 	return -1;
+}
+
+int sysfs_write(const char *name, const char *fmt, ...)
+{
+	int e;
+	int n;
+	char *buf;
+	va_list ap;
+	int fd = open(name, O_WRONLY);
+	if (fd < 0)
+		return -1;
+	va_start(ap, fmt);
+	n = vasprintf(&buf, fmt, ap);
+	va_end(ap);
+	n = write(fd, buf, n);
+	e = errno;
+	close(fd);
+	free(buf);
+	errno = e;
+	return n;
+}
+
+int sysfs_available(const char *name, int flags)
+{
+	return access(name, flags) == 0;
 }

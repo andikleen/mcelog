@@ -36,6 +36,7 @@
 #include "page.h"
 #include "config.h"
 #include "memdb.h"
+#include "sysfs.h"
 
 #define PAGE_SHIFT 12
 #define PAGE_SIZE (1UL << PAGE_SHIFT)
@@ -137,20 +138,7 @@ static enum otype offline = OFFLINE_OFF;
 
 static int do_memory_offline(u64 addr, enum otype type)
 {
-	int e;
-	int n;
-	char *buf;
-
-	int fd = open(kernel_offline[type], O_WRONLY);
-	if (fd < 0)
-		return -1;
-	n = asprintf(&buf, "%llx", addr);
-	n = write(fd, buf, n);
-	e = errno;
-	close(fd);
-	free(buf);
-	errno = e;
-	return n;
+	return sysfs_write(kernel_offline[type], "%llx", addr);
 }
 
 static int memory_offline(u64 addr)
@@ -164,11 +152,6 @@ static int memory_offline(u64 addr)
 		return 0;
 	}
 	return do_memory_offline(addr, offline);
-}
-
-static int sysfs_offline_interface(void)
-{
-	return access(kernel_offline[offline], W_OK) == 0;
 }
 
 static void offline_action(struct mempage *mp, u64 addr)
@@ -255,7 +238,8 @@ void page_setup(void)
 	n = config_choice("page", "memory-ce-action", offline_choice);
 	if (n >= 0)
 		offline = n;
-	if (offline > OFFLINE_ACCOUNT && !sysfs_offline_interface()) { 
+	if (offline > OFFLINE_ACCOUNT && 
+	    !sysfs_available(kernel_offline[offline], W_OK)) {
 		Lprintf("Kernel does not support page offline interface\n");
 		offline = OFFLINE_ACCOUNT;
 	}
