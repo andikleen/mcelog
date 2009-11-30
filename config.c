@@ -285,6 +285,7 @@ int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
 {
 	char *s;
 	char *name;
+	int n;
 
 	asprintf(&name, "%s-threshold", base);
 	s = config_string(header, name);
@@ -307,6 +308,13 @@ int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
 		bc->trigger = s;
 	}
 	free(name);
+
+	bc->log = 0;
+	asprintf(&name, "%s-log", base);
+	n = config_bool(header, name);
+	if (n >= 0)
+		bc->log = n;
+
 	return 0;
 }
 

@@ -9,6 +9,7 @@ struct bucket_conf {
 	unsigned capacity;
 	unsigned agetime;
 	unsigned char tunit;	/* 'd','h','m','s' */
+	unsigned char log;
 	char *trigger;
 };
 

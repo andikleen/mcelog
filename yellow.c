@@ -32,6 +32,7 @@
 #define test_bit(i, a) (((unsigned *)(a))[(i) / BITS_PER_U] & (1U << ((i) % BITS_PER_U)))
 
 static char *yellow_trigger;
+static int yellow_log = 1;
 
 enum {
 	MAX_ENV = 10,
@@ -74,7 +75,8 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls, int soc
 	asprintf(&msg, "%s has large number of corrected cache errors in %s %s", 
 		location, ls, ts);
 	free(location);
-	Lprintf("%s\n", msg);
+	if (yellow_log)
+		Lprintf("%s\n", msg);
 	if (!yellow_trigger)
 		return;
 
@@ -96,11 +98,17 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls, int soc
 
 void yellow_setup(void)
 {
+	int n;
+
 	yellow_trigger = config_string("cache", "cache-threshold-trigger"); 
 	if (yellow_trigger && access(yellow_trigger, R_OK|X_OK) < 0) {
 		SYSERRprintf("Cannot access cache threshold trigger `%s'", 
 				yellow_trigger);
 		exit(1);
 	}
+
+	n = config_bool("cache", "cache-threshold-log");
+	if (n >= 0)
+		yellow_log = n;
 }
 

@@ -139,8 +139,10 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 	char *location = format_location(md);
 	char *output = bucket_output(bc, bucket);
 
-	Gprintf("%s: %s\n", msg, output); 
-	Gprintf("Location %s\n", location);
+	if (bc->log) { 
+		Gprintf("%s: %s\n", msg, output); 
+		Gprintf("Location %s\n", location);
+	}
 	if (bc->trigger == NULL)
 		return;
 	asprintf(&env[ei++], "PATH=%s", getenv("PATH") ?: "/sbin:/usr/sbin:/bin:/usr/bin");
