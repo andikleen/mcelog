@@ -1,5 +1,8 @@
 <newer changes first>
 
+Support changing mcelog daemon to other user
+	Disabled by default because this breaks the advanced triggers
+	which need root rights.
 Allow to disable memory error logging
 Add per socket memory accounting/trigger support
 Add per page memory error accounting and predictive page offlining

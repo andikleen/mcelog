@@ -13,6 +13,9 @@
 # UCCOUNT	Total uncorrected error count for socket
 # LASTEVENT	Time stamp of event that triggered threshold (in time_t format, seconds)
 # THRESHOLD_COUNT Total umber of events in current threshold time period of specific type
+#
+# note: will run as mcelog configured user
+# this can be changed in mcelog.conf
 
 logger -s -p daemon.err -t mcelog "$MESSAGE"
 logger -s -p daemon.err -t mcelog "Location: $LOCATION"

@@ -11,6 +11,8 @@
 # AFFECTED_CPUS   List of CPUs sharing the affected cache
 # SOCKETID	  Socket ID of affected CPU
 #
+# note: will run as mcelog configured user
+# this can be changed in mcelog.conf
 
 #
 # offline the CPUs (except CPU #0) sharing the affected cache
