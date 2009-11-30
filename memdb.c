@@ -382,8 +382,8 @@ void prefill_memdb(void)
 			continue;
 		}
 		md->memdev = d;
-		md->location = bl;
-		md->name = dmi_getstring(&d->header, d->device_locator);
+		md->location = xstrdup(bl);
+		md->name = xstrdup(dmi_getstring(&d->header, d->device_locator));
 	}
 	if (missed) { 
 		Eprintf("failed to prefill DIMM database from DMI data");
