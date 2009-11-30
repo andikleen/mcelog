@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <pwd.h>
+#include <grp.h>
 #include "memutil.h"
 #include "mcelog.h"
 #include "config.h"
@@ -316,6 +318,37 @@ int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
 		bc->log = n;
 
 	return 0;
+}
+
+void config_cred(char *header, char *base, struct config_cred *cred)
+{
+	char *s;
+	char *name;
+
+	asprintf(&name, "%s-user", base);
+	if ((s = config_string(header, name)) != NULL) { 
+		struct passwd *pw;
+		if (!strcmp(s, "*"))
+			cred->uid = -1U;
+		else if ((pw = getpwnam(s)) == NULL)
+			Eprintf("Unknown user `%s' in %s:%s config entry\n", 
+				s, header, name);
+		else
+		        cred->uid = pw->pw_uid;
+	}
+	free(name);
+	asprintf(&name, "%s-group", base);	
+	if ((s = config_string(header, name)) != NULL) { 
+		struct group *gr;
+		if (!strcmp(s, "*"))
+			cred->gid = -1U;
+		else if ((gr = getgrnam(s)) == NULL)
+			Eprintf("Unknown group `%s' in %s:%s config entry\n", 
+				header, name, s);
+		else
+			cred->gid = gr->gr_gid;
+	}
+	free(name);
 }
 
 #ifdef TEST

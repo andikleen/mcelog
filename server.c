@@ -28,8 +28,6 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/un.h>
-#include <pwd.h>
-#include <grp.h>
 #include <signal.h>
 #include <setjmp.h>
 #include "mcelog.h"
@@ -52,9 +50,8 @@ struct clientcon {
 };
 
 static char *client_path = SOCKET_PATH;
-static uid_t access_uid = -1U;
-static gid_t access_gid = -1U;
 static int initial_ping_timeout = 2;
+static struct config_cred acc = { .uid = -1U, .gid = -1U };
 
 static void free_outbuf(struct clientcon *cc)
 {
@@ -157,8 +154,8 @@ static int access_check(int fd, struct msghdr *msg)
 	}
 	uc = (struct ucred *)CMSG_DATA(cmsg);
 	if (uc->uid == 0 || 
-		(access_uid != -1U && uc->uid == access_uid) ||
-		(access_gid != -1U && uc->gid == access_gid))
+		(acc.uid != -1U && uc->uid == acc.uid) ||
+		(acc.gid != -1U && uc->gid == acc.gid))
 		return 0;
 	Eprintf("rejected client access from pid:%u uid:%u gid:%u\n",
 		uc->pid, uc->uid, uc->gid);
@@ -275,20 +272,7 @@ static void server_config(void)
 	char *s;
 	long v;
 
-	if ((s = config_string("server", "client-user")) != NULL) { 
-		struct passwd *pw = getpwnam(s);
-		if (!pw) 
-			Eprintf("Unknown user `%s' in client-user config entry\n", s);
-		else
-			access_uid = pw->pw_uid;
-	}
-	if ((s = config_string("server", "client-group")) != NULL) { 
-		struct group *gr = getgrnam(s);
-		if (!gr) 
-			Eprintf("Unknown group `%s' in client-user config entry\n", s);
-		else
-			access_gid = gr->gr_gid;
-	}
+	config_cred("server", "client", &acc);
 	if ((s = config_string("server", "socket-path")) != NULL)
 		client_path = s;
 	if (config_number("server", "initial-ping-timeout", "%u", &v) == 0)

@@ -1,3 +1,5 @@
+#include <sys/types.h>
+
 struct config_choice {
 	char *name;
 	int val;
@@ -14,3 +16,9 @@ void config_options(struct option *opts, int (*func)(int));
 struct bucket_conf;
 int config_trigger(const char *header, const char *name, struct bucket_conf *bc);
 
+struct config_cred {
+	uid_t uid;
+	gid_t gid;
+};
+
+void config_cred(char *header, char *name, struct config_cred *cred);
