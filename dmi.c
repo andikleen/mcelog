@@ -145,6 +145,7 @@ int opendmi(void)
 	int pagesize = getpagesize();
 	int memfd; 
 	unsigned corr;
+	int err = -1;
 
 	if (entries)
 		return 0;
@@ -158,14 +159,14 @@ int opendmi(void)
 	abase = mmap(NULL, 0xffff, PROT_READ, MAP_SHARED, memfd, 0xf0000); 
 	if (abase == (struct anchor *)-1) {
 		Eprintf("Cannot mmap 0xf0000: %s", strerror(errno));
-		return -1;
+		goto out;
 	}   
 
 	for (a = abase;;a += 4) { 
 		a = memmem(a, 0xffff, "_SM_", 4);
 		if (!a) {
 			Eprintf("Cannot find SMBIOS DMI tables");
-			return -1;
+			goto out;
 		}
 		if (checksum((unsigned char *)a, a->entry_length) == 0) 
 			break;
@@ -179,14 +180,20 @@ int opendmi(void)
 			round_down(a->table, pagesize));
 	if (entries == (struct dmi_entry *)-1) { 
 		Eprintf("Cannot mmap SMBIOS tables at %x", a->table);
-		return -1;
+		goto out_mmap;
 	}
 	entries = (struct dmi_entry *)(((char *)entries) + corr);
 	numentries = a->numentries;
 	dmi_length = a->length;
 	fill_handles();
 	collect_dmi_dimms(); 
-	return 0;	
+	err = 0;
+
+out_mmap:
+	munmap(abase, 0xffff);
+out:
+	close(memfd);
+	return err;	
 }
 
 unsigned dmi_dimm_size(unsigned short size, char *unit)
