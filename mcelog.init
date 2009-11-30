@@ -1,0 +1,94 @@
+#!/bin/sh
+# 
+# Startup script for mcelog
+# 
+# This should be customized for distribution standards
+# (using rc_status etc.)
+#
+### BEGIN INIT INFO
+# Provides:		mcelog 
+# Default-Start:	3 5
+# Default-Stop:		0 1 2 6
+# Short-Description:	mcelog hardware error logging
+# Description:          Start the mcelog hardware error logging. 
+#                       This logs and handles CPU hardware errors on x86 systems.
+### END INIT INFO
+
+# put this is sysconfig
+
+# mcelog mode
+# valid values: daemon, trigger, cron
+# Recommended value daemon
+MCELOG_MODE=daemon
+
+# additional options to pass to the daemon
+# this only works in daemon mode
+# see the manpage for details. settings can be also
+# set in /etc/mcelog.conf
+MCELOG_OPTIONS=""
+
+# private settings
+MCELOG=${MCELOG:-/usr/sbin/mcelog}
+TRIGGER=/sys/devices/system/machinecheck/machinecheck0/trigger
+[ ! -x $MCELOG ] && ( echo "mcelog not found" ; exit 1 )
+
+case "$MCELOG_MODE" in
+daemon)
+	;;
+trigger)
+	;;
+cron)
+	echo "mcelog not started"
+	exit 0
+	;;
+*)
+	echo "Unknown mcelog mode $MCELOG_MODE. Valid daemon/trigger/cron"
+	exit 1
+esac
+
+case "$1" in
+start)
+	if [ "$MCELOG_MODE" = "daemon" ] ; then
+		echo "Starting mcelog daemon"
+		startproc $MCELOG --daemon $MCELOG_OPTIONS
+	elif [ -f "$TRIGGER" ] ; then
+		echo $MCELOG > "$TRIGGER"
+	else
+		echo No machine check capability
+	fi
+	;;
+stop)
+	if [ "$MCELOG_MODE" = "daemon" ] ; then
+		echo "Stopping mcelog"
+		killproc -TERM $MCELOG
+	elif [ "$MCELOG_MODE" = "trigger" -a -f "$TRIGGER" ]; then 
+		echo "" > "$TRIGGER"
+	else
+		echo mcelog not running
+	fi
+	;;
+try-restart)
+	$0 status > /dev/null && $0 restart
+	;;
+restart)
+	$0 stop
+	$0 start
+	;;
+reload)
+	$0 try-restart
+	;;
+force-reload)
+	$0 try-restart
+	;;
+status)
+	if [ "$MCELOG_MODE" = "daemon" ] ; then
+		echo "Checking for mcelog"
+		checkproc $MCELOG
+	fi
+	;;
+*)
+	echo "Usage: $0 {start|stop|try-restart|restart|status|force-reload|reload}"
+	exit 1
+esac
+
+
