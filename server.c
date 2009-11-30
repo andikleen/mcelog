@@ -51,7 +51,7 @@ struct clientcon {
 
 static char *client_path = SOCKET_PATH;
 static int initial_ping_timeout = 2;
-static struct config_cred acc = { .uid = -1U, .gid = -1U };
+static struct config_cred acc = { .uid = 0, .gid = -1U };
 
 static void free_outbuf(struct clientcon *cc)
 {
