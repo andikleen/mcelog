@@ -120,7 +120,7 @@ static char *bankname(unsigned bank)
 
 static void resolveaddr(unsigned long addr)
 {
-	if (addr && do_dmi)
+	if (addr && do_dmi && dmi_forced)
 		dmi_decodeaddr(addr);
 	/* Should check for PCI resources here too */
 }
@@ -508,7 +508,7 @@ static void decodefatal(FILE *inf)
 	int disclaimer_seen;
 
 	ascii_mode = 1;
-	if (do_dmi)
+	if (do_dmi && dmi_forced)
 		Wprintf(
  "WARNING: with --dmi mcelog --ascii must run on the same machine with the\n"
  "     same BIOS/memory configuration as where the machine check occurred.\n");
