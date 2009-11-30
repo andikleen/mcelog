@@ -86,9 +86,7 @@ static int check_entry(struct dmi_entry *e, struct dmi_entry **next)
 		return 0;
  	s = (char *)e + e->length;
 	if (verbose > 3)
-		printf("entry %lx length %d handle %x\n", 
-			(char*)e - (char*)entries, 
-			e->length, e->handle);
+		printf("length %d handle %x\n", e->length, e->handle);
 	do {
 		if (verbose > 3) 
 			printf("string %s\n", s);
@@ -249,9 +247,8 @@ static void dump_memdev(struct dmi_memdev *md, unsigned long addr)
 	if (md->header.length < 
 			offsetof(struct dmi_memdev, manufacturer)) { 
 		if (verbose > 0)
-			printf("Memory device for address %lx too short %hu expected %lu\n",
-			       addr, md->header.length, 
-			       sizeof(struct dmi_memdev));
+			printf("Memory device for address %lx too short %hu\n",
+			       addr, md->header.length);
 		return;
 	}	
 

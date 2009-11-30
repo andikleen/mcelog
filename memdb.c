@@ -60,7 +60,7 @@ static struct err_triggers sockets;
 static int memdb_enabled;
 static int sockdb_enabled;
 
-#define FNV32_OFFSET 2166136261
+#define FNV32_OFFSET 2166136261U
 #define FNV32_PRIME 0x01000193
 #define O(x) ((x) & 0xff)
 
