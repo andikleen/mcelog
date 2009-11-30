@@ -14,6 +14,6 @@
 # LASTEVENT	Time stamp of event that triggered threshold (in time_t format, seconds)
 # THRESHOLD_COUNT Total umber of events in current threshold time period of specific type
 
-logger "CPU Socket $LOCATION exceeded pre-configured error threshold $THRESHOLD"
+logger "$MESSAGE"
 
 [ -x ./socket-memory-error-trigger.local ] && . ./socket-memory-error-trigger.local

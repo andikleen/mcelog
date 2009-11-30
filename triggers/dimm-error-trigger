@@ -18,6 +18,6 @@
 # LASTEVENT	Time stamp of event that triggered threshold (in time_t format, seconds)
 # THRESHOLD_COUNT Total umber of events in current threshold time period of specific type
 
-logger "DIMM $LOCATION exceeded pre-configured error threshold $THRESHOLD"
+logger "$MESSAGE"
 
 [ -x ./dimm-error-trigger.local ] && . ./dimm-error-trigger.local
