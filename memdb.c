@@ -144,7 +144,7 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 		Gprintf("Location %s\n", location);
 	}
 	if (bc->trigger == NULL)
-		return;
+		goto out;
 	asprintf(&env[ei++], "PATH=%s", getenv("PATH") ?: "/sbin:/usr/sbin:/bin:/usr/bin");
 	asprintf(&env[ei++], "THRESHOLD=%s", output);
 	asprintf(&env[ei++], "TOTALCOUNT=%lu", et->count);
@@ -171,6 +171,7 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 	run_trigger(bc->trigger, NULL, env);
 	for (i = 0; i < ei; i++)
 		free(env[i]);
+out:
 	free(location);
 	free(output);
 }

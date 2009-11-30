@@ -78,7 +78,7 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls, int soc
 	if (yellow_log)
 		Lprintf("%s\n", msg);
 	if (!yellow_trigger)
-		return;
+		goto out;
 
 	if (socket >= 0)
 		asprintf(&env[ei++], "SOCKETID=%d", socket);
@@ -94,6 +94,8 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls, int soc
 	run_trigger(yellow_trigger, NULL, env);
 	for (i = 0; i < ei; i++)
 		free(env[i]);
+out:
+	free(msg);
 }
 
 void yellow_setup(void)
