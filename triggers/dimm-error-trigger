@@ -18,7 +18,7 @@
 # LASTEVENT	Time stamp of event that triggered threshold (in time_t format, seconds)
 # THRESHOLD_COUNT Total umber of events in current threshold time period of specific type
 
-logger "$MESSAGE"
-logger "Location: $LOCATION"
+logger -s -p daemon.err -t mcelog "$MESSAGE"
+logger -s -p daemon.err -t mcelog "Location: $LOCATION"
 
 [ -x ./dimm-error-trigger.local ] && . ./dimm-error-trigger.local
