@@ -49,7 +49,7 @@ struct mempage {
 	struct err_type ce;
 	char offlined;
 	char triggered;
-	// XXX lots of padding, move into ptr?
+	// 2(32bit)-6(64bit) bytes of padding to play with here
 };
 
 static struct rb_root mempage_root;
