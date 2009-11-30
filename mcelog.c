@@ -855,8 +855,6 @@ static void general_setup(void)
 {
 	trigger_setup();
 	yellow_setup();
-	page_setup();
-
 	if (config_bool("global", "filter-memory-errors") == 1)
 		filter_memory_errors = 1;
 }
@@ -1010,6 +1008,7 @@ int main(int ac, char **av)
 	d.buf = xalloc(d.recordlen * d.loglen); 
 	if (daemon_mode) {
 		server_setup();
+		page_setup();
 		register_pollcb(fd, POLLIN, process_mcefd, &d);
 		if (!foreground && daemon(0, need_stdout()) < 0)
 			err("daemon");
