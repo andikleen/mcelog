@@ -34,6 +34,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <assert.h>
+#include <pwd.h>
 #include "mcelog.h"
 #include "paths.h"
 #include "k8.h"
@@ -71,6 +72,7 @@ static char *inputfile;
 char *processor_flags;
 static int foreground;
 int filter_memory_errors;
+static struct config_cred runcred = { .uid = -1U, .gid = -1U };
 
 static void check_cpu(void);
 
@@ -855,8 +857,26 @@ static void general_setup(void)
 {
 	trigger_setup();
 	yellow_setup();
+	config_cred("global", "run-credentials", &runcred);
 	if (config_bool("global", "filter-memory-errors") == 1)
 		filter_memory_errors = 1;
+}
+
+static void drop_cred(void)
+{
+	if (runcred.uid != -1U && runcred.gid == -1U) {
+		struct passwd *pw = getpwuid(runcred.uid);
+		if (pw)
+			runcred.gid = pw->pw_gid;
+	}
+	if (runcred.gid != -1U) {
+		if (setgid(runcred.gid) < 0) 
+			SYSERRprintf("Cannot change group to %d", runcred.gid);
+	}
+	if (runcred.uid != -1U) {
+		if (setuid(runcred.uid) < 0)
+			SYSERRprintf("Cannot change user to %d", runcred.uid);
+	}
 }
 
 static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
@@ -1009,6 +1029,7 @@ int main(int ac, char **av)
 	if (daemon_mode) {
 		server_setup();
 		page_setup();
+		drop_cred();
 		register_pollcb(fd, POLLIN, process_mcefd, &d);
 		if (!foreground && daemon(0, need_stdout()) < 0)
 			err("daemon");
