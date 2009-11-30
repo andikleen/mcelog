@@ -19,5 +19,6 @@
 # THRESHOLD_COUNT Total umber of events in current threshold time period of specific type
 
 logger "$MESSAGE"
+logger "Location: $LOCATION"
 
 [ -x ./dimm-error-trigger.local ] && . ./dimm-error-trigger.local

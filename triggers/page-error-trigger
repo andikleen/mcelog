@@ -20,5 +20,6 @@
 # THRESHOLD_COUNT Total umber of events in current threshold time period of specific type
 
 logger "$MESSAGE"
+logger "Location: $LOCATION"
 
 [ -x ./page-error-trigger.local ] && . ./page-error-trigger.local

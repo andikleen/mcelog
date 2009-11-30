@@ -137,16 +137,18 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 	int ei = 0;
 	int i;
 	char *location = format_location(md);
-	char *output = bucket_output(bc, bucket);
+	char *thresh = bucket_output(bc, bucket);
+	char *out;
 
+	asprintf(&out, "%s: %s", msg, thresh);
 	if (bc->log) { 
-		Gprintf("%s: %s\n", msg, output); 
+		Gprintf("%s\n", out); 
 		Gprintf("Location %s\n", location);
 	}
 	if (bc->trigger == NULL)
 		goto out;
 	asprintf(&env[ei++], "PATH=%s", getenv("PATH") ?: "/sbin:/usr/sbin:/bin:/usr/bin");
-	asprintf(&env[ei++], "THRESHOLD=%s", output);
+	asprintf(&env[ei++], "THRESHOLD=%s", thresh);
 	asprintf(&env[ei++], "TOTALCOUNT=%lu", et->count);
 	asprintf(&env[ei++], "LOCATION=%s", location);
 	if (md->location)
@@ -164,7 +166,7 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 		asprintf(&env[ei++], "LASTEVENT=%lu", t);
 	asprintf(&env[ei++], "AGETIME=%u", bc->agetime);
 	// XXX human readable version of agetime
-	asprintf(&env[ei++], "MESSAGE=%s", msg);
+	asprintf(&env[ei++], "MESSAGE=%s", out);
 	asprintf(&env[ei++], "THRESHOLD_COUNT=%d", bucket->count + bucket->excess);
 	env[ei] = NULL;	
 	assert(ei < MAX_ENV);
@@ -173,7 +175,8 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 		free(env[i]);
 out:
 	free(location);
-	free(output);
+	free(out);
+	free(thresh);
 }
 
 static void 
