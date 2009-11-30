@@ -1,10 +1,41 @@
+mcelog is the user space backend for logging machine check errors
+reported by the hardware to the kernel. The kernel does the immediate
+actions (like killing processes etc.) and mcelog decodes the logs
+the errors.
 
-The latest x86-64 2.6 kernel won't log machine check errors to the
-kernel log anymore. You need this tool to decode them.
+It primarily handles machine checks and thermal events, which
+are reported for errors detected by the CPU.
 
-Create the device first.
+It is recommended that mcelog runs on all x86 machines, both
+64bit (since early 2.6) and 32bit (since 2.6.32)
 
-mknod /dev/mcelog c 10 227
+mcelog can run in several modi: cronjob, trigger, daemon
+
+cronjob is the old method. mcelog runs every 5 minutes from cron and checks
+for errors. Disadvantage of this is that it can delay error reporting 
+significantly (upto 10 minutes) and does not allow mcelog to keep extended state.
+
+trigger is a newer method where the kernel runs mcelog on a error.
+This is configured with 
+echo /usr/sbin/mcelog > /sys/devices/system/machinecheck/machinecheck0/trigger
+This is faster, but still doesn't allow mcelog to keep state,
+and has relatively high overhead for each error because a program has
+to be initialized from scratch.
+
+In daemon mode mcelog runs continuously as a daemon in the background
+and wait for errors. It is enabled by running mcelog --daemon & 
+from a init script. This is the fastest.
+
+The recommended mode is daemon, because several new functions (like page error
+predictive failure analysis) require a continuously running daemon.
+
+For distributors:
+
+Please install a init script by default that runs mcelog in daemon mode.
+
+/dev/mcelog is needed for mcelog operation
+If it's not there it can be created with mknod /dev/mcelog c 10 227
+or through udev
 
 This program is licensed under the subject of the GNU Public General
 License, v.2
