@@ -26,11 +26,20 @@ ctype=${3:-0}
 track=${4:-1}
 
 case "$ctype" in
+instr) ctype=0 ;;
 data) ctype=1 ;;
-instr) ctype=1 ;;
 generic) ctype=2 ;;
 [0-3])  ;;
 *) echo "Unknown ctype $ctype" ; exit 1
+esac
+
+case "$level" in
+L0) level=0 ;;
+L1) level=1 ;;
+L2) level=2 ;;
+LG) level=3 ;;
+[0-3])  ;;
+*) echo "Unknown Cache $level" ; exit 1
 esac
 
 case "$track" in
