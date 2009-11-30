@@ -21,7 +21,7 @@ for i in $CPUS_AFFECTED ; do
 		continue
 	fi
 	logger "Offlining CPU $i"
-	F=$(printf "/sys/devices/cpu/system/cpu%d/online" $i)
+	F=$(printf "/sys/devices/system/cpu/cpu%d/online" $i)
 	echo 0 > $F
 	if [ "$(< $F)" != "0" ] then
 		logger "Offlining CPU $i failed"
