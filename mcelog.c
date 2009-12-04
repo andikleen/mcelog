@@ -285,8 +285,6 @@ static void mce_cpuid(struct mce *m)
 	} else if (cputype == CPU_GENERIC && !cpu_forced) { 
 		check_cpu();
 	}	
-
-	prefill_memdb();
 }
 
 static void mce_prepare(struct mce *m)
@@ -398,6 +396,11 @@ void check_cpu(void)
 		ALL = 0x1f 
 	} seen = 0;
 	FILE *f;
+	static int checked;
+
+	if (checked)
+		return;
+	checked = 1;
 
 	f = fopen("/proc/cpuinfo","r");
 	if (f != NULL) { 
@@ -1027,6 +1030,8 @@ int main(int ac, char **av)
 
 	d.buf = xalloc(d.recordlen * d.loglen); 
 	if (daemon_mode) {
+		check_cpu();
+		prefill_memdb();
 		server_setup();
 		page_setup();
 		drop_cred();
