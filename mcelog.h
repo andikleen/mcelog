@@ -1,4 +1,3 @@
- 
 typedef unsigned long long u64;
 typedef unsigned int u32;
 typedef unsigned short u16;
@@ -76,6 +75,13 @@ struct mce {
 #define err(x) perror(x),exit(1)
 #define sizeof_field(t, f) (sizeof(((t *)0)->f))
 #define endof_field(t, f) (sizeof(((t *)0)->f) + offsetof(t, f))
+
+#define round_up(x,y) (((x) + (y) - 1) & ~((y)-1))
+#define round_down(x,y) ((x) & ~((y)-1))
+
+#define BITS_PER_INT (sizeof(unsigned) * 8)
+#define BITS_PER_LONG (sizeof(unsigned long) * 8)
+
 
 #ifdef __GNUC__
 #define PRINTFLIKE __attribute__((format(printf,1,2)))

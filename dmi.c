@@ -137,9 +137,6 @@ static void fill_handles(void)
 	}
 }
 
-#define round_up(x,y) (((x) + (y) - 1) & ~((y)-1))
-#define round_down(x,y) ((x) & ~((y)-1))
-
 int opendmi(void)
 {
 	struct anchor *a, *abase;
