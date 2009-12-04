@@ -70,6 +70,7 @@ void dmi_set_verbosity(int v);
 
 char *dmi_getstring(struct dmi_entry *e, unsigned number);
 extern void checkdmi(void);
+void closedmi(void);
 
 /* valid after opendmi: */
 extern struct dmi_memdev **dmi_dimms; 

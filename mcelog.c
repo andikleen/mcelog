@@ -1032,6 +1032,8 @@ int main(int ac, char **av)
 	if (daemon_mode) {
 		check_cpu();
 		prefill_memdb();
+		if (!do_dmi)
+			closedmi();
 		server_setup();
 		page_setup();
 		drop_cred();

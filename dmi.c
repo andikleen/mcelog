@@ -55,6 +55,7 @@ struct anchor {
 } __attribute__((packed));
 
 static struct dmi_entry *entries;
+static int entrieslen;
 static int numentries;
 static int dmi_length;
 static struct dmi_entry **handle_to_entry;
@@ -175,7 +176,8 @@ int opendmi(void)
 		printf("DMI tables at %x, %u bytes, %u entries\n", 
 			a->table, a->length, a->numentries);
 	corr = a->table - round_down(a->table, pagesize); 
- 	entries = mmap(NULL, round_up(a->length + pagesize, pagesize), 
+	entrieslen = round_up(a->length + pagesize, pagesize);
+ 	entries = mmap(NULL, entrieslen, 
 		       	PROT_READ, MAP_SHARED, memfd, 
 			round_down(a->table, pagesize));
 	if (entries == (struct dmi_entry *)-1) { 
@@ -525,4 +527,19 @@ void checkdmi(void)
 	}
 	if (!dmi_forced)
 		do_dmi = dmi_sanity_check();
+}
+
+#define FREE(x) free(x), (x) = NULL
+
+void closedmi(void)
+{
+	if (!entries) 
+		return;
+	munmap(entries, entrieslen);
+	entries = NULL;
+	FREE(dmi_dimms);
+	FREE(dmi_arrays);
+	FREE(dmi_ranges);
+	FREE(dmi_array_ranges);
+	FREE(handle_to_entry);
 }
