@@ -61,8 +61,14 @@ static void more_cpus(int cpu)
 
 static unsigned cpumap_len(char *s)
 {
-	unsigned len = strspn(s, "0123456789abcdefABCDEF,");
-	return (len + sizeof(unsigned)*8 - 1) / 8;
+	unsigned len = 0;
+	while (*s) {
+		if (isxdigit(*s))
+			len++;
+		s++;
+	}
+	len = round_up(len * 4, BITS_PER_INT) / 8;
+	return len;
 }
 
 static void parse_cpumap(char *map, unsigned *buf, unsigned len)
@@ -81,7 +87,7 @@ static void parse_cpumap(char *map, unsigned *buf, unsigned len)
 		buf[c++] = strtoul(s, NULL, 16);
 		if (s == map)
 			break;
-		s -= 2;
+		s--;
 	}
 	assert(len == c * sizeof(unsigned));
 }
