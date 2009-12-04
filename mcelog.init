@@ -31,6 +31,7 @@ MCELOG_OPTIONS=""
 MCELOG=${MCELOG:-/usr/sbin/mcelog}
 TRIGGER=/sys/devices/system/machinecheck/machinecheck0/trigger
 [ ! -x $MCELOG ] && ( echo "mcelog not found" ; exit 1 )
+[ ! -r /dev/mcelog ] && ( echo "/dev/mcelog not active" ; exit 0 )
 
 case "$MCELOG_MODE" in
 daemon)
