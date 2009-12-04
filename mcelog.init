@@ -4,6 +4,8 @@
 # 
 # This should be customized for distribution standards
 # (using rc_status etc.)
+# The paths are hardcoded and are not automatically adjusted
+# for different prefix
 #
 ### BEGIN INIT INFO
 # Provides:		mcelog 

@@ -4,6 +4,9 @@ etcprefix :=
 # Define appropiately for your distribution
 # DOCDIR := /usr/share/doc/packages/mcelog
 
+# Note when changing prefix: some of the non-critical files like
+# the manpage or the init script have hardcoded prefixes
+
 # Warning flags added implicitely to CFLAGS in the default rule
 # this is done so that even when CFLAGS are overriden we still get
 # the additional warnings
