@@ -37,6 +37,33 @@ Please install a init script by default that runs mcelog in daemon mode.
 If it's not there it can be created with mknod /dev/mcelog c 10 227
 or through udev
 
+Security:
+
+mcelog needs to run as root because it might trigger actions like
+page-offlining, which require CAP_SYS_ADMIN. Also it opens /dev/mcelog
+and a unix socket for client support.
+
+It also opens /dev/mem to parse the BIOS DMI tables. It is careful
+to close the file descriptor and unmap any mappings after using them.
+
+There is support for changing the user in daemon mode after opening
+the device and the sockets, but that would stop triggers from
+doing corrective action that require root.
+
+In principle it would be possible to only keep CAP_SYS_ADMIN
+for page-offling, but that would prevent triggers from doing root
+only actions not covered by it (and CAP_SYS_ADMIN is not that different 
+from full root)
+
+In daemon mode mcelog listens to a unix socket and processes
+requests from mcelog --client. This can be disabled in the configuration file.
+The uid/gid of the requestor is checked on access and is configurable
+(default 0/0 only). The command parsing code is very straight forward
+(server.c) The client parsing/reply is currently done with full privileges
+of the daemon.
+
+License:
+
 This program is licensed under the subject of the GNU Public General
 License, v.2
 
