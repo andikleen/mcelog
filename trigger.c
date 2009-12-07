@@ -63,13 +63,13 @@ void run_trigger(char *trigger, char *argv[], char **env)
 		SYSERRprintf("Cannot create process for trigger");
 		return;
 	}
-	num_children++;
 	if (child == 0) { 
 		if (trigger_dir)
 			chdir(trigger_dir);
 		execve(trigger, argv, env);	
 		_exit(127);	
 	}
+	num_children++;
 	c = xalloc(sizeof(struct child));
 	c->name = trigger;
 	c->child = child;
