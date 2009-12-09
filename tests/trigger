@@ -1,4 +1,4 @@
 #!/bin/sh
 
 echo trigger
-env
+env | egrep -v 'PATH'

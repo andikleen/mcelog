@@ -1,0 +1,62 @@
+#!/bin/sh
+# simple test harness for mcelog daemon trigger test cases
+# ./test subdir [debugger]
+# run mcelog test in specific sub directory
+# requires root rights and a built mce-inject in ../../mce-inject or $PATH
+# warning: this kills any other running mcelogs
+
+D=${2:-}
+
+if [ "$1" = "" ] ; then
+	echo "usage $0 testdir"
+	exit 1
+fi
+
+if [ "$(whoami)" != "root" ] ; then
+	echo "Must run as root"
+	exit 1
+fi
+
+echo "++++++++++++ running $1 test +++++++++++++++++++"
+
+killall mcelog || true
+
+#killwatchdog() { 
+#	kill %1 || true
+#}
+#
+#watchdog() { 
+#	sleep 10
+#	echo timeout waiting for mcelog
+#	killall mcelog
+#} 
+
+cd $1
+./inject
+#trap killwatchdog 0
+#watchdog & 
+rm -f log
+$D ../../mcelog --foreground --daemon --config $1.conf --logfile log
+
+# let triggers finish
+sleep 1
+
+NUMT="$(awk '/# trigger: / { print $3 }' $1.conf)"
+NUMC="$(grep -c 'Running trigger' log || true)"
+
+if [ "$NUMC" = 0 ] ; then
+	echo "$1: no triggers at all"
+	exit 1
+fi
+
+if [ "$NUMT" != "" ] ; then
+	if [ "$NUMC" != "$NUMT" ] ; then
+		echo "$1: triggers did not trigger as expected: $NUMT != $NUMC"
+		exit 1
+	fi
+else
+	echo "$1: did not declare number of triggers"
+fi
+#trap "" 0 
+#killwatchdog 
+
