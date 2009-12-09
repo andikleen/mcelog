@@ -73,6 +73,7 @@ char *processor_flags;
 static int foreground;
 int filter_memory_errors;
 static struct config_cred runcred = { .uid = -1U, .gid = -1U };
+static int numerrors;
 
 static void check_cpu(void);
 
@@ -672,7 +673,8 @@ void usage(void)
 "--filter            Inhibit known bogus events (default on)\n"
 "--no-filter         Don't inhibit known broken events\n"
 "--config-file filename Read config information from config file instead of " CONFIG_FILENAME "\n"
-"--foreground	     Keep in foreground (for debugging)\n"
+"--foreground        Keep in foreground (for debugging)\n"
+"--num-errors N      Only process N errors (for testing)\n"
 		);
 	diskdb_usage();
 	print_cputypes();
@@ -703,6 +705,7 @@ enum options {
 	O_CPU,
 	O_FILE,
 	O_FOREGROUND,
+	O_NUMERRORS,
 };
 
 static struct option options[] = {
@@ -732,6 +735,7 @@ static struct option options[] = {
 	{ "cpu", 1, NULL, O_CPU },
 	{ "foreground", 0, NULL, O_FOREGROUND },
 	{ "client", 0, NULL, O_CLIENT },
+	{ "num-errors", 1, NULL, O_NUMERRORS },
 	DISKDB_OPTIONS
 	{}
 };
@@ -821,6 +825,9 @@ static int modifier(int opt)
 		if (!(syslog_opt & SYSLOG_FORCE))
 			syslog_opt = SYSLOG_FORCE;
 		break;
+	case O_NUMERRORS:
+		numerrors = atoi(optarg);
+		break;
 	case O_CONFIG_FILE:
 		/* parsed in config.c */
 		break;
@@ -886,6 +893,7 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 {	
 	int i; 
 	int len;
+	int finish = 0;
 
 	if (recordlen == 0) {
 		Wprintf("no data in mce record\n");
@@ -896,9 +904,11 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 	if (len < 0) 
 		err("read"); 
 
-	for (i = 0; i < len / (int)recordlen; i++) { 
+	for (i = 0; (i < len / (int)recordlen) && !finish; i++) { 
 		struct mce *mce = (struct mce *)(buf + i*recordlen);
 		mce_prepare(mce);
+		if (numerrors > 0 && --numerrors == 0)
+			finish = 1;
 		if (!mce_filter(mce, recordlen)) 
 			continue;
 		if (!dump_raw_ascii) {
@@ -914,6 +924,9 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 				(unsigned long)recordlen - sizeof(struct mce)); 
 		Eprintf("consider an update\n"); 
 	}
+
+	if (finish)
+		exit(0);
 }
 
 static void noargs(int ac, char **av)
