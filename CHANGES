@@ -1,6 +1,7 @@
 <newer changes first>
 
-Enable DIMM tracking, cache tracking and per page tracking by default
+Add --pidfile option to write daemon pid into file.
+Enable DIMM, socket, cache tracking and per page tracking by default
 Support changing mcelog daemon to other user
 	Disabled by default because this breaks the advanced triggers
 	which need root rights.

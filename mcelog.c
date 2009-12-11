@@ -74,6 +74,7 @@ static int foreground;
 int filter_memory_errors;
 static struct config_cred runcred = { .uid = -1U, .gid = -1U };
 static int numerrors;
+static char *pidfile;
 
 static void check_cpu(void);
 
@@ -644,6 +645,24 @@ restart:
 		dump_mce_final(&m, symbol, missing, recordlen, disclaimer_seen);
 }
 
+static void remove_pidfile(void)
+{
+	unlink(pidfile);
+}
+
+static void write_pidfile(void)
+{
+	FILE *f;
+	atexit(remove_pidfile);
+	f = fopen(pidfile, "w");
+	if (!f) {
+		Eprintf("Cannot open pidfile `%s'", pidfile);
+		return;
+	}
+	fprintf(f, "%u", getpid());
+	fclose(f);
+}
+
 void usage(void)
 {
 	fprintf(stderr, 
@@ -675,6 +694,7 @@ void usage(void)
 "--config-file filename Read config information from config file instead of " CONFIG_FILENAME "\n"
 "--foreground        Keep in foreground (for debugging)\n"
 "--num-errors N      Only process N errors (for testing)\n"
+"--pidfile file	     Write pid of daemon into file\n"
 		);
 	diskdb_usage();
 	print_cputypes();
@@ -706,6 +726,7 @@ enum options {
 	O_FILE,
 	O_FOREGROUND,
 	O_NUMERRORS,
+	O_PIDFILE,
 };
 
 static struct option options[] = {
@@ -736,6 +757,7 @@ static struct option options[] = {
 	{ "foreground", 0, NULL, O_FOREGROUND },
 	{ "client", 0, NULL, O_CLIENT },
 	{ "num-errors", 1, NULL, O_NUMERRORS },
+	{ "pidfile", 1, NULL, O_PIDFILE },
 	DISKDB_OPTIONS
 	{}
 };
@@ -827,6 +849,9 @@ static int modifier(int opt)
 		break;
 	case O_NUMERRORS:
 		numerrors = atoi(optarg);
+		break;
+	case O_PIDFILE:
+		pidfile = optarg;
 		break;
 	case O_CONFIG_FILE:
 		/* parsed in config.c */
@@ -1053,6 +1078,8 @@ int main(int ac, char **av)
 		register_pollcb(fd, POLLIN, process_mcefd, &d);
 		if (!foreground && daemon(0, need_stdout()) < 0)
 			err("daemon");
+		if (pidfile)
+			write_pidfile();
 		eventloop();
 	} else {
 		process(fd, d.recordlen, d.loglen, d.buf);

@@ -204,6 +204,12 @@ By default the frequency of the current CPU is used when mcelog
 determines it is safe to use. Newer kernels report
 the time directly in the event and don't need this anymore.
 
+The 
+.B \-\-pidfile file
+option writes the process id of the daemon into file 
+.I file.
+Only valid in daemon mode.
+
 .\".B \-\-database filename
 .\"specifies the memory module error database file. Default is
 .\"/var/lib/memory-errors.  It is only used together with DMI decoding.
