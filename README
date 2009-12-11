@@ -62,6 +62,15 @@ The uid/gid of the requestor is checked on access and is configurable
 (server.c) The client parsing/reply is currently done with full privileges
 of the daemon.
 
+Testing:
+
+There is a simple test suite in tests/. The test suite requires root to 
+be run and access to mce-inject and a kernel with MCE injection support 
+(CONFIG_X86_MCE_INJECT).  It will kill any running mcelog daemon.
+
+The test suite requires the mce-inject tool, available from
+git://git.kernel.org/pub/utils/cpu/mce/mce-inject.git
+
 License:
 
 This program is licensed under the subject of the GNU Public General
