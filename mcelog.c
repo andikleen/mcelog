@@ -34,6 +34,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <assert.h>
+#include <signal.h>
 #include <pwd.h>
 #include "mcelog.h"
 #include "paths.h"
@@ -650,10 +651,18 @@ static void remove_pidfile(void)
 	unlink(pidfile);
 }
 
+static void signal_exit(int sig)
+{
+	remove_pidfile();
+	_exit(sig);
+}
+
 static void write_pidfile(void)
 {
 	FILE *f;
 	atexit(remove_pidfile);
+	signal(SIGTERM, signal_exit);
+	signal(SIGKILL, signal_exit);
 	f = fopen(pidfile, "w");
 	if (!f) {
 		Eprintf("Cannot open pidfile `%s'", pidfile);
