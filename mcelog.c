@@ -494,6 +494,7 @@ static void dump_mce_final(struct mce *m, char *symbol, int missing, int recordl
 			Wprintf("(Fields were incomplete)\n");
 	} else
 		dump_mce_raw_ascii(m, recordlen);
+	flushlog();
 }
 
 #define FIELD(f) \
@@ -951,6 +952,7 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 			dump_mce(mce, recordlen);
 		} else
 			dump_mce_raw_ascii(mce, recordlen);
+		flushlog();
 	}
 
 	if (recordlen > sizeof(struct mce))  {

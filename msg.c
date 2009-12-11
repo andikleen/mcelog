@@ -144,3 +144,9 @@ void Gprintf(char *fmt, ...)
 		va_end(ap);
 	}
 }
+
+void flushlog(void)
+{
+	FILE *f = output_fh ? output_fh : stdout;
+	fflush(f);
+}
