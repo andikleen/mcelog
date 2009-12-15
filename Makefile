@@ -65,7 +65,7 @@ else
 	echo "Consider defining DOCDIR to install additional documentation"
 endif
 
-clean:
+clean: test-clean
 	rm -f ${CLEAN} ${OBJ} 
 
 tsc:    tsc.c
@@ -85,7 +85,7 @@ include .depend
 
 Makefile: .depend
 
-.PHONY: iccverify src
+.PHONY: iccverify src test
 
 # run the icc static verifier over sources. you need the intel compiler installed for this
 DISABLED_DIAGS := -diag-disable 188,271,869,2259,981,12072,181,12331,1572
@@ -98,3 +98,10 @@ src:
 
 config-test: config.c
 	gcc -DTEST=1 config.c -o config-test
+
+test:
+	$(MAKE) -C tests test
+
+test-clean:
+	$(MAKE) -C tests clean
+
