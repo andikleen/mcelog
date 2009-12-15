@@ -19,6 +19,8 @@ fi
 
 echo "++++++++++++ running $1 test +++++++++++++++++++"
 
+# disable trigger
+echo -n "" > /sys/devices/system/machinecheck/machinecheck0/trigger
 killall mcelog || true
 
 #killwatchdog() { 
