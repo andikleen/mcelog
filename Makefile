@@ -51,9 +51,9 @@ mcelog: ${OBJ}
 
 # dbquery intentionally not installed by default
 install: mcelog
+	mkdir -p ${etcprefix}/etc/mcelog ${prefix}/sbin ${prefix}/share/man/man8
 	install -m 755 -p mcelog ${prefix}/sbin/mcelog
 	install -m 644 -p mcelog.8 ${prefix}/share/man/man8
-	mkdir -p ${etcprefix}/etc/mcelog
 	install -m 644 -p -b mcelog.conf ${etcprefix}/etc/mcelog/mcelog.conf
 	for i in ${TRIGGERS} ; do 						\
 		install -m 755 -p -b triggers/$$i ${etcprefix}/etc/mcelog ; 	\
