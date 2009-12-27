@@ -112,10 +112,31 @@ int event_signal(int sig)
 	return 0;
 }
 
+/* Handle old glibc without ppoll. */
+static int ppoll_fallback(struct pollfd *pfd, nfds_t nfds, 
+			  const struct timespec *ts, const sigset_t *ss)
+{
+	sigset_t origmask;
+	int ready;
+	sigprocmask(SIG_SETMASK, ss, &origmask);
+	ready = poll(pfd, nfds, ts ? ts->tv_sec : -1);
+	sigprocmask(SIG_SETMASK, &origmask, NULL);
+	return ready;
+}
+
+static int (*ppoll_vec)(struct pollfd *, nfds_t, const struct timespec
+			*, const sigset_t *);
+
 void eventloop(void)
 {
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ >= 5 || __GLIBC__ > 2
+	ppoll_vec = ppoll;
+#endif
+	if (!ppoll_vec) 
+		ppoll_vec = ppoll_fallback;
+
 	for (;;) { 
-		int n = ppoll(pollfds, max_pollfd, NULL, &event_sigs);
+		int n = ppoll_vec(pollfds, max_pollfd, NULL, &event_sigs);
 		if (n <= 0) {
 			if (n < 0 && errno != EINTR)
 				SYSERRprintf("poll error");
