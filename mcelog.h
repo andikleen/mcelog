@@ -63,6 +63,8 @@ struct mce {
 #define MCI_STATUS_MISCV (1ULL<<59)  /* misc error reg. valid */
 #define MCI_STATUS_ADDRV (1ULL<<58)  /* addr reg. valid */
 #define MCI_STATUS_PCC   (1ULL<<57)  /* processor context corrupt */
+#define MCI_STATUS_S	 (1ULL<<56)  /* signalled */
+#define MCI_STATUS_AR	 (1ULL<<55)  /* action-required */
 
 #define MCG_STATUS_RIPV  (1ULL<<0)   /* restart ip valid */
 #define MCG_STATUS_EIPV  (1ULL<<1)   /* eip points to correct instruction */
@@ -70,6 +72,7 @@ struct mce {
 
 #define MCG_CMCI_P		(1ULL<<10)   /* CMCI supported */
 #define MCG_TES_P		(1ULL<<11)   /* Yellow bit cache threshold supported */
+#define MCG_SER_P		(1ULL<<24)   /* MCA recovery / new status */
 
 #define NELE(x) (sizeof(x)/sizeof(*(x)))
 #define err(x) perror(x),exit(1)

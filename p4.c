@@ -235,6 +235,13 @@ static void decode_tracking(u64 track)
 	}
 }
 
+static const char *arstate[4] = { 
+	[0] = "UCNA",
+	[1] = "AR", 	
+	[2] = "SRAO",
+	[3] = "SRAR"
+};
+
 static void decode_mci(__u64 status, int cpu, unsigned mcgcap, int *ismemerr,
 		       int socket)
 {
@@ -261,6 +268,9 @@ static void decode_mci(__u64 status, int cpu, unsigned mcgcap, int *ismemerr,
 
 	if (status & MCI_STATUS_PCC)
 		Wprintf("Processor context corrupt\n");
+
+	if (status & (MCI_STATUS_S|MCI_STATUS_AR))
+		Wprintf("%s\n", arstate[(status >> 55) & 3]);
 
 	if ((mcgcap == 0 || (mcgcap & MCG_TES_P)) && !(status & MCI_STATUS_UC)) {
 		track = (status >> 53) & 3;
