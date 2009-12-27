@@ -511,7 +511,7 @@ static void decodefatal(FILE *inf)
 	char symbol[100];
 	int data;
 	int next;
-	char *s;
+	char *s = NULL;
 	unsigned cpuvendor;
 	unsigned recordlen;
 	int disclaimer_seen;
