@@ -60,7 +60,8 @@ void Eprintf(char *fmt, ...)
 		va_start(ap, fmt);
 		fputs("mcelog: ", f);
 		vfprintf(f, fmt, ap);
-		fputc('\n', f);
+		if (*fmt && fmt[strlen(fmt)-1] != '\n')
+			fputc('\n', f);
 		va_end(ap);
 	}
 	if (syslog_opt & SYSLOG_ERROR) { 
