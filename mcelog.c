@@ -198,6 +198,7 @@ static char *cputype_name[] = {
 	[CPU_NEHALEM] = "Intel Xeon 55xx / Core i7 (\"Nehalem\")",
 	[CPU_DUNNINGTON] = "Intel Xeon 7400",
 	[CPU_TULSA] = "Intel Xeon 71xx",
+	[CPU_INTEL] = "Intel generic architectural MCA",
 };
 
 static struct config_choice cpu_choices[] = {
@@ -213,6 +214,7 @@ static struct config_choice cpu_choices[] = {
 	{ "nehalem", CPU_NEHALEM },
 	{ "xeon71xx", CPU_TULSA },
 	{ "tulsa", CPU_TULSA },
+	{ "intel", CPU_INTEL },
 	{}
 };
 

@@ -110,6 +110,7 @@ enum cputype {
 	CPU_NEHALEM,
 	CPU_DUNNINGTON,
 	CPU_TULSA,
+	CPU_INTEL, /* Intel architectural errors */
 };
 
 enum option_ranges {

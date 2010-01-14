@@ -10,5 +10,6 @@ extern int memory_error_support;
 	case CPU_NEHALEM: \
 	case CPU_DUNNINGTON: \
 	case CPU_TULSA:	\
-	case CPU_P4
+	case CPU_P4: \
+	case CPU_INTEL
 
