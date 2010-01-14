@@ -16,6 +16,7 @@
    on your Linux system; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 #define _GNU_SOURCE 1
+#include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -140,4 +141,22 @@ void trigger_wait(void)
 		if (sigwait(&mask, &sig) < 0)
 			SYSERRprintf("sigwait waiting for children");
 	}
+}
+
+int trigger_check(char *s)
+{
+	char *name;
+	int rc;
+
+	if (trigger_dir)
+		asprintf(&name, "%s/%s", trigger_dir, s);
+	else
+		name = s;
+
+	rc = access(name, R_OK|X_OK);
+
+	if (trigger_dir)
+		free(name);
+
+	return rc;
 }

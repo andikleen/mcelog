@@ -103,7 +103,7 @@ void yellow_setup(void)
 	int n;
 
 	yellow_trigger = config_string("cache", "cache-threshold-trigger"); 
-	if (yellow_trigger && access(yellow_trigger, R_OK|X_OK) < 0) {
+	if (yellow_trigger && trigger_check(yellow_trigger) < 0) {
 		SYSERRprintf("Cannot access cache threshold trigger `%s'", 
 				yellow_trigger);
 		exit(1);

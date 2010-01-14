@@ -30,6 +30,7 @@
 #include "mcelog.h"
 #include "config.h"
 #include "leaky-bucket.h"
+#include "trigger.h"
 
 #ifdef TEST
 #define Eprintf printf
@@ -303,7 +304,7 @@ int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
 	s = config_string(header, name);
 	if (s) { 
 		/* no $PATH */
-		if (access(s, R_OK|X_OK) != 0) {
+		if (trigger_check(s) != 0) {
 			SYSERRprintf("Trigger `%s' not executable\n", s);
 			exit(1);
 		}
