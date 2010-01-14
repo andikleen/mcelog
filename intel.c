@@ -32,6 +32,9 @@ enum cputype select_intel_cputype(int family, int model)
 		return CPU_P4;
 	} 
 	if (family == 6) { 
+		if (model >= 0x1a) 
+			memory_error_support = 1;
+
 		if (model < 0xf) 
 			return CPU_P6OLD;
 		else if (model == 0xf || model == 0x17) /* Merom/Penryn */
@@ -40,9 +43,6 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_DUNNINGTON;
 		else if (model == 0x1a)
 			return CPU_NEHALEM;
-
-		if (model >= 0x1a) 
-			memory_error_support = 1;
 	}
 	Eprintf("Unknown Intel CPU type family %x model %x\n", family, model);
 	return family == 6 ? CPU_P6OLD : CPU_GENERIC;
