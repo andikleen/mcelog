@@ -72,7 +72,7 @@ Run it with "make test"
 
 The test suite requires the mce-inject tool, available from
 git://git.kernel.org/pub/utils/cpu/mce/mce-inject.git
-The mce-test executable must be either in $PATH or in the
+The mce-inject executable must be either in $PATH or in the
 ../mce-inject directory.
 
 License:
