@@ -22,6 +22,7 @@
 #include <sys/ioctl.h>
 #include <asm/types.h>
 #include <asm/ioctls.h>
+#include <linux/limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -650,12 +651,30 @@ restart:
 static void remove_pidfile(void)
 {
 	unlink(pidfile);
+	free(pidfile);
 }
 
 static void signal_exit(int sig)
 {
 	remove_pidfile();
 	_exit(sig);
+}
+
+static void setup_pidfile(char *s)
+{
+	char cwd[PATH_MAX];
+	char *c;
+
+	if (*s != '/') {
+		c = getcwd(cwd, PATH_MAX);
+		if (!c)
+			return;
+		asprintf(&pidfile, "%s/%s", cwd, s);
+	} else {
+		asprintf(&pidfile, "%s", s);
+	}
+
+	return;
 }
 
 static void write_pidfile(void)
@@ -861,7 +880,7 @@ static int modifier(int opt)
 		numerrors = atoi(optarg);
 		break;
 	case O_PIDFILE:
-		pidfile = optarg;
+		setup_pidfile(optarg);
 		break;
 	case O_CONFIG_FILE:
 		/* parsed in config.c */
