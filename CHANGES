@@ -1,5 +1,6 @@
 <newer changes first>
 
+Add Xeon75xx support
 Add Intel architectural mca fallback for new family 6 Intel CPUs
 Add --pidfile option to write daemon pid into file.
 Enable DIMM, socket, cache tracking and per page tracking by default

@@ -21,6 +21,7 @@
 #include "nehalem.h"
 #include "memdb.h"
 #include "page.h"
+#include "xeon75xx.h"
 
 int memory_error_support;
 
@@ -43,6 +44,8 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_DUNNINGTON;
 		else if (model == 0x1a)
 			return CPU_NEHALEM;
+		else if (model == 0x2e)
+			return CPU_XEON75XX;
 
 		if (model > 0x1a) {
 			Eprintf("Unsupported new Family 6 Model %x CPU: only decoding architectural errors\n",
@@ -74,12 +77,15 @@ static int intel_memory_error(struct mce *m, unsigned recordlen)
 	if ((mca >> 7) == 1) { 
 		int cmci = 0;
 		unsigned corr_err_cnt = 0;
-		int channel = (mca & 0xf) == 0xf ? -1 : (int)(mca & 0xf);
-		int dimm = -1;
+		int channel[2] = { (mca & 0xf) == 0xf ? -1 : (int)(mca & 0xf), -1 };
+		int dimm[2] = { -1, -1 };
 
 		switch (cputype) { 
 		case CPU_NEHALEM:
-			nehalem_memerr_misc(m, &channel, &dimm);
+			nehalem_memerr_misc(m, channel, dimm);
+			break;
+		case CPU_XEON75XX:
+			xeon75xx_memory_error(m, recordlen, channel, dimm);
 			break;
 		default:
 			cmci = !!(m->mcgcap & MCG_CMCI_P);
@@ -88,9 +94,17 @@ static int intel_memory_error(struct mce *m, unsigned recordlen)
 
 		if (cmci)
  			corr_err_cnt = EXTRACT(m->status, 38, 52);
-		memory_error(m, channel, dimm, corr_err_cnt, recordlen);
+		memory_error(m, channel[0], dimm[0], corr_err_cnt, recordlen);
+		account_page_error(m, channel[0], dimm[0], corr_err_cnt);
 
-		account_page_error(m, channel, dimm, corr_err_cnt);
+		/* 
+	 	 * For corr_err_cnt we don't know for which DIMM it was. Account it 
+		 * to both.
+		 */
+		if (channel[1] != -1) {
+			memory_error(m, channel[1], dimm[1], corr_err_cnt, recordlen);
+			account_page_error(m, channel[1], dimm[1], corr_err_cnt);
+		}
 
 		return 1;
 	}

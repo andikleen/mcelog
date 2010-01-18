@@ -331,6 +331,7 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 			p4_decode_model(log->status & 0xffff0000L);
 			break;
 		case CPU_NEHALEM:
+		case CPU_XEON75XX:
 			core2_decode_model(log->status);
 			break;
 		}
@@ -346,6 +347,9 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 		break;
 	case CPU_TULSA:
 		tulsa_decode_model(log->status, log->misc);
+		break;
+	case CPU_XEON75XX:
+		xeon75xx_decode_model(log, size);
 		break;
 	}
 }

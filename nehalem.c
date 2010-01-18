@@ -24,6 +24,7 @@
 #include "nehalem.h"
 #include "bitfield.h"
 #include "memdb.h"
+#include "xeon75xx.h"
 
 /* See IA32 SDM Vol3B Appendix E.3.2 ff */
 
@@ -154,6 +155,18 @@ void nehalem_decode_model(u64 status, u64 misc)
 		if (status & MCI_STATUS_MISCV)
 			decode_numfield(misc, nhm_memory_misc_numbers);
 	}
+}
+
+/* Only core errors supported. Same as Nehalem */
+void xeon75xx_decode_model(struct mce *m, unsigned msize)
+{
+	u64 status = m->status;
+	u32 mca = status & 0xffff;
+	if (mca == 0x0001) { /* internal unspecified */
+		decode_bitfield(status, internal_error_status);
+		decode_numfield(status, internal_error_numbers);
+	}
+	xeon75xx_decode_dimm(m, msize);
 }
 
 /* Nehalem-EP specific DIMM decoding */
