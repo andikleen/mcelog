@@ -389,6 +389,10 @@ static void dump_mce_raw_ascii(struct mce *m, unsigned recordlen)
 	CPRINT("SOCKETID %u", socketid);
 	CPRINT("APICID %u", apicid);
 	CPRINT("MCGCAP %#llx", mcgcap);
+	if (m->aux0)
+		CPRINT("AUX0 %#llx", aux0);
+	if (m->aux1)
+		CPRINT("AUX1 %#llx", aux1);
 #undef CPRINT
 	Wprintf("\n");
 }
@@ -633,6 +637,16 @@ restart:
 				missing++;
 			FIELD(socketid);
 		} 
+		else if (!strncmp(s, "AUX0", 4)) {
+			if ((n = sscanf(s, "AUX0 %llx%n", &m.aux0, &next)) != 1)
+				missing++;
+			FIELD(aux0);
+		}
+		else if (!strncmp(s, "AUX1", 4)) {
+			if ((n = sscanf(s, "AUX1 %llx%n", &m.aux1, &next)) != 1)
+				missing++;
+			FIELD(aux1);
+		}
 		else if (strstr(s, "HARDWARE ERROR"))
 			disclaimer_seen = 1;
 		else { 
