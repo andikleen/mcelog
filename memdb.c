@@ -182,6 +182,8 @@ out:
 static void 
 account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigned corr_err_cnt)
 {
+#if 0
+	/* Need per socket accounting */
 	if (corr_err_cnt && --corr_err_cnt > 0) {
 		/* Lost some errors. Assume they were CE */
 		md->ce.count += corr_err_cnt;
@@ -193,6 +195,7 @@ account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigne
 			free(msg);
 		}
 	}
+#endif
 
 	if (m->status & MCI_STATUS_UC) { 
 		md->uc.count++;

@@ -15,6 +15,7 @@
    You should find a copy of v2 of the GNU General Public License somewhere
    on your Linux system; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
+#include <stddef.h>
 #include "mcelog.h"
 #include "intel.h"
 #include "bitfield.h"
@@ -75,7 +76,6 @@ static int intel_memory_error(struct mce *m, unsigned recordlen)
 {
 	u32 mca = m->status & 0xffff;
 	if ((mca >> 7) == 1) { 
-		int cmci = 0;
 		unsigned corr_err_cnt = 0;
 		int channel[2] = { (mca & 0xf) == 0xf ? -1 : (int)(mca & 0xf), -1 };
 		int dimm[2] = { -1, -1 };
@@ -88,22 +88,20 @@ static int intel_memory_error(struct mce *m, unsigned recordlen)
 			xeon75xx_memory_error(m, recordlen, channel, dimm);
 			break;
 		default:
-			cmci = !!(m->mcgcap & MCG_CMCI_P);
 			break;
 		} 
 
-		if (cmci)
+		if (recordlen > offsetof(struct mce, mcgcap) && m->mcgcap & MCG_CMCI_P)
  			corr_err_cnt = EXTRACT(m->status, 38, 52);
 		memory_error(m, channel[0], dimm[0], corr_err_cnt, recordlen);
-		account_page_error(m, channel[0], dimm[0], corr_err_cnt);
+		account_page_error(m, channel[0], dimm[0]);
 
 		/* 
-	 	 * For corr_err_cnt we don't know for which DIMM it was. Account it 
-		 * to both.
+		 * When both DIMMs have a error account the error twice to the page.
 		 */
 		if (channel[1] != -1) {
 			memory_error(m, channel[1], dimm[1], corr_err_cnt, recordlen);
-			account_page_error(m, channel[1], dimm[1], corr_err_cnt);
+			account_page_error(m, channel[1], dimm[1]);
 		}
 
 		return 1;

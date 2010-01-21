@@ -166,7 +166,7 @@ static void offline_action(struct mempage *mp, u64 addr)
 		mp->offlined = PAGE_OFFLINE;
 }
 
-void account_page_error(struct mce *m, int channel, int dimm, unsigned corr_err_cnt)
+void account_page_error(struct mce *m, int channel, int dimm)
 {
 	u64 addr = m->addr;
 	struct mempage *mp;
@@ -186,7 +186,7 @@ void account_page_error(struct mce *m, int channel, int dimm, unsigned corr_err_
 	        mempage_insert(addr, mp);
 	}
 	++mp->ce.count;
-	if (__bucket_account(&page_trigger_conf, &mp->ce.bucket, 1+corr_err_cnt, t)) { 
+	if (__bucket_account(&page_trigger_conf, &mp->ce.bucket, 1, t)) { 
 		struct memdimm *md;
 		char *msg;
 		char *thresh;
