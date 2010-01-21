@@ -564,23 +564,35 @@ restart:
 				m.cpu = cpu;
 				if (n < 2) 
 					missing++;
-				else
+				else { 
 					m.bank = bank;
-			} else { 
+					FIELD(bank);
+				}
+			} else if (n <= 0) { 
+				missing++;
+			} else if (n > 1) {
+				FIELD(mcgstatus);
 				m.cpu = cpu;
-				m.bank = bank;
-				if (n < 4) 
+				if (n > 2) {
+					m.bank = bank;
+					FIELD(bank);
+				} else if (n > 3) 
+					FIELD(status);
+				if (n < 4)
 					missing++; 
-
 			}
 		} 
 		else if (!strncmp(s, "STATUS", 6)) {
 			if ((n = sscanf(s,"STATUS %llx%n", &m.status, &next)) < 1)
 				missing++;
+			else
+				FIELD(status);
 		}
 		else if (!strncmp(s, "MCGSTATUS", 6)) {
 			if ((n = sscanf(s,"MCGSTATUS %llx%n", &m.mcgstatus, &next)) < 1)
 				missing++;
+			else
+				FIELD(mcgstatus);
 		}
 		else if (!strncmp(s, "RIP", 3)) { 
 			unsigned cs = 0; 
@@ -597,55 +609,71 @@ restart:
 			m.cs = cs;
 			if (n < 2) 
 				missing++; 
+			else
+				FIELD(ip);
 		} 
 		else if (!strncmp(s, "TSC",3)) { 
 			if ((n = sscanf(s, "TSC %llx%n", &m.tsc, &next)) < 1) 
 				missing++;
+			else
+				FIELD(tsc);
 		}
 		else if (!strncmp(s, "ADDR",4)) { 
 			if ((n = sscanf(s, "ADDR %llx%n", &m.addr, &next)) < 1) 
 				missing++;
+			else
+				FIELD(addr);
 		}
 		else if (!strncmp(s, "MISC",4)) { 
 			if ((n = sscanf(s, "MISC %llx%n", &m.misc, &next)) < 1) 
 				missing++; 
+			else
+				FIELD(misc);
 		} 
 		else if (!strncmp(s, "PROCESSOR", 9)) { 
 			if ((n = sscanf(s, "PROCESSOR %u:%x%n", &cpuvendor, &m.cpuid, &next)) < 2)
 				missing++;
-			else
+			else {
 				m.cpuvendor = cpuvendor;			
-			FIELD(cpuvendor);
+				FIELD(cpuid);
+				FIELD(cpuvendor);
+			}
 		} 
 		else if (!strncmp(s, "TIME", 4)) { 
 			if ((n = sscanf(s, "TIME %llu%n", &m.time, &next)) < 1)
 				missing++;
-			FIELD(time);
+			else
+				FIELD(time);
 		} 
 		else if (!strncmp(s, "MCGCAP", 6)) {
 			if ((n = sscanf(s, "MCGCAP %llx%n", &m.mcgcap, &next)) != 1)
 				missing++;
-			FIELD(mcgcap);
+			else
+				FIELD(mcgcap);
 		} 
 		else if (!strncmp(s, "APICID", 6)) {
 			if ((n = sscanf(s, "APICID %x%n", &m.apicid, &next)) != 1)
 				missing++;
-			FIELD(apicid);
+			else
+				FIELD(apicid);
 		} 
 		else if (!strncmp(s, "SOCKETID", 8)) {
 			if ((n = sscanf(s, "SOCKETID %u%n", &m.socketid, &next)) != 1)
 				missing++;
-			FIELD(socketid);
+			else
+				FIELD(socketid);
 		} 
 		else if (!strncmp(s, "AUX0", 4)) {
 			if ((n = sscanf(s, "AUX0 %llx%n", &m.aux0, &next)) != 1)
 				missing++;
-			FIELD(aux0);
+			else
+				FIELD(aux0);
 		}
 		else if (!strncmp(s, "AUX1", 4)) {
 			if ((n = sscanf(s, "AUX1 %llx%n", &m.aux1, &next)) != 1)
 				missing++;
-			FIELD(aux1);
+			else
+				FIELD(aux1);
 		}
 		else if (strstr(s, "HARDWARE ERROR"))
 			disclaimer_seen = 1;
