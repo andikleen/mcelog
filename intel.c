@@ -34,7 +34,7 @@ enum cputype select_intel_cputype(int family, int model)
 		return CPU_P4;
 	} 
 	if (family == 6) { 
-		if (model >= 0x1a) 
+		if (model >= 0x1a && model != 28) 
 			memory_error_support = 1;
 
 		if (model < 0xf) 
