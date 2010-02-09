@@ -1,0 +1,8 @@
+#!/bin/sh
+
+PATH=$PATH:$(pwd)/../../../mce-inject
+
+../../input/GENCACHE 1 1 data green | mce-inject
+../../input/GENCACHE 1 1 data yellow | mce-inject
+../../input/GENCACHE 1 2 generic yellow | mce-inject
+

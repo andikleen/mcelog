@@ -7,4 +7,5 @@ test:
 	./test socket
 
 clean:
-	rm -f */log
+	rm -f */*log
+	rm -f */results
