@@ -195,11 +195,11 @@ static char *cputype_name[] = {
 	[CPU_CORE2] = "Intel Core", /* 65nm and 45nm */
 	[CPU_K8] = "AMD K8 and derivates",
 	[CPU_P4] = "Intel P4",
-	[CPU_NEHALEM] = "Intel Xeon 55xx / Core i3/5/7 (\"Nehalem/Westmere\")",
-	[CPU_DUNNINGTON] = "Intel Xeon 7400",
-	[CPU_TULSA] = "Intel Xeon 71xx",
+	[CPU_NEHALEM] = "Intel Xeon 5500 series / Core i3/5/7 (\"Nehalem/Westmere\")",
+	[CPU_DUNNINGTON] = "Intel Xeon 7400 series",
+	[CPU_TULSA] = "Intel Xeon 7100 series",
 	[CPU_INTEL] = "Intel generic architectural MCA",
-	[CPU_XEON75XX] = "Intel Xeon 75xx",
+	[CPU_XEON75XX] = "Intel Xeon 7500 series",
 };
 
 static struct config_choice cpu_choices[] = {
@@ -210,13 +210,26 @@ static struct config_choice cpu_choices[] = {
 	{ "p4", CPU_P4 },
 	{ "dunnington", CPU_DUNNINGTON },
 	{ "xeon74xx", CPU_DUNNINGTON },
-	{ "xeon55xx", CPU_NEHALEM },
+	{ "xeon7400", CPU_DUNNINGTON },
+	{ "xeon5500", CPU_NEHALEM },
+	{ "xeon5200", CPU_CORE2 },
+	{ "xeon5000", CPU_P4 },
+	{ "xeon5100", CPU_CORE2 },
+	{ "xeon3100", CPU_CORE2 },
+	{ "xeon3200", CPU_CORE2 },
 	{ "core_i7", CPU_NEHALEM },
+	{ "core_i5", CPU_NEHALEM },
+	{ "core_i3", CPU_NEHALEM },
 	{ "nehalem", CPU_NEHALEM },
+	{ "westmere", CPU_NEHALEM },
 	{ "xeon71xx", CPU_TULSA },
+	{ "xeon7100", CPU_TULSA },
 	{ "tulsa", CPU_TULSA },
 	{ "intel", CPU_INTEL },
 	{ "xeon75xx", CPU_XEON75XX },
+	{ "xeon7500", CPU_XEON75XX },
+	{ "xeon7200", CPU_CORE2 },
+	{ "xeon7100", CPU_P4 },
 	{}
 };
 
