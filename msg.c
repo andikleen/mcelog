@@ -116,13 +116,13 @@ int Wprintf(char *fmt, ...)
 {
 	int n = 0;
 	va_list ap;
-	if (syslog_opt & SYSLOG_ERROR) {
+	if (syslog_opt & SYSLOG_LOG) {
 		va_start(ap,fmt);
 		opensyslog();
 		n = vlinesyslog(fmt, ap);
 		va_end(ap);
 	}
-	if (!(syslog_opt & SYSLOG_ERROR) || output_fh) {
+	if (!(syslog_opt & SYSLOG_LOG) || output_fh) {
 		va_start(ap,fmt);
 		n = vfprintf(output_fh ? output_fh : stdout, fmt, ap);
 		va_end(ap);
