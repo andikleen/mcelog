@@ -25,3 +25,5 @@ logger -s -p daemon.err -t mcelog "$MESSAGE"
 logger -s -p daemon.err -t mcelog "Location: $LOCATION"
 
 [ -x ./dimm-error-trigger.local ] && . ./dimm-error-trigger.local
+
+exit 0
