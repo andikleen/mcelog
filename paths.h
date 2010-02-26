@@ -5,3 +5,5 @@
 #define CONFIG_FILENAME PREFIX "/etc/mcelog/mcelog.conf"
 
 #define SOCKET_PATH "/var/run/mcelog-client"
+
+#define LOG_FILE "/var/log/mcelog"

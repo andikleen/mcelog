@@ -1,5 +1,6 @@
 <newer changes first>
 
+Default --daemon mode to logging to /var/log/mcelog
 Add Core i3/5 and more Westmere support
 Add Xeon75xx support
 Add Intel architectural mca fallback for new family 6 Intel CPUs

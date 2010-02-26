@@ -77,6 +77,7 @@ int filter_memory_errors;
 static struct config_cred runcred = { .uid = -1U, .gid = -1U };
 static int numerrors;
 static char *pidfile;
+static char *logfile;
 
 static void check_cpu(void);
 
@@ -856,10 +857,7 @@ static int modifier(int opt)
 
 	switch (opt) { 
 	case O_LOGFILE:
-		if (open_logfile(optarg) < 0) {
-			fprintf(stderr, "Cannot open log file %s. Exiting.\n", optarg);	
-			exit(1);
-		}
+		logfile = optarg;
 		break;
 	case O_K8:
 		cputype = CPU_K8;
@@ -924,8 +922,11 @@ static int modifier(int opt)
 		break;
 	case O_DAEMON:
 		daemon_mode = 1;
+		if (!logfile)
+			logfile = LOG_FILE;
 		if (!(syslog_opt & SYSLOG_FORCE))
-			syslog_opt = SYSLOG_ALL;
+			syslog_opt = SYSLOG_REMARK;
+
 		break;
 	case O_FILE:
 		inputfile = optarg;
@@ -951,6 +952,19 @@ static int modifier(int opt)
 	}
 	return 1;
 } 
+
+static void modifier_finish(void)
+{
+	if (logfile) {
+		if (open_logfile(logfile) < 0) {
+			if (daemon_mode && !(syslog_opt & SYSLOG_FORCE))
+				syslog_opt = SYSLOG_ALL;
+			SYSERRprintf("Cannot open logfile %s", logfile);
+			if (!daemon_mode)
+				exit(1);
+		}
+	}			
+}
 
 void argsleft(int ac, char **av)
 {
@@ -1135,6 +1149,7 @@ int main(int ac, char **av)
 		} else if (opt == 0)
 			break;		    
 	} 
+	modifier_finish();
 	if (av[optind])
 		logfn = av[optind++];
 	if (av[optind])
