@@ -1121,6 +1121,11 @@ static void process_mcefd(struct pollfd *pfd, void *data)
 	process(pfd->fd, d->recordlen, d->loglen, d->buf);
 }
 
+static void handle_sigusr1(int sig)
+{
+	reopenlog();
+}
+
 int main(int ac, char **av) 
 { 
 	struct mcefd_data d = {};
@@ -1184,6 +1189,8 @@ int main(int ac, char **av)
 			err("daemon");
 		if (pidfile)
 			write_pidfile();
+		signal(SIGUSR1, handle_sigusr1);
+		event_signal(SIGUSR1);
 		eventloop();
 	} else {
 		process(fd, d.recordlen, d.loglen, d.buf);

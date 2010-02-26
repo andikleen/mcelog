@@ -7,10 +7,12 @@
 #include <stdio.h>
 #include "mcelog.h"
 #include "msg.h"
+#include "memutil.h"
 
 enum syslog_opt syslog_opt = SYSLOG_REMARK;
 int syslog_level = LOG_WARNING;
 static FILE *output_fh;
+static char *output_fn;
 
 int need_stdout(void)
 {
@@ -20,7 +22,13 @@ int need_stdout(void)
 int open_logfile(char *fn)
 {
 	output_fh = fopen(fn, "a");
-	return output_fh ? 0 : -1;
+	if (output_fh) { 
+		char *old = output_fn;
+		output_fn = xstrdup(fn);
+		free(old);
+		return 0;
+	}
+	return -1;
 }
 
 static void opensyslog(void)
@@ -150,4 +158,14 @@ void flushlog(void)
 {
 	FILE *f = output_fh ? output_fh : stdout;
 	fflush(f);
+}
+
+void reopenlog(void)
+{
+	if (output_fn && output_fh) { 
+		fclose(output_fh);
+		output_fh = NULL;
+		if (open_logfile(output_fn) < 0) 
+			SYSERRprintf("Cannot reopen logfile `%s'", output_fn);
+	}	
 }

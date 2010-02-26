@@ -9,6 +9,7 @@
     copytruncate
     postrotate
     chmod 644 /var/log/mcelog
+    [ -r /var/run/mcelog.pid ] && kill -USR1 `cat /var/run/mcelog.pid`
     endscript
 }
 
