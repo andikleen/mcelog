@@ -76,7 +76,7 @@ static int foreground;
 int filter_memory_errors;
 static struct config_cred runcred = { .uid = -1U, .gid = -1U };
 static int numerrors;
-static char *pidfile;
+static char *pidfile = PID_FILE;
 static char *logfile;
 
 static void check_cpu(void);

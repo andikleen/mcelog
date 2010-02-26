@@ -283,12 +283,15 @@ runs in daemon mode and receives a
 .I SIGUSR1
 it will close and reopen the log files. This can be used to rotate logs without
 restarting the daemon.
+
 .SH FILES
 /dev/mcelog (char 10, minor 227) 
 
 /etc/mcelog/mcelog.conf
 
-/sys/devices/system/machinecheck/machinecheck0/trigger
+/var/log/mcelog
+
+/var/run/mcelog.pid
 
 .\"/var/lib/memory-errors
 .SH SEE ALSO

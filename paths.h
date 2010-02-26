@@ -7,3 +7,5 @@
 #define SOCKET_PATH "/var/run/mcelog-client"
 
 #define LOG_FILE "/var/log/mcelog"
+
+#define PID_FILE "/var/run/mcelog.pid"

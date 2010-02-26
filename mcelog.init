@@ -27,7 +27,7 @@ MCELOG_MODE=daemon
 # this only works in daemon mode
 # see the manpage for details. settings can be also
 # set in /etc/mcelog.conf
-MCELOG_OPTIONS="--pidfile /var/run/mcelog.pid"
+MCELOG_OPTIONS=""
 
 # private settings
 MCELOG=${MCELOG:-/usr/sbin/mcelog}

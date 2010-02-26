@@ -1,5 +1,6 @@
 <newer changes first>
 
+Write pid file by default in daemon mode
 Reopen log files on SIGUSR1 in daemon mode
 Default --daemon mode to logging to /var/log/mcelog
 Add Core i3/5 and more Westmere support
