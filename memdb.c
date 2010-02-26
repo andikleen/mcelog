@@ -167,7 +167,7 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 	asprintf(&env[ei++], "AGETIME=%u", bc->agetime);
 	// XXX human readable version of agetime
 	asprintf(&env[ei++], "MESSAGE=%s", out);
-	asprintf(&env[ei++], "THRESHOLD_COUNT=%d", bucket->count + bucket->excess);
+	asprintf(&env[ei++], "THRESHOLD_COUNT=%d", bucket->count);
 	env[ei] = NULL;	
 	assert(ei < MAX_ENV);
 	run_trigger(bc->trigger, NULL, env);
@@ -399,6 +399,10 @@ void prefill_memdb(void)
 		md->name = xstrdup(dmi_getstring(&d->header, d->device_locator));
 	}
 	if (missed) { 
-		Eprintf("failed to prefill DIMM database from DMI data");
+		static int warned;
+		if (!warned) {
+			Eprintf("failed to prefill DIMM database from DMI data");
+			warned = 1;
+		}
 	}
 }
