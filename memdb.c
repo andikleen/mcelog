@@ -179,13 +179,14 @@ out:
 	free(thresh);
 }
 
-static void 
-account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigned corr_err_cnt)
+/* 
+ * Lost some errors. Assume they were CE. Only works for the sockets because
+ * we have no clues where they are.
+ */
+static void
+account_over(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigned corr_err_cnt)
 {
-#if 0
-	/* Need per socket accounting */
 	if (corr_err_cnt && --corr_err_cnt > 0) {
-		/* Lost some errors. Assume they were CE */
 		md->ce.count += corr_err_cnt;
 		if (__bucket_account(&t->ce_bucket_conf, &md->ce.bucket, corr_err_cnt, m->time)) { 
 			char *msg;
@@ -195,8 +196,11 @@ account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigne
 			free(msg);
 		}
 	}
-#endif
+}
 
+static void 
+account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m)
+{
 	if (m->status & MCI_STATUS_UC) { 
 		md->uc.count++;
 		if (__bucket_account(&t->uc_bucket_conf, &md->uc.bucket, 1, m->time))
@@ -220,14 +224,24 @@ void memory_error(struct mce *m, int ch, int dimm, unsigned corr_err_cnt,
 {
 	struct memdimm *md;
 
-	if (memdb_enabled && (ch != -1 || dimm != -1)) {
-		md = get_memdimm(m->socketid, ch, dimm);
-		account_memdb(&dimms, md, m, corr_err_cnt);
+	if (recordlen < offsetof(struct mce, socketid)) { 
+		static int warned;
+		if (!warned) {
+			Eprintf("Cannot account memory errors because kernel does not report socketid");
+			warned = 1;
+		}
+		return;
 	}
 
-	if (sockdb_enabled && recordlen > offsetof(struct mce, socketid)) {
+	if (memdb_enabled && (ch != -1 || dimm != -1)) {
+		md = get_memdimm(m->socketid, ch, dimm);
+		account_memdb(&dimms, md, m);
+	}
+
+	if (sockdb_enabled) {
 		md = get_memdimm(m->socketid, -1, -1);
-		account_memdb(&sockets, md, m, corr_err_cnt);
+		account_over(&sockets, md, m, corr_err_cnt);
+		account_memdb(&sockets, md, m);
 	}
 }
 
