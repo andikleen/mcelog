@@ -346,6 +346,18 @@ void memdb_config(void)
 	config_trigger("socket", "mem-uc-error", &sockets.uc_bucket_conf);
 }
 
+static int 
+parse_dimm_addr(char *bl, unsigned *socketid, unsigned *channel, unsigned *dimm)
+{
+	if (!bl)
+		return 0;
+	if (sscanf(bl + strcspn(bl, "_"), "_Node%u_Channel%u_Dimm%u", socketid, 
+		   channel, dimm) == 3)
+		return 1;
+	/* Add more DMI formats here */
+	return 0;		
+}
+
 /* Prepopulate DIMM database from BIOS information */
 void prefill_memdb(void)
 {
@@ -371,9 +383,7 @@ void prefill_memdb(void)
 		char *bl;
 
 		bl = dmi_getstring(&d->header, d->bank_locator);
-		if (!bl || sscanf(bl + strcspn(bl, "_"), 
-				"_Node%u_Channel%u_Dimm%u", &socketid, 
-					&channel, &dimm) != 3) {
+		if (!parse_dimm_addr(bl, &socketid, &channel, &dimm)) {
 			missed++;
 			continue;
 		}
