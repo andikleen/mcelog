@@ -72,7 +72,7 @@ static unsigned hash(const char *str)
 static struct header *new_header(struct header *prevh, char *name)
 {
 	struct header *h = xalloc(sizeof(struct header));
-	h->name = name;
+	h->name = xstrdup(name);
 	if (prevh) 
 		prevh->next = h;
 	else 
@@ -162,8 +162,8 @@ int parse_config_file(const char *fn)
 			name = strstrip(s);
 			val = strstrip(val);
 			opt = xalloc(sizeof(struct opt));
-			opt->name = name;
-			opt->val = val;
+			opt->name = xstrdup(name);
+			opt->val = xstrdup(val);
 			h = hash(name);
 			if (!hdr) 
 				hdr = new_header(hdr, "global");
@@ -173,13 +173,13 @@ int parse_config_file(const char *fn)
 			else
 				hdr->optslast[h]->next = opt;
 			hdr->optslast[h] = opt;
-		} else if (!empty(line)) { 
+		} else if (!empty(s)) {
 			parse_error(lineno, "config file line not field nor header");
 		}
 		lineno++;
-		line = NULL;
 	}
 	fclose(f);
+	free(line);
 	return 0;
 }
 
@@ -317,6 +317,7 @@ int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
 	n = config_bool(header, name);
 	if (n >= 0)
 		bc->log = n;
+	free(name);
 
 	return 0;
 }

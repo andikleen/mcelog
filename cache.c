@@ -138,6 +138,7 @@ static int read_caches(void)
 			free(fn);
 		}
 	}
+	closedir(cpus);
 	if (!caches) { 
 		Wprintf("No caches found in sysfs");
 		return -1;

@@ -103,8 +103,10 @@ config-test: config.c
 test:
 	$(MAKE) -C tests test DEBUG=""
 
+VALGRIND=valgrind --leak-check=full
+
 valgrind-test:
-	$(MAKE) -C tests test DEBUG="valgrind --leak-check=full"
+	$(MAKE) -C tests test DEBUG="${VALGRIND}"
 
 test-clean:
 	$(MAKE) -C tests clean
