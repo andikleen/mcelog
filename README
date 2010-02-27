@@ -87,8 +87,8 @@ The mce-inject executable must be either in $PATH or in the
 
 You can also test under valgrind with "make valgrind-test". For 
 this valgrind needs to be installed of course.  Advanced
-valgrind options (like --leak-trace=full) can be specified
-with make VALGRIND="valgrind --option" valgrind-test
+valgrind options can be specified with 
+make VALGRIND="valgrind --option" valgrind-test
 
 Other checks:
 
