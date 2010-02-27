@@ -742,7 +742,8 @@ static void write_pidfile(void)
 	FILE *f;
 	atexit(remove_pidfile);
 	signal(SIGTERM, signal_exit);
-	signal(SIGKILL, signal_exit);
+	signal(SIGINT, signal_exit);
+	signal(SIGQUIT, signal_exit);
 	f = fopen(pidfile, "w");
 	if (!f) {
 		Eprintf("Cannot open pidfile `%s'", pidfile);
