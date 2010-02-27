@@ -75,8 +75,10 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls, int soc
 	asprintf(&msg, "%s has large number of corrected cache errors in %s %s", 
 		location, ls, ts);
 	free(location);
-	if (yellow_log)
+	if (yellow_log) {
 		Lprintf("%s\n", msg);
+		Lprintf("System operating correctly, but might lead to uncorrected cache errors soon\n");
+	}
 	if (!yellow_trigger)
 		goto out;
 
