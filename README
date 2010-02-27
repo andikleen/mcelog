@@ -75,6 +75,11 @@ git://git.kernel.org/pub/utils/cpu/mce/mce-inject.git
 The mce-inject executable must be either in $PATH or in the
 ../mce-inject directory.
 
+You can also test under valgrind with "make valgrind-test". For 
+this valgrind needs to be installed of course. Note there are
+some expected leaks from the config parser which never 
+attempts to free the parsed config data.
+
 License:
 
 This program is licensed under the subject of the GNU Public General

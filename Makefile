@@ -101,7 +101,10 @@ config-test: config.c
 	gcc -DTEST=1 config.c -o config-test
 
 test:
-	$(MAKE) -C tests test
+	$(MAKE) -C tests test DEBUG=""
+
+valgrind-test:
+	$(MAKE) -C tests test DEBUG="valgrind --leak-check=full"
 
 test-clean:
 	$(MAKE) -C tests clean

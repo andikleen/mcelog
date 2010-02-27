@@ -1,10 +1,12 @@
 .PHONY: test clean
 
+DEBUG =
+
 test:
-	./test cache
-	./test page
-	./test memdb
-	./test socket
+	./test cache "${DEBUG}"
+	./test page "${DEBUG}"
+	./test memdb "${DEBUG}"
+	./test socket "${DEBUG}"
 
 clean:
 	rm -f */*log
