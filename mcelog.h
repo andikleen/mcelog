@@ -122,9 +122,9 @@ enum option_ranges {
 };
 
 enum syslog_opt { 
-	SYSLOG_LOG = (1 << 0),
-	SYSLOG_REMARK = (1 << 1), 
-	SYSLOG_ERROR  = (1 << 2),
+	SYSLOG_LOG = (1 << 0),		/* normal decoding output to syslog */
+	SYSLOG_REMARK = (1 << 1), 	/* special warnings to syslog */
+	SYSLOG_ERROR  = (1 << 2),	/* errors during operation to syslog */
 	SYSLOG_ALL = SYSLOG_LOG|SYSLOG_REMARK|SYSLOG_ERROR,
 	SYSLOG_FORCE = (1 << 3),
 };
