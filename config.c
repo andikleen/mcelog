@@ -87,7 +87,7 @@ static int empty(char *s)
 	return *s == 0;
 }
 
-static void parse_error(int line, char *msg)
+static void noreturn parse_error(int line, char *msg)
 {
 	Eprintf("config file line %d: %s\n", line, msg);
 	exit(1);

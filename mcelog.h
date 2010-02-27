@@ -87,11 +87,12 @@ struct mce {
 #define BITS_PER_INT (sizeof(unsigned) * 8)
 #define BITS_PER_LONG (sizeof(unsigned long) * 8)
 
-
 #ifdef __GNUC__
 #define PRINTFLIKE __attribute__((format(printf,1,2)))
+#define noreturn   __attribute__((noreturn))
 #else
 #define PRINTFLIKE 
+#define noreturn
 #endif
 
 int Wprintf(char *fmt, ...) PRINTFLIKE;

@@ -139,10 +139,6 @@ static int read_caches(void)
 		}
 	}
 	closedir(cpus);
-	if (!caches) { 
-		Wprintf("No caches found in sysfs");
-		return -1;
-	}
 	return 0;
 }
 
@@ -153,6 +149,10 @@ int cache_to_cpus(int cpu, unsigned level, unsigned type,
 	if (!caches) {
 		if (read_caches() < 0)
 			return -1;
+		if (!caches) { 
+			Wprintf("No caches found in sysfs");
+			return -1;
+		}
 	}
 	for (c = caches[cpu]; c && c->cpumap; c++) { 
 		//printf("%d level %d type %d\n", cpu, c->level, c->type);

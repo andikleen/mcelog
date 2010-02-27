@@ -56,8 +56,7 @@ char *read_field(char *base, char *name)
 
 bad:
 	SYSERRprintf("Cannot read sysfs field %s/%s", base, name);
-	*buf = 0;
-	return buf;
+	return xstrdup("");
 }
 
 unsigned read_field_num(char *base, char *name)
