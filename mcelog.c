@@ -76,7 +76,8 @@ static int foreground;
 int filter_memory_errors;
 static struct config_cred runcred = { .uid = -1U, .gid = -1U };
 static int numerrors;
-static char *pidfile = PID_FILE;
+static char pidfile_default[] = PID_FILE;
+static char *pidfile = pidfile_default;
 static char *logfile;
 
 static void check_cpu(void);
@@ -710,7 +711,8 @@ restart:
 static void remove_pidfile(void)
 {
 	unlink(pidfile);
-	free(pidfile);
+	if (pidfile != pidfile_default)
+		free(pidfile);
 }
 
 static void signal_exit(int sig)
