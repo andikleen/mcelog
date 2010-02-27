@@ -925,7 +925,7 @@ static int modifier(int opt)
 		if (!logfile)
 			logfile = LOG_FILE;
 		if (!(syslog_opt & SYSLOG_FORCE))
-			syslog_opt = SYSLOG_REMARK;
+			syslog_opt = SYSLOG_REMARK|SYSLOG_ERROR;
 
 		break;
 	case O_FILE:
