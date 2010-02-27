@@ -94,6 +94,9 @@ DISABLED_DIAGS := -diag-disable 188,271,869,2259,981,12072,181,12331,1572
 iccverify:
 	icc -Wall -diag-enable sv3 $(DISABLED_DIAGS) $(ADD_DEFINES) $(SRC)	
 
+clangverify:
+	clang --analyze $(ADD_DEFINES) $(SRC)
+
 src:
 	echo $(SRC)
 
