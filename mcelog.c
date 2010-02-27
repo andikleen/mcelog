@@ -435,7 +435,6 @@ void check_cpu(void)
 		char vendor[64] = { 0 };
 		char *line = NULL;
 		size_t linelen = 0; 
-		int n;
 		double mhz;
 
 		while (getdelim(&line, &linelen, '\n', f) > 0 && seen != ALL) { 
@@ -453,7 +452,7 @@ void check_cpu(void)
 					cpumhz = mhz;
 				seen |= MHZ;
 			}
-			if (sscanf(line, "flags : %n", &n) == 0 && n > 0) {
+			if (!strncmp(line, "flags :", 7)) {
 				processor_flags = line + 7;
 				line = NULL;
 				linelen = 0;
