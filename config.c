@@ -236,29 +236,32 @@ int config_bool(const char *header, const char *name)
 	return config_choice(header, name, bool_choices);
 }
 
+static char *match_arg(char **av, char *arg)
+{
+	int len = strlen(arg);
+	if (!strncmp(*av, arg, len)) {
+		if ((*av)[len] == '=') {
+			return len + 1 + *av;
+		} else { 
+			if (av[1] == NULL)
+				usage();
+			return av[1];
+		}
+	}
+	return NULL;
+}
+
 /* Look for the config file argument before parsing the other 
    options because we want to read the config file first so 
    that command line options can conveniently override it. */
 const char *config_file(char **av, const char *deffn)
 {
+	char *arg;
 	while (*++av) { 
 		if (!strcmp(*av, "--"))
 			break;
-		if (!strncmp(*av, "--config-file", 13)) {
-			if ((*av)[13] == '=') {
-				return 14 + *av;
-			} else { 
-				return av[1];
-			}
-		}
-		if (!strncmp(*av, "--config", 8)) {
-			if ((*av)[8] == '=') {
-				return 9 + *av;
-			} else { 
-				return av[1];
-			}
-		}
-
+		if ((arg = match_arg(av, "--conf")) != NULL)
+			return arg;
 	}
 	return deffn;
 }

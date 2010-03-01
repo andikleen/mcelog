@@ -47,6 +47,7 @@ struct memdimm {
 struct err_triggers {
 	struct bucket_conf ce_bucket_conf;
 	struct bucket_conf uc_bucket_conf;
+	char *type;
 };
 
 #define SHASH 17
@@ -54,8 +55,8 @@ struct err_triggers {
 static int md_numdimms;
 static struct memdimm *md_dimms[SHASH];
 
-static struct err_triggers dimms;
-static struct err_triggers sockets;
+static struct err_triggers dimms = { .type = "DIMM" };
+static struct err_triggers sockets = { .type = "Socket" };
 
 static int memdb_enabled;
 static int sockdb_enabled;
@@ -190,8 +191,8 @@ account_over(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigned
 		md->ce.count += corr_err_cnt;
 		if (__bucket_account(&t->ce_bucket_conf, &md->ce.bucket, corr_err_cnt, m->time)) { 
 			char *msg;
-			asprintf(&msg, "Lost DIMM memory error count %d exceeded threshold", 
-				 corr_err_cnt);
+			asprintf(&msg, "Fallback %s memory error count %d exceeded threshold", 
+				 t->type, corr_err_cnt);
 			memdb_trigger(msg, md, 0, &md->ce, &t->ce_bucket_conf);
 			free(msg);
 		}
@@ -201,17 +202,21 @@ account_over(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigned
 static void 
 account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m)
 {
+	char *msg;
+
+	asprintf(&msg, "%scorrected %s memory error count exceeded threshold", 
+		(m->status & MCI_STATUS_UC) ? "Un" : "", t->type);
+
 	if (m->status & MCI_STATUS_UC) { 
 		md->uc.count++;
 		if (__bucket_account(&t->uc_bucket_conf, &md->uc.bucket, 1, m->time))
-			memdb_trigger("Uncorrected DIMM memory error count exceeded threshold", 
-				      md, m->time, &md->uc, &t->uc_bucket_conf);
+			memdb_trigger(msg, md, m->time, &md->uc, &t->uc_bucket_conf);
 	} else {
 		md->ce.count++;
 		if (__bucket_account(&t->ce_bucket_conf, &md->ce.bucket, 1, m->time))
-			memdb_trigger("Corrected DIMM memory error count exceeded threshold", 
-				      md, m->time, &md->ce, &t->ce_bucket_conf);
+			memdb_trigger(msg, md, m->time, &md->ce, &t->ce_bucket_conf);
 	}
+	free(msg);
 }
 
 /* 
@@ -269,7 +274,7 @@ static void dump_errtype(char *name, struct err_type *e, FILE *f, enum printflag
 	if (e->count || all) {
 		fprintf(f, "\t%lu total\n", e->count);
 	}
-	if (e->bucket.count || all) {
+	if (bc->capacity && (e->bucket.count || all)) {
 		s = bucket_output(bc, &e->bucket);
 		fprintf(f, "\t%s\n", s);  
 		free(s);

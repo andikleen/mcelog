@@ -77,6 +77,7 @@ int filter_memory_errors;
 static struct config_cred runcred = { .uid = -1U, .gid = -1U };
 static int numerrors;
 static char pidfile_default[] = PID_FILE;
+static char logfile_default[] = LOG_FILE;
 static char *pidfile = pidfile_default;
 static char *logfile;
 
@@ -453,8 +454,8 @@ void check_cpu(void)
 					cpumhz = mhz;
 				seen |= MHZ;
 			}
-			if (!strncmp(line, "flags :", 7)) {
-				processor_flags = line + 7;
+			if (!strncmp(line, "flags", 5) && isspace(line[6])) {
+				processor_flags = line;
 				line = NULL;
 				linelen = 0;
 				seen |= FLAGS;
@@ -892,6 +893,7 @@ static int modifier(int opt)
 	case O_CPU:
 		cputype = lookup_cputype(optarg);
 		cpu_forced = 1;
+		intel_cpu_init(cputype);
 		break;
 	case O_DMI:
 		do_dmi = 1;
@@ -924,8 +926,8 @@ static int modifier(int opt)
 		break;
 	case O_DAEMON:
 		daemon_mode = 1;
-		if (!logfile)
-			logfile = LOG_FILE;
+		if (!logfile && !foreground)
+			logfile = logfile_default;
 		if (!(syslog_opt & SYSLOG_FORCE))
 			syslog_opt = SYSLOG_REMARK|SYSLOG_ERROR;
 
@@ -937,6 +939,8 @@ static int modifier(int opt)
 		foreground = 1;	
 		if (!(syslog_opt & SYSLOG_FORCE))
 			syslog_opt = SYSLOG_FORCE;
+		if (logfile == logfile_default)
+			logfile = NULL;
 		break;
 	case O_NUMERRORS:
 		numerrors = atoi(optarg);
