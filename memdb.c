@@ -274,7 +274,7 @@ static void dump_errtype(char *name, struct err_type *e, FILE *f, enum printflag
 	if (e->count || all) {
 		fprintf(f, "\t%lu total\n", e->count);
 	}
-	if (e->bucket.count || all) {
+	if (bc->capacity && (e->bucket.count || all)) {
 		s = bucket_output(bc, &e->bucket);
 		fprintf(f, "\t%s\n", s);  
 		free(s);
