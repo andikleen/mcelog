@@ -219,7 +219,7 @@ void dump_page_errors(FILE *f)
 		if (k++ == 0)
 			fprintf(f, "Per page corrected memory statistics:\n");
 		msg = bucket_output(&page_trigger_conf, &p->ce.bucket);
-		fprintf(f, "%llx: total %lu %s %s%s\n",
+		fprintf(f, "%llx: total %lu seen \"%s\" %s%s\n",
 			p->addr,
 			p->ce.count,
 			msg,
