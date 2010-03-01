@@ -893,6 +893,7 @@ static int modifier(int opt)
 	case O_CPU:
 		cputype = lookup_cputype(optarg);
 		cpu_forced = 1;
+		intel_cpu_init(cputype);
 		break;
 	case O_DMI:
 		do_dmi = 1;

@@ -26,6 +26,12 @@
 
 int memory_error_support;
 
+void intel_cpu_init(enum cputype cpu)
+{
+	if (cpu == CPU_NEHALEM || cpu == CPU_XEON75XX || cpu == CPU_INTEL)
+		memory_error_support = 1;
+}
+
 enum cputype select_intel_cputype(int family, int model)
 {
 	if (family == 15) { 
