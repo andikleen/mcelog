@@ -77,6 +77,7 @@ int filter_memory_errors;
 static struct config_cred runcred = { .uid = -1U, .gid = -1U };
 static int numerrors;
 static char pidfile_default[] = PID_FILE;
+static char logfile_default[] = LOG_FILE;
 static char *pidfile = pidfile_default;
 static char *logfile;
 
@@ -924,8 +925,8 @@ static int modifier(int opt)
 		break;
 	case O_DAEMON:
 		daemon_mode = 1;
-		if (!logfile)
-			logfile = LOG_FILE;
+		if (!logfile && !foreground)
+			logfile = logfile_default;
 		if (!(syslog_opt & SYSLOG_FORCE))
 			syslog_opt = SYSLOG_REMARK|SYSLOG_ERROR;
 
@@ -937,6 +938,8 @@ static int modifier(int opt)
 		foreground = 1;	
 		if (!(syslog_opt & SYSLOG_FORCE))
 			syslog_opt = SYSLOG_FORCE;
+		if (logfile == logfile_default)
+			logfile = NULL;
 		break;
 	case O_NUMERRORS:
 		numerrors = atoi(optarg);
