@@ -454,8 +454,8 @@ void check_cpu(void)
 					cpumhz = mhz;
 				seen |= MHZ;
 			}
-			if (!strncmp(line, "flags :", 7)) {
-				processor_flags = line + 7;
+			if (!strncmp(line, "flags", 5) && isspace(line[6])) {
+				processor_flags = line;
 				line = NULL;
 				linelen = 0;
 				seen |= FLAGS;
