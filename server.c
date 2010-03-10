@@ -166,7 +166,7 @@ static int access_check(int fd, struct msghdr *msg)
 /* retrieve commands from client */
 static int client_input(int fd, struct clientcon *cc)
 {
-	char ctlbuf[512];
+	char ctlbuf[CMSG_SPACE(sizeof(struct ucred))];
 	struct iovec miov;
 	struct msghdr msg = {
 		.msg_iov = &miov,
