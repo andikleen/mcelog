@@ -98,7 +98,7 @@ static char* get_PP_str(__u8 pp)
 
 static char* get_T_str(__u8 t)
 {
-	static char* T[] = {"Request-timeout", "Request-no-timeout"};
+	static char* T[] = {"Request-timed-out", "Request-did-not-timeout"};
 	if (t >= NELE(T)) {
 		return "UNKNOWN";
 	}
