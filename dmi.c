@@ -140,10 +140,12 @@ static void fill_handles(void)
 int opendmi(void)
 {
 	struct anchor *a, *abase;
+	void *p, *q;
 	int pagesize = getpagesize();
 	int memfd; 
 	unsigned corr;
 	int err = -1;
+	const int segsize = 0x10000;
 
 	if (entries)
 		return 0;
@@ -154,21 +156,25 @@ int opendmi(void)
 		return -1;
 	}	
 
-	abase = mmap(NULL, 0xffff, PROT_READ, MAP_SHARED, memfd, 0xf0000); 
+	abase = mmap(NULL, segsize-1, PROT_READ, MAP_SHARED, memfd, 0xf0000); 
 	if (abase == (struct anchor *)-1) {
 		Eprintf("Cannot mmap 0xf0000: %s", strerror(errno));
 		goto out;
 	}   
 
-	for (a = abase;;a += 4) { 
-		a = memmem(a, 0xffff, "_SM_", 4);
-		if (!a) {
-			Eprintf("Cannot find SMBIOS DMI tables");
-			goto out;
-		}
-		if (checksum((unsigned char *)a, a->entry_length) == 0) 
+	for (p = abase, q = p + segsize; p < q; p += 0x10) { 
+		if (!memcmp(p, "_SM_", 4) && 
+		    (checksum(p, ((struct anchor *)p)->entry_length) == 0)) 
 			break;
 	}
+
+	if (p >= q) {
+		Eprintf("Cannot find SMBIOS DMI tables");
+		goto out;
+	}
+
+	a = p;
+
 	if (verbose) 
 		printf("DMI tables at %x, %u bytes, %u entries\n", 
 			a->table, a->length, a->numentries);
