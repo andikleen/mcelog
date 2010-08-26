@@ -19,7 +19,7 @@
 #
 EXIT=0
 
-for i in $CPUS_AFFECTED ; do 
+for i in $CPUS_AFFECTED ; do
 	if [ $i = 0 ] ; then
 		logger -s -p daemon.warn -t mcelog "Not offlining CPU 0"	
 		EXIT=1
@@ -28,7 +28,7 @@ for i in $CPUS_AFFECTED ; do
 	logger -s -p daemon.crit -t mcelog "Offlining CPU $i due to cache error threshold"
 	F=$(printf "/sys/devices/system/cpu/cpu%d/online" $i)
 	echo 0 > $F
-	if [ "$(< $F)" != "0" ] then
+	if [ "$(< $F)" != "0" ] ; then
 		logger -s -p daemon.warn -t mcelog "Offlining CPU $i failed"
 		EXIT=1
 	fi
