@@ -32,7 +32,7 @@
 struct child {
 	struct list_head nd;
 	pid_t child;
-	char *name;
+	const char *name;
 };
 
 static LIST_HEAD(childlist);
@@ -40,11 +40,27 @@ static int num_children;
 static int children_max = 4;
 static char *trigger_dir;
 
+pid_t mcelog_fork(const char *name)
+{
+	pid_t child;
+	struct child *c;
+
+	child = fork();
+	if (child <= 0)
+		return child;
+
+	num_children++;
+	c = xalloc(sizeof(struct child));
+	c->name = name;
+	c->child = child;
+	list_add_tail(&c->nd, &childlist);
+	return child;
+}
+
 // note: trigger must be allocated, e.g. from config
 void run_trigger(char *trigger, char *argv[], char **env)
 {
 	pid_t child;
-	struct child *c;
 	char *fallback_argv[] = {
 		trigger,
 		NULL,
@@ -59,7 +75,7 @@ void run_trigger(char *trigger, char *argv[], char **env)
 		return;
 	}
 
-	child = fork();
+	child = mcelog_fork(trigger);
 	if (child < 0) { 
 		SYSERRprintf("Cannot create process for trigger");
 		return;
@@ -70,11 +86,6 @@ void run_trigger(char *trigger, char *argv[], char **env)
 		execve(trigger, argv, env);	
 		_exit(127);	
 	}
-	num_children++;
-	c = xalloc(sizeof(struct child));
-	c->name = trigger;
-	c->child = child;
-	list_add_tail(&c->nd, &childlist);
 }
 
 /* Clean up child on SIGCHLD */
