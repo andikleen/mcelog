@@ -86,8 +86,7 @@ static void check_cpu(void);
 
 static void disclaimer(void)
 {
-	Wprintf("HARDWARE ERROR. This is *NOT* a software problem!\n");
-	Wprintf("Please contact your hardware vendor\n");
+	Wprintf("Hardware event. This is not a software error.\n");
 }
 
 static char *extended_bankname(unsigned bank) 
