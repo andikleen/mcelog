@@ -257,6 +257,8 @@ static void decode_mci(__u64 status, int cpu, unsigned mcgcap, int *ismemerr,
 	
 	if (status & MCI_STATUS_UC) 
 		Wprintf("Uncorrected error\n");
+	else
+		Wprintf("Corrected error\n");
 
 	if (status & MCI_STATUS_EN)
 		Wprintf("Error enabled\n");
