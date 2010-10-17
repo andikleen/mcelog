@@ -115,6 +115,8 @@ enum cputype {
 	CPU_TULSA,
 	CPU_INTEL, /* Intel architectural errors */
 	CPU_XEON75XX, 
+	CPU_SANDY_BRIDGE, 
+	CPU_SANDY_BRIDGE_EP, 
 };
 
 enum option_ranges {

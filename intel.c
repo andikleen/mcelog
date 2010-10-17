@@ -28,7 +28,8 @@ int memory_error_support;
 
 void intel_cpu_init(enum cputype cpu)
 {
-	if (cpu == CPU_NEHALEM || cpu == CPU_XEON75XX || cpu == CPU_INTEL)
+	if (cpu == CPU_NEHALEM || cpu == CPU_XEON75XX || cpu == CPU_INTEL ||
+	    cpu == CPU_SANDY_BRIDGE || cpu == CPU_SANDY_BRIDGE_EP)
 		memory_error_support = 1;
 }
 
@@ -53,7 +54,10 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_NEHALEM;
 		else if (model == 0x2e || model == 0x2f)
 			return CPU_XEON75XX;
-
+		else if (model == 0x2a)
+			return CPU_SANDY_BRIDGE;
+		else if (model == 0x2d)
+			return CPU_SANDY_BRIDGE_EP;
 		if (model > 0x1a) {
 			Eprintf("Unsupported new Family 6 Model %x CPU: only decoding architectural errors\n",
 				model);

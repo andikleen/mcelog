@@ -203,6 +203,8 @@ static char *cputype_name[] = {
 	[CPU_TULSA] = "Intel Xeon 7100 series",
 	[CPU_INTEL] = "Intel generic architectural MCA",
 	[CPU_XEON75XX] = "Intel Xeon 7500 series",
+	[CPU_SANDY_BRIDGE] = "Sandy Bridge", /* Fill in better name */
+	[CPU_SANDY_BRIDGE_EP] = "Sandy Bridge EP", /* Fill in better name */
 };
 
 static struct config_choice cpu_choices[] = {
@@ -233,6 +235,8 @@ static struct config_choice cpu_choices[] = {
 	{ "xeon7500", CPU_XEON75XX },
 	{ "xeon7200", CPU_CORE2 },
 	{ "xeon7100", CPU_P4 },
+	{ "sandybridge", CPU_SANDY_BRIDGE }, /* Fill in better name */
+	{ "sandybridge-ep", CPU_SANDY_BRIDGE_EP }, /* Fill in better name */
 	{}
 };
 

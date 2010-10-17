@@ -13,5 +13,7 @@ extern int memory_error_support;
 	case CPU_TULSA:	\
 	case CPU_P4: \
 	case CPU_INTEL: \
-	case CPU_XEON75XX
+	case CPU_XEON75XX: \
+	case CPU_SANDY_BRIDGE_EP: \
+	case CPU_SANDY_BRIDGE
 

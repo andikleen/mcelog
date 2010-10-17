@@ -30,6 +30,7 @@
 #include "tulsa.h"
 #include "intel.h"
 #include "yellow.h"
+#include "sandy-bridge.h"
 
 /* decode mce for P4/Xeon and Core2 family */
 
@@ -350,6 +351,10 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 		break;
 	case CPU_XEON75XX:
 		xeon75xx_decode_model(log, size);
+		break;
+	case CPU_SANDY_BRIDGE:
+	case CPU_SANDY_BRIDGE_EP:
+		snb_decode_model(cputype, log->bank, log->status, size);
 		break;
 	}
 }
