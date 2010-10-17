@@ -259,7 +259,7 @@ static void dump_memdev(struct dmi_memdev *md, unsigned long addr)
 	if (md->header.length < 
 			offsetof(struct dmi_memdev, manufacturer)) { 
 		if (verbose > 0)
-			printf("Memory device for address %lx too short %hu\n",
+			printf("Memory device for address %lx too short %u\n",
 			       addr, md->header.length);
 		return;
 	}	
