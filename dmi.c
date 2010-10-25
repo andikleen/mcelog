@@ -179,7 +179,8 @@ int opendmi(void)
 		printf("DMI tables at %x, %u bytes, %u entries\n", 
 			a->table, a->length, a->numentries);
 	corr = a->table - round_down(a->table, pagesize); 
-	entrieslen = round_up(a->length + pagesize, pagesize);
+	entrieslen = round_up(a->table + a->length, pagesize) -
+		round_down(a->table, pagesize);
  	entries = mmap(NULL, entrieslen, 
 		       	PROT_READ, MAP_SHARED, memfd, 
 			round_down(a->table, pagesize));
