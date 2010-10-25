@@ -1,5 +1,7 @@
 <newer changes first>
 
+Add Linux Kongress 2010 paper
+Add Sandy Bridge Support
 Write pid file by default in daemon mode
 Reopen log files on SIGUSR1 in daemon mode
 Default --daemon mode to logging to /var/log/mcelog
