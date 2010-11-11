@@ -776,6 +776,7 @@ void usage(void)
 "--cpumhz MHZ        Set CPU Mhz to decode time (output unreliable, not needed on new kernels)\n"
 "--raw		     (with --ascii) Dump in raw ASCII format for machine processing\n"
 "--daemon            Run in background waiting for events (needs newer kernel)\n"
+"--ignorenodev       Exit silently when the device cannot be opened\n"
 "--file filename     With --ascii read machine check log from filename instead of stdin\n"
 "--syslog            Log decoded machine checks in syslog (default stdout or syslog for daemon)\n"	     
 "--syslog-error	     Log decoded machine checks in syslog with error level\n"
