@@ -19,7 +19,7 @@
 #
 EXIT=0
 
-for i in $CPUS_AFFECTED ; do
+for i in $AFFECTED_CPUS ; do
 	if [ $i = 0 ] ; then
 		logger -s -p daemon.warn -t mcelog "Not offlining CPU 0"	
 		EXIT=1
