@@ -1022,8 +1022,10 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 	}
 
 	len = read(fd, buf, recordlen * loglen); 
-	if (len < 0) 
-		err("read"); 
+	if (len < 0) {
+		SYSERRprintf("mcelog read"); 
+		return;
+	}
 
 	for (i = 0; (i < len / (int)recordlen) && !finish; i++) { 
 		struct mce *mce = (struct mce *)(buf + i*recordlen);
