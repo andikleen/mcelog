@@ -1043,6 +1043,10 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 		flushlog();
 	}
 
+	/* for debug purpose */
+	if (numerrors <= 0)
+		finish = 1;
+
 	if (recordlen > sizeof(struct mce))  {
 		Eprintf("warning: %lu bytes ignored in each record\n",
 				(unsigned long)recordlen - sizeof(struct mce)); 
