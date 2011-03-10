@@ -7,6 +7,7 @@ test:
 	./test page "${DEBUG}"
 	./test memdb "${DEBUG}"
 	./test socket "${DEBUG}"
+	./test pfa "${DEBUG}"
 
 clean:
 	rm -f */*log

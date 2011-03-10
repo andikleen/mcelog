@@ -1,0 +1,41 @@
+#!/bin/sh
+PATH=$PATH:$(pwd)/../../../mce-inject
+ 
+page_type="slab buddy mmap anonymous nopage huge"
+ 
+function get_free_page() 
+{
+        local rand=0
+        cnt=`page-types -Nl -b $1 | tee page_$1 | wc -l`
+        if [ $cnt -gt 1 ]; then
+                rand=$(expr $RANDOM % $cnt + 1)
+                if [ ${rand} -eq 1 ]; then
+			# skip the title line of output
+                        ((rand++))
+                fi
+                page=`awk -v line=${rand} 'NR == line {print $1}' page_$1`
+                echo 0x${page}
+        else
+                echo 0
+        fi
+        rm -f page_$1
+}
+ 
+which page-types > /dev/null 2>&1
+if [ $? -ne 0 ];then
+        echo "please install page-types tool first"
+        exit 1
+fi
+for i in ${page_type}; do
+        P=$(get_free_page $i)
+        if [ "$P" = "0" ]; then
+                continue
+        fi
+	echo "inject at physical address ${P}000 1st time..."
+        ../../input/GENPAGE $P | mce-inject
+	echo "inject at physical address ${P}000 2nd time..."
+        ../../input/GENPAGE $P | mce-inject
+	echo "inject at physical address ${P}000 3rd time..."
+        ../../input/GENPAGE $P | mce-inject
+done
+
