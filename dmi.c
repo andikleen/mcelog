@@ -137,6 +137,52 @@ static void fill_handles(void)
 	}
 }
 
+static int get_efi_base_addr(size_t *address)
+{
+	FILE *efi_systab;
+	const char *filename;
+	char linebuf[64];
+	int ret = 0;
+
+	*address = 0; /* Prevent compiler warning */
+
+	/* Linux 2.6.7 and up: /sys/firmware/efi/systab */
+	filename = "/sys/firmware/efi/systab";
+	if ((efi_systab = fopen(filename, "r")) != NULL)
+		goto check_symbol;
+
+	/* Linux up to 2.6.6: /proc/efi/systab */
+	filename = "/proc/efi/systab";
+	if ((efi_systab = fopen(filename, "r")) != NULL)
+		goto check_symbol;
+
+	/* Failed to open EFI interfaces */
+	return ret;
+
+check_symbol:
+	while ((fgets(linebuf, sizeof(linebuf) - 1, efi_systab)) != NULL) {
+		char *addrp = strchr(linebuf, '=');
+		*(addrp++) = '\0';
+
+		if (strcmp(linebuf, "SMBIOS") == 0) {
+			*address = strtoul(addrp, NULL, 0);
+			ret = 1;
+			break;
+		}
+	}
+
+	if (fclose(efi_systab) != 0)
+		perror(filename);
+
+	if (!ret)
+		Eprintf("%s: SMBIOS entry point missing", filename);
+
+	if (verbose)
+		printf("%s: SMBIOS entry point at 0x%08lx\n", filename,
+			(unsigned long)*address);
+	return ret;
+}
+
 int opendmi(void)
 {
 	struct anchor *a, *abase;
@@ -146,6 +192,8 @@ int opendmi(void)
 	unsigned corr;
 	int err = -1;
 	const int segsize = 0x10000;
+	size_t entry_point_addr = 0;
+	size_t length = 0;
 
 	if (entries)
 		return 0;
@@ -156,9 +204,37 @@ int opendmi(void)
 		return -1;
 	}	
 
-	abase = mmap(NULL, segsize-1, PROT_READ, MAP_SHARED, memfd, 0xf0000); 
+	/*
+	 * On EFI-based systems, the SMBIOS Entry Point structure can be
+	 * located by looking in the EFI Configuration Table.
+	 */
+	if (get_efi_base_addr(&entry_point_addr)) {
+		length = 0x20;
+		/* mmap() the address of SMBIOS structure table entry point. */
+		abase = mmap(NULL, length, PROT_READ, MAP_SHARED, memfd,
+					entry_point_addr);
+		if (abase == (struct anchor *)-1) {
+			Eprintf("Cannot mmap 0x%lx for efi mode: %s",
+				(unsigned long)entry_point_addr,
+				strerror(errno));
+			goto legacy;
+		}
+		a = abase;
+		goto fill_entries;
+	}
+
+legacy:
+	/*
+	 * On non-EFI systems, the SMBIOS Entry Point structure can be located
+	 * by searching for the anchor-string on paragraph (16-byte) boundaries
+	 * within the physical memory address range 000F0000h to 000FFFFFh
+	 */
+	length = segsize - 1;
+	abase = mmap(NULL, length, PROT_READ, MAP_SHARED, memfd, 0xf0000);
+
 	if (abase == (struct anchor *)-1) {
-		Eprintf("Cannot mmap 0xf0000: %s", strerror(errno));
+		Eprintf("Cannot mmap 0xf0000 for legacy mode: %s",
+			strerror(errno));
 		goto out;
 	}   
 
@@ -175,6 +251,7 @@ int opendmi(void)
 
 	a = p;
 
+fill_entries:
 	if (verbose) 
 		printf("DMI tables at %x, %u bytes, %u entries\n", 
 			a->table, a->length, a->numentries);
@@ -196,7 +273,7 @@ int opendmi(void)
 	err = 0;
 
 out_mmap:
-	munmap(abase, 0xffff);
+	munmap(abase, length);
 out:
 	close(memfd);
 	return err;	
