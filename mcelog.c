@@ -317,7 +317,7 @@ static void mce_cpuid(struct mce *m)
 static void mce_prepare(struct mce *m)
 {
 	mce_cpuid(m);
-	if (m->time)
+	if (!m->time)
 		m->time = time(NULL);
 }
 
