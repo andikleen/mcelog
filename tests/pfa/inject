@@ -21,21 +21,59 @@ function get_free_page()
         rm -f page_$1
 }
  
+if [ "$1" = "" ]; then
+	echo "usage $0 conf_file"
+	exit 1
+fi
+
+if [ ! -f $1 ]; then
+	echo "configure file not exists: $1"
+	exit 1
+fi
+
 which page-types > /dev/null 2>&1
 if [ $? -ne 0 ];then
         echo "please install page-types tool first"
         exit 1
 fi
-for i in ${page_type}; do
-        P=$(get_free_page $i)
-        if [ "$P" = "0" ]; then
-                continue
-        fi
-	echo "inject at physical address ${P}000 1st time..."
-        ../../input/GENPAGE $P | mce-inject
-	echo "inject at physical address ${P}000 2nd time..."
-        ../../input/GENPAGE $P | mce-inject
-	echo "inject at physical address ${P}000 3rd time..."
-        ../../input/GENPAGE $P | mce-inject
-done
 
+echo "+++ start the injection for $1 +++"
+
+NUMT="$(awk '/# trigger: / { print $3}' $1)"
+THRESHOLD="$(awk '/memory-ce-threshold = / { print $3}' $1)"
+
+if [ "$NUMT" -eq 0 ]; then
+	echo "No injection will be done!"
+	exit 0
+fi
+
+if [ "$THRESHOLD" -eq 0 ]; then
+	echo "Threshold should not be 0!"
+	exit 1
+fi
+
+trigger_cnt=0
+while [ "$trigger_cnt" -lt "$NUMT" ]; do
+	for i in ${page_type}; do
+		P=$(get_free_page $i)
+		if [ "$P" = "0" ]; then
+			continue
+		fi
+		if [ "$trigger_cnt" -ge "$NUMT" ]; then
+			exit 0;
+		fi
+		inject_cnt=0
+		while [ "$inject_cnt" -lt "$THRESHOLD" ]; do
+			echo "inject for page type $i at physical address ${P}000 [ NO. $inject_cnt ]"
+			../../input/GENPAGE $P | mce-inject
+			inject_cnt=$(($inject_cnt+1))
+		done
+		if [ "$inject_cnt" -eq "$THRESHOLD" ]; then
+			trigger_cnt=$(($trigger_cnt+1))
+		fi
+	done
+	if [ "$trigger_cnt" -eq 0 ]; then
+		echo "None available free pages found!"
+		exit 1
+	fi
+done
