@@ -1,0 +1,213 @@
+This README file describes the steps of testing PFA (Predictive Failure
+Analysis) functionality of mcelog under Linux which is facilitated by using
+mce-inject.
+
+PFA is a RAS Feature. PFA capable system can monitor corrected hardware errors
+and take corrective action in advance before uncorrected error happen. For
+example, PFA should offline a memory page if more than 10 errors per hour on a
+memory page are found. It mostly focuses on memory errors.
+
+0. Preparation work
+*******************************
+-  Install the Linux kernel with full MCE injection support
+
+   Make sure following configuration options are enabled:
+
+   CONFIG_X86_MCE=y
+   CONFIG_X86_MCE_INTEL=y
+   CONFIG_X86_MCE_INJECT=y or CONFIG_X86_MCE_INJECT=m
+
+-  Build mcelog and install in /usr/bin (or rather first in your $PATH)
+
+   # cd $HOME/mcelog
+   # make
+   # make install
+
+-  Get mce-inject git version from
+   git://git.kernel.org/pub/scm/utils/cpu/mce/mce-inject.git
+   and install in /usr/bin (or rather first in your $PATH)
+
+   # cd $HOME
+   # git clone git://git.kernel.org/pub/scm/utils/cpu/mce/mce-inject.git
+   # cd mce-inject
+   # make
+   # make install
+
+-  Install page-types tool, which is accompanied with Linux kernel source
+   (2.6.32 or newer).
+
+   # cd $KERNEL_SRC/Documentation/vm/
+   # gcc -o page-types page-types.c
+   # cp page-types /usr/bin/
+
+
+
+1. Start PFA test
+*******************************
+
+The PFA test cases in mcelog are in the following directories:
+
+- mcelog/tests/pfa	#page level pfa test cases
+
+You can run all PFA test cases simply just by typing:
+
+  # cd mcelog/tests
+  # ./test pfa
+
+all the test cases in the specified subdirectory will be ran and the test
+results will be saved in files:
+
+  mcelog/tests/pfa/results
+
+When you examine the content of the file, you will find such results:
+
+- if one case passed:
+
+  "*.conf: triggers trigger as expected"
+
+- if one case failed
+
+  "*.conf: triggers did not trigger as expected: $expected_num !=
+  $actual_got_num"
+
+you can refer to the "*.log" file in the specific subdirectory for the log saved
+by mcelog.
+
+
+2. Modify or add new test cases
+*******************************
+
+If you want to modify the existing test cases or add your own case, the
+following description will have a more detailed look which might help:
+
+- To add or run a page level PFA test, you need first get a configure file in
+
+  mcelog/tests/pfa/
+
+  directory defining mainly the threshold and trigger actions you want, then the
+  number of trigger events you expect to happen.
+
+
+- A typical configure file is as following:
+
+  mcelog/tests/pfa/page-account.conf
+  ----------------------------------------------------------
+  # trigger: 5
+  # num-errors = 3
+
+  [page]
+  memory-ce-threshold = 2 / 1h
+  memory-ce-trigger = ../trigger
+  #memory-ce-action = off|account|soft|hard|soft-then-hard
+  memory-ce-action = account
+
+  [trigger]
+  directory = .
+  ------------------------------------------------------------
+
+  - “# trigger: 5”
+
+    Specify the count number of triggers you expect to get based
+    on the threshold defined in "memory-ce-threshold" described below.
+
+    mcelog/tests/test harness in the end will compare this count number with
+    the number of actual trigger events got from the log to verify the test
+    results.
+
+    please note the "#" is needed for mcelog/tests/test harness to read here.
+
+
+  - "# num-errors = 3"
+
+     "num-errors" is a mcelog configure option. if uncomment, it is used by
+     mcelog to stop processing the stored machine check records in mcelog
+     buffer read from /dev/mcelog and return(for debug purpose) when the
+     number is reached even there might be:
+       -   still some unprocessed records left in the buffer which
+     will be ignored
+       -   or there are not enough records in /dev/mcelog the program
+     will not return.
+
+     if not set as in this example, mcelog will return until finish processing
+     all the records.
+
+     When you are not sure what should be the correct num-errors number, it is
+     not recommended to set this option.
+
+
+  - "memory-ce-threshold = 2 / 1h"
+
+    Define the threshold for memory corrected errors per page. Here means
+    if there are 2 corrected errors detected in one page within 1 hour,
+    the trigger defined in “memory-ce-trigger” described below will be called.
+
+
+  - "memory-ce-trigger = ../trigger"
+
+    Specify the trigger you want when exceeding the threshold.
+    Here mcelog/tests/trigger will be called which simply print some text for
+    testing.
+
+
+  - "memory-ce-action = account"
+
+    specify the internal action in mcelog to exceeding a memory corrected error
+    threshold.
+
+    This is done in addition to executing the trigger script if available.
+    - off:             No action
+    - account:         only account errors
+    - soft:            try to soft-offline page without killing any processes
+                       This requires an update kernel. Might not be successful
+    - hard:            try to hard-offline page without killing any processes
+                       This requires an update kernel. Might not be successful
+    - soft-then-hard:  First try to soft offline, then try hard offlining
+
+    The offline action is based on the sysfs_wirte action of:
+      /sys/devices/system/memory/soft_offline_page
+    or
+      /sys/devices/system/memory/hard_offline_page
+
+    Please note that offlining does not work for all pages, but only for pages
+    in the Linux page cache or free pages. And if offline action(soft, hard, or
+    soft-then-hard)are chosen in "memory-ce-action", there will trigger only
+    once for each page,no matter the offline action taken was successful or
+    failed.
+
+
+3. Influencing factors of the trigger results
+*******************************
+
+The correct expectation of triggers depends on 4 factors:
+
+- The count number of trigger expectation defined in "pfa/*.conf" file
+
+  As described above, in our example the trigger expectation are defined to be 5
+  times which means the "mcelog/tests/pfa/inject" script will randomly chosen 5
+  free pages to inject in turn and do the MCE injection on each page for
+  $memory-ce-threshold times.
+
+- The threshold defined in “memory-ce-trigger” of "pfa/*.conf" file
+
+  As described above, for “memory-ce-threshold = 2 / 1h” in our example,
+  "mcelog/tests/pfa/inject" script will do the MCE injection
+  2 times continuously for each chosen page to make the trigger happen.
+
+- The “memory-ce-action” defined in "pfa/*.conf" file
+
+  As described above. if the “memory-ce-action” is soft/hard/soft-then-hard,
+  no matter offlining action succeed or not, triggers_per_page calculation will
+  changed to be:
+
+  triggers_per_page = INT(injections_per_page / memory-ce-threshold) >= 1? 1:0
+
+- The actual number of records read out if "num-errors" defined in "pfa/*.conf"
+  file
+
+  As described above. mcelog will just read out $num-errors records, that means:
+
+  readout_total_injections = MIN(num-errors, injection_per_page *
+  actual-inject_pages)
+
+  this might affect the trigger counts for some last injected pages since not
+  all the machine check records from /dev/mcelog are processed and counted.
