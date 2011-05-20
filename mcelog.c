@@ -679,6 +679,26 @@ restart:
 		} 
 		else if (strstr(s, "HARDWARE ERROR"))
 			disclaimer_seen = 1;
+		else if (!strncmp(s, "(XEN)", 5)) {
+			char *w; 
+			unsigned bank, cpu;
+
+			if (strstr(s, "The hardware reports a non fatal, correctable incident occurred")) {
+				w = strstr(s, "CPU");
+				if (w && sscanf(w, "CPU %d", &cpu)) {
+					m.cpu = cpu;
+					FIELD(cpu);
+				}
+			} else if ((n = sscanf(s, "(XEN) Bank %d: %llx at %llx", 
+						&bank, &m.status, &m.addr) >= 1)) {
+				m.bank = bank;
+				FIELD(bank);	
+				if (n >= 2) 
+					FIELD(status);
+				if (n >= 3)
+					FIELD(addr);
+			}
+		}
 		else { 
 			s = skipspace(s);
 			if (*s && data)
