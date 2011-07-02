@@ -209,17 +209,20 @@ int opendmi(void)
 	 * located by looking in the EFI Configuration Table.
 	 */
 	if (get_efi_base_addr(&entry_point_addr)) {
-		length = 0x20;
+		size_t addr_start = round_down(entry_point_addr, pagesize);
+		size_t addr_end = round_up(entry_point_addr + 0x20, pagesize);
+		length = addr_end - addr_start;
+
 		/* mmap() the address of SMBIOS structure table entry point. */
 		abase = mmap(NULL, length, PROT_READ, MAP_SHARED, memfd,
-					entry_point_addr);
+					addr_start);
 		if (abase == (struct anchor *)-1) {
 			Eprintf("Cannot mmap 0x%lx for efi mode: %s",
 				(unsigned long)entry_point_addr,
 				strerror(errno));
 			goto legacy;
 		}
-		a = abase;
+		a = (struct anchor*)((char*)abase + (entry_point_addr - addr_start));
 		goto fill_entries;
 	}
 
