@@ -962,6 +962,9 @@ static int modifier(int opt)
 	case O_CONFIG_FILE:
 		/* parsed in config.c */
 		break;
+	case O_DEBUG_NUMERRORS:
+		debug_numerrors = 1;
+		break;
 	case 0:
 		break;
 	default:
