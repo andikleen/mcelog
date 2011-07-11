@@ -43,7 +43,7 @@ for conf in `ls *.conf`
 do
 	log=`echo $conf | sed "s/conf/log/g"`
 	./inject $conf
-	$D ../../mcelog --foreground --daemon --config $conf --logfile $log >> result
+	$D ../../mcelog --foreground --daemon --debug-numerrors --config $conf --logfile $log >> result
 
 	# let triggers finish
 	sleep 1

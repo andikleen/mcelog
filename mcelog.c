@@ -80,6 +80,7 @@ static char pidfile_default[] = PID_FILE;
 static char logfile_default[] = LOG_FILE;
 static char *pidfile = pidfile_default;
 static char *logfile;
+static int debug_numerrors;
 
 static void check_cpu(void);
 
@@ -827,6 +828,7 @@ enum options {
 	O_FOREGROUND,
 	O_NUMERRORS,
 	O_PIDFILE,
+	O_DEBUG_NUMERRORS,
 };
 
 static struct option options[] = {
@@ -858,6 +860,7 @@ static struct option options[] = {
 	{ "client", 0, NULL, O_CLIENT },
 	{ "num-errors", 1, NULL, O_NUMERRORS },
 	{ "pidfile", 1, NULL, O_PIDFILE },
+	{ "debug-numerrors", 0, NULL, O_DEBUG_NUMERRORS }, /* undocumented: for testing */
 	DISKDB_OPTIONS
 	{}
 };
@@ -958,6 +961,9 @@ static int modifier(int opt)
 		break;
 	case O_CONFIG_FILE:
 		/* parsed in config.c */
+		break;
+	case O_DEBUG_NUMERRORS:
+		debug_numerrors = 1;
 		break;
 	case 0:
 		break;
@@ -1063,8 +1069,7 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 		flushlog();
 	}
 
-	/* for debug purpose */
-	if (numerrors <= 0)
+	if (debug_numerrors && numerrors <= 0)
 		finish = 1;
 
 	if (recordlen > sizeof(struct mce))  {
