@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/fcntl.h>
+#include <sys/stat.h>
 #include <stdarg.h>
 #include <errno.h>
 #include "mcelog.h"
