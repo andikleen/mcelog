@@ -487,8 +487,21 @@ static char *skipspace(char *s)
 	return s;
 }
 
+static char *skip_syslog(char *s)
+{
+	char *p;
+
+	/* Handle syslog output */
+	p = strstr(s, "mcelog: ");
+	if (p)
+		return p + sizeof("mcelog: ") - 1;
+	return s;
+}
+	
 static char *skipgunk(char *s)
 {
+	s = skip_syslog(s);
+
 	s = skipspace(s);
 	if (*s == '<') { 
 		s += strcspn(s, ">"); 
@@ -556,9 +569,11 @@ restart:
 	symbol[0] = '\0';
 	while (next > 0 || getdelim(&line, &linelen, '\n', inf) > 0) { 
 		int n = 0;
+		char *start;
 
 		s = next > 0 ? s + next : line;
 		s = skipgunk(s);
+		start = s;
 		next = 0;
 
 		if (!strncmp(s, "CPU", 3)) { 
@@ -705,7 +720,7 @@ restart:
 			if (*s && data)
 				dump_mce_final(&m, symbol, missing, recordlen, disclaimer_seen); 
 			if (!dump_raw_ascii)
-				Wprintf("%s", line);
+				Wprintf("%s", start);
 			if (*s && data)
 				goto restart;
 		} 
