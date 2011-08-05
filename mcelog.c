@@ -37,6 +37,7 @@
 #include <assert.h>
 #include <signal.h>
 #include <pwd.h>
+#include <fnmatch.h>
 #include "mcelog.h"
 #include "paths.h"
 #include "k8.h"
@@ -192,6 +193,24 @@ static void parse_cpuid(u32 cpuid, u32 *family, u32 *model)
 		*model += c.c.ext_model << 4;
 }
 
+static u32 unparse_cpuid(unsigned family, unsigned model)
+{
+	union { 
+		struct cpuid1 c;
+		u32 v;	
+       } c;
+
+	c.c.family = family;
+	if (family >= 0xf) {
+		c.c.family = 0xf;
+		c.c.ext_family = family - 0xf;
+	}
+	c.c.model = model & 0xf;
+	if (family == 6 || family == 0xf)
+		c.c.ext_model = model >> 4;
+	return c.v;
+}
+
 static char *cputype_name[] = {
 	[CPU_GENERIC] = "generic CPU",
 	[CPU_P6OLD] = "Intel PPro/P2/P3/old Xeon",
@@ -261,19 +280,35 @@ static enum cputype lookup_cputype(char *name)
 	exit(1);
 }
 
+static char *vendor[] = {
+	[0] = "Intel",
+	[1] = "Cyrix",
+	[2] = "AMD",
+	[3] = "UMC", 
+	[4] = "vendor 4",
+	[5] = "Centaur",
+	[6] = "vendor 6",
+	[7] = "Transmeta",
+	[8] = "NSC"
+};
+
+static unsigned cpuvendor_to_num(char *name)
+{
+	unsigned i;
+	unsigned v;
+	char *end;
+
+	v = strtoul(name, &end, 0);
+	if (end > name)
+		return v;
+	for (i = 0; i < NELE(vendor); i++)
+		if (!strcmp(name, vendor[i]))
+			return i;
+	return 0;
+}
+
 static char *cpuvendor_name(u32 cpuvendor)
 {
-	static char *vendor[] = {
-		[0] = "Intel",
-		[1] = "Cyrix",
-		[2] = "AMD",
-		[3] = "UMC", 
-		[4] = "vendor 4",
-		[5] = "Centaur",
-		[6] = "vendor 6",
-		[7] = "Transmeta",
-		[8] = "NSC"
-	};
 	return (cpuvendor < NELE(vendor)) ? vendor[cpuvendor] : "Unknown vendor";
 }
 
@@ -517,10 +552,42 @@ static char *skipgunk(char *s)
 	return skipspace(s);
 }
 
+static inline int urange(unsigned val, unsigned lo, unsigned hi)
+{
+	return val >= lo && val <= hi;
+}
+
+static int is_short(char *name)
+{
+	return strlen(name) == 3 && 
+		isupper(name[0]) && 
+		islower(name[1]) &&
+		islower(name[2]);
+}
+
+static unsigned skip_date(char *s)
+{
+	unsigned day, hour, min, year, sec; 
+	char dayname[11];
+	char month[11];
+	unsigned next;
+
+	if (sscanf(s, "%10s %10s %u %u:%u:%u %u%n", 
+		dayname, month, &day, &hour, &min, &sec, &year, &next) != 7)
+		return 0;
+	if (!is_short(dayname) || !is_short(month) || !urange(day, 1, 31) ||
+		!urange(hour, 0, 24) || !urange(min, 0, 59) || !urange(sec, 0, 59) ||
+		year < 1900)
+		return 0;
+	return next;
+}
+
 static void dump_mce_final(struct mce *m, char *symbol, int missing, int recordlen, 
 			   int dseen)
 {
 	m->finished = 1;
+	if (m->cpuid)
+		mce_cpuid(m);
 	if (!dump_raw_ascii) {
 		if (!dseen)
 			disclaimer();
@@ -532,6 +599,23 @@ static void dump_mce_final(struct mce *m, char *symbol, int missing, int recordl
 	} else
 		dump_mce_raw_ascii(m, recordlen);
 	flushlog();
+}
+
+static char *skip_patterns[] = {
+	"MCA:*",
+	"MCi_MISC register valid*",
+	"MC? status*",
+	"Unsupported new Family*",
+	"Kernel does not support page offline interface",
+	NULL
+};
+
+static int match_patterns(char *s, char **pat)
+{
+	for (; *pat; pat++) 
+		if (!fnmatch(*pat, s, 0))
+			return 0;
+	return 1;
 }
 
 #define FIELD(f) \
@@ -576,7 +660,7 @@ restart:
 		start = s;
 		next = 0;
 
-		if (!strncmp(s, "CPU", 3)) { 
+		if (!strncmp(s, "CPU ", 4)) { 
 			unsigned cpu = 0, bank = 0;
 			n = sscanf(s,
 	       "CPU %u: Machine Check Exception: %16Lx Bank %d: %016Lx%n",
@@ -674,6 +758,8 @@ restart:
 				missing++;
 			else
 				FIELD(time);
+
+			next += skip_date(s + next);
 		} 
 		else if (!strncmp(s, "MCGCAP", 6)) {
 			if ((n = sscanf(s, "MCGCAP %llx%n", &m.mcgcap, &next)) != 1)
@@ -692,6 +778,20 @@ restart:
 				missing++;
 			else
 				FIELD(socketid);
+		} 
+		else if (!strncmp(s, "CPUID", 5)) {
+			unsigned fam, mod;
+			char vendor[31];
+
+			if ((n = sscanf(s, "CPUID Vendor %30s Family %u Model %u\n", 
+					vendor, &fam, &mod)) < 3)
+				missing++;
+			else {
+				m.cpuvendor = cpuvendor_to_num(vendor);
+				m.cpuid = unparse_cpuid(fam, mod);
+				FIELD(cpuid);
+				FIELD(cpuvendor);
+			}
 		} 
 		else if (strstr(s, "HARDWARE ERROR"))
 			disclaimer_seen = 1;
@@ -715,6 +815,8 @@ restart:
 					FIELD(addr);
 			}
 		}
+		else if (!match_patterns(s, skip_patterns))
+			n = 0;
 		else { 
 			s = skipspace(s);
 			if (*s && data)
