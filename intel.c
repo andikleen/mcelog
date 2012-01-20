@@ -50,7 +50,8 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_CORE2;
 		else if (model == 0x1d)
 			return CPU_DUNNINGTON;
-		else if (model == 0x1a || model == 0x2c || model == 0x1e)
+		else if (model == 0x1a || model == 0x2c || model == 0x1e ||
+			 model == 0x25)
 			return CPU_NEHALEM;
 		else if (model == 0x2e || model == 0x2f)
 			return CPU_XEON75XX;
