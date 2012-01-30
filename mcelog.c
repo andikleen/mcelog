@@ -83,7 +83,7 @@ static char *pidfile = pidfile_default;
 static char *logfile;
 static int debug_numerrors;
 
-static void check_cpu(void);
+static int is_cpu_supported(void);
 
 
 static void disclaimer(void)
@@ -346,7 +346,7 @@ static void mce_cpuid(struct mce *m)
 			warned = 1;
 		}
 	} else if (cputype == CPU_GENERIC && !cpu_forced) { 
-		check_cpu();
+		is_cpu_supported();
 	}	
 }
 
@@ -448,7 +448,7 @@ static void dump_mce_raw_ascii(struct mce *m, unsigned recordlen)
 	Wprintf("\n");
 }
 
-void check_cpu(void)
+int is_cpu_supported(void)
 { 
 	enum { 
 		VENDOR = 1, 
@@ -462,7 +462,7 @@ void check_cpu(void)
 	static int checked;
 
 	if (checked)
-		return;
+		return 1;
 	checked = 1;
 
 	f = fopen("/proc/cpuinfo","r");
@@ -498,12 +498,13 @@ void check_cpu(void)
 
 		} 
 		if (seen == ALL) {
-			if (cpu_forced) 
-				;
-			else if (!strcmp(vendor,"AuthenticAMD") && 
-			    (family == 15 || family == 16 || family == 17))
-				cputype = CPU_K8;
-			else if (!strcmp(vendor,"GenuineIntel"))
+			if (!strcmp(vendor,"AuthenticAMD")) {
+				if (family == 15)
+					cputype = CPU_K8;
+				if (family >= 15)
+					SYSERRprintf("AMD Processor family %d: Please load edac_mce_amd module.\n", family);
+				return 0;
+			} else if (!strcmp(vendor,"GenuineIntel"))
 				cputype = select_intel_cputype(family, model);
 			/* Add checks for other CPUs here */	
 		} else {
@@ -513,6 +514,8 @@ void check_cpu(void)
 		free(line);
 	} else
 		Eprintf("warning: Cannot open /proc/cpuinfo\n");
+
+	return 1;
 } 
 
 static char *skipspace(char *s)
@@ -1296,6 +1299,13 @@ int main(int ac, char **av)
 		} else if (opt == 0)
 			break;		    
 	} 
+
+	/* before doing anything else let's see if the CPUs are supported */
+	if (daemon_mode && !cpu_forced && !is_cpu_supported()) {
+		SYSERRprintf("CPU is unsupported\n");
+		exit(1);
+	}
+
 	modifier_finish();
 	if (av[optind])
 		logfn = av[optind++];
@@ -1319,7 +1329,6 @@ int main(int ac, char **av)
 
 	d.buf = xalloc(d.recordlen * d.loglen); 
 	if (daemon_mode) {
-		check_cpu();
 		prefill_memdb();
 		if (!do_dmi)
 			closedmi();
