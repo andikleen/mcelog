@@ -60,13 +60,13 @@ enum cputype select_intel_cputype(int family, int model)
 		else if (model == 0x2d)
 			return CPU_SANDY_BRIDGE_EP;
 		if (model > 0x1a) {
-			Eprintf("Unsupported new Family 6 Model %x CPU: only decoding architectural errors\n",
+			Eprintf("Family 6 Model %x CPU: only decoding architectural errors\n",
 				model);
 			return CPU_INTEL; 
 		}
 	}
 	if (family > 6) { 
-		Eprintf("Unsupported new Family %u Model %x CPU: only decoding architectural errors\n",
+		Eprintf("Family %u Model %x CPU: only decoding architectural errors\n",
 				family, model);
 		return CPU_INTEL;
 	}
