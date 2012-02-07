@@ -1301,8 +1301,8 @@ int main(int ac, char **av)
 	} 
 
 	/* before doing anything else let's see if the CPUs are supported */
-	if (daemon_mode && !cpu_forced && !is_cpu_supported()) {
-		SYSERRprintf("CPU is unsupported\n");
+	if (!cpu_forced && !is_cpu_supported()) {
+		fprintf(stderr, "CPU is unsupported\n");
 		exit(1);
 	}
 
