@@ -48,7 +48,7 @@ struct anchor {
 	char fmt[5];
 	char str2[5]; /* _DMI_ */
 	char csum2;
-	short length;
+	unsigned short length;
 	unsigned table;
 	unsigned short numentries;
 	char bcdrev;
