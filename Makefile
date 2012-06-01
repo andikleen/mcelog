@@ -52,15 +52,15 @@ mcelog: ${OBJ}
 
 # dbquery intentionally not installed by default
 install: mcelog
-	mkdir -p ${etcprefix}/etc/mcelog ${prefix}/sbin ${prefix}/share/man/man8
-	install -m 755 -p mcelog ${prefix}/sbin/mcelog
-	install -m 644 -p mcelog.8 ${prefix}/share/man/man8
-	install -m 644 -p -b mcelog.conf ${etcprefix}/etc/mcelog/mcelog.conf
+	mkdir -p $(DESTDIR)${etcprefix}/etc/mcelog $(DESTDIR)${prefix}/sbin $(DESTDIR)${prefix}/share/man/man8
+	install -m 755 -p mcelog $(DESTDIR)${prefix}/sbin/mcelog
+	install -m 644 -p mcelog.8 $(DESTDIR)${prefix}/share/man/man8
+	install -m 644 -p -b mcelog.conf $(DESTDIR)${etcprefix}/etc/mcelog/mcelog.conf
 	for i in ${TRIGGERS} ; do 						\
-		install -m 755 -p -b triggers/$$i ${etcprefix}/etc/mcelog ; 	\
+		install -m 755 -p -b triggers/$$i $(DESTDIR)${etcprefix}/etc/mcelog ; 	\
 	done
 ifdef DOCDIR
-	install -m 644 -p ${DOC} ${DOCDIR} 
+	install -m 644 -p ${DOC} $(DESTDIR)${DOCDIR} 
 else
 	echo
 	echo "Consider defining DOCDIR to install additional documentation"
