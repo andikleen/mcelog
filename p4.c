@@ -149,6 +149,7 @@ static void decode_mca(__u32 mca, u64 track, int cpu, int *ismemerr, int socket)
 		[2] = "Microcode ROM parity error",
 		[3] = "External error",
 		[4] = "FRC error",
+		[5] = "Internal parity error",
 	};
 
 	if (mca & (1UL << 12)) {
