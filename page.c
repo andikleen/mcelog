@@ -171,11 +171,29 @@ void account_page_error(struct mce *m, int channel, int dimm)
 	u64 addr = m->addr;
 	struct mempage *mp;
 	time_t t;
+	unsigned cpu = m->extcpu ? m->extcpu : m->cpu;
 
 	if (offline == OFFLINE_OFF)
 		return;
 	if (!(m->status & MCI_STATUS_ADDRV)  || (m->status & MCI_STATUS_UC))
 		return;
+
+	switch (cputype) {
+	case CPU_SANDY_BRIDGE_EP:
+		/*
+		 * On SNB-EP platform we see corrected errors reported with
+		 * address in Bank 5 from hardware (depending on BIOS setting),
+                 * in the meanwhile, a duplicate record constructed from
+                 * information found by "firmware first" APEI code. Ignore the
+                 * duplicate information so that we don't double count errors.
+		 *
+		 * NOTE: the record from APEI fake this error from CPU 0 BANK 1.
+		 */
+		if (m->bank == 1 && cpu == 0)
+			return;
+	default:
+		break;
+	}
 
 	t = m->time;
 	addr &= ~((u64)PAGE_SIZE - 1);
