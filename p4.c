@@ -30,14 +30,10 @@
 #include "tulsa.h"
 #include "intel.h"
 #include "yellow.h"
+#include "bitfield.h"
 #include "sandy-bridge.h"
 
 /* decode mce for P4/Xeon and Core2 family */
-
-static inline int test_prefix(int nr, __u32 value)
-{
-	return ((value >> nr) == 1);
-}
 
 static char* get_TT_str(__u8 t)
 {
