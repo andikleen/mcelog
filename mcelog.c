@@ -416,7 +416,8 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 			fam,
 			mod);
 	}
-	resolveaddr(m->addr);
+	if (cputype != CPU_SANDY_BRIDGE_EP)
+		resolveaddr(m->addr);
 	if (!ascii_mode && ismemerr && (m->status & MCI_STATUS_ADDRV)) {
 		diskdb_resolve_addr(m->addr);
 	}
