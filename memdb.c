@@ -77,18 +77,19 @@ static unsigned dimmhash(unsigned socket, int dimm, unsigned ch)
 }
 
 /* Search DIMM in hash table */
-struct memdimm *get_memdimm(int socketid, int channel, int dimm)
+struct memdimm *get_memdimm(int socketid, int channel, int dimm, int insert)
 {
 	struct memdimm *md;
-	unsigned h = dimmhash(socketid, dimm, channel);
+	unsigned h;
 
+	h = dimmhash(socketid, dimm, channel);
 	for (md = md_dimms[h]; md; md = md->next) { 
 		if (md->socketid == socketid && 
 			md->channel == channel && 
 			md->dimm == dimm)
 			break;	
 	}
-	if (md)
+	if (md || !insert)
 		return md;
 
 	md = xalloc(sizeof(struct memdimm));
@@ -239,12 +240,12 @@ void memory_error(struct mce *m, int ch, int dimm, unsigned corr_err_cnt,
 	}
 
 	if (memdb_enabled && (ch != -1 || dimm != -1)) {
-		md = get_memdimm(m->socketid, ch, dimm);
+		md = get_memdimm(m->socketid, ch, dimm, 1);
 		account_memdb(&dimms, md, m);
 	}
 
 	if (sockdb_enabled) {
-		md = get_memdimm(m->socketid, -1, -1);
+		md = get_memdimm(m->socketid, -1, -1, 1);
 		account_over(&sockets, md, m, corr_err_cnt);
 		account_memdb(&sockets, md, m);
 	}
@@ -410,7 +411,7 @@ void prefill_memdb(void)
 			continue;
 		}
 
-		md = get_memdimm(socketid, channel, dimm);
+		md = get_memdimm(socketid, channel, dimm, 1);
 		if (md->memdev) { 
 			/* dups -- likely parse error */
 			missed++;

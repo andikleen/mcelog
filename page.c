@@ -213,7 +213,7 @@ void account_page_error(struct mce *m, int channel, int dimm)
 			return;
 		/* Only do triggers and messages for online pages */
 		thresh = bucket_output(&page_trigger_conf, &mp->ce.bucket);
-		md = get_memdimm(m->socketid, channel, dimm);
+		md = get_memdimm(m->socketid, channel, dimm, 1);
 		asprintf(&msg, "Corrected memory errors on page %llx exceed threshold %s",
 			addr, thresh);
 		free(thresh);

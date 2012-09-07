@@ -21,4 +21,4 @@ void memory_error(struct mce *m, int channel, int dimm, unsigned corr_err_cnt,
 struct memdimm;
 void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 		   struct err_type *et, struct bucket_conf *bc);
-struct memdimm *get_memdimm(int socketid, int channel, int dimm);
+struct memdimm *get_memdimm(int socketid, int channel, int dimm, int insert);
