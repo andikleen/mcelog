@@ -373,6 +373,9 @@ parse_dimm_addr(char *bl, unsigned *socketid, unsigned *channel, unsigned *dimm)
 	if (sscanf(bl + strcspn(bl, "_"), "_Node%u_Channel%u_Dimm%u", socketid, 
 		   channel, dimm) == 3)
 		return 1;
+	if (sscanf(bl, "NODE %u CHANNEL %u DIMM %u", socketid,
+		   channel, dimm) == 3)
+		return 1;
 	/* Add more DMI formats here */
 	return 0;		
 }
