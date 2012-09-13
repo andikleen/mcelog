@@ -139,3 +139,5 @@ extern enum syslog_opt syslog_opt;
 extern int syslog_level;
 extern enum cputype cputype;
 extern int filter_memory_errors;
+extern int imc_log;
+extern void set_imc_log(int cputype);

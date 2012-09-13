@@ -353,7 +353,7 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 		break;
 	case CPU_SANDY_BRIDGE:
 	case CPU_SANDY_BRIDGE_EP:
-		snb_decode_model(cputype, log->bank, log->status, size);
+		snb_decode_model(cputype, log->bank, log->status, log->misc);
 		break;
 	}
 }

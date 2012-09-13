@@ -98,6 +98,9 @@ static int intel_memory_error(struct mce *m, unsigned recordlen)
 		case CPU_XEON75XX:
 			xeon75xx_memory_error(m, recordlen, channel, dimm);
 			break;
+		case CPU_SANDY_BRIDGE_EP:
+			sandy_bridge_ep_memerr_misc(m, channel, dimm);
+			break;
 		default:
 			break;
 		} 

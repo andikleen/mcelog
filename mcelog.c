@@ -82,6 +82,7 @@ static char logfile_default[] = LOG_FILE;
 static char *pidfile = pidfile_default;
 static char *logfile;
 static int debug_numerrors;
+int imc_log = -1;
 
 static int is_cpu_supported(void);
 
@@ -917,6 +918,7 @@ void usage(void)
 "--foreground        Keep in foreground (for debugging)\n"
 "--num-errors N      Only process N errors (for testing)\n"
 "--pidfile file	     Write pid of daemon into file\n"
+"--no-imc-log	     Disable extended iMC logging\n"
 		);
 	diskdb_usage();
 	print_cputypes();
@@ -950,6 +952,7 @@ enum options {
 	O_NUMERRORS,
 	O_PIDFILE,
 	O_DEBUG_NUMERRORS,
+	O_NO_IMC_LOG,
 };
 
 static struct option options[] = {
@@ -982,6 +985,7 @@ static struct option options[] = {
 	{ "num-errors", 1, NULL, O_NUMERRORS },
 	{ "pidfile", 1, NULL, O_PIDFILE },
 	{ "debug-numerrors", 0, NULL, O_DEBUG_NUMERRORS }, /* undocumented: for testing */
+	{ "no-imc-log", 0, NULL, O_NO_IMC_LOG },
 	DISKDB_OPTIONS
 	{}
 };
@@ -1085,6 +1089,9 @@ static int modifier(int opt)
 		break;
 	case O_DEBUG_NUMERRORS:
 		debug_numerrors = 1;
+		break;
+	case O_NO_IMC_LOG:
+		imc_log = 0;
 		break;
 	case 0:
 		break;
@@ -1307,6 +1314,18 @@ int main(int ac, char **av)
 		exit(1);
 	}
 
+	/* If the user didn't tell us not to use iMC logging, check if CPU supports it */
+	if (imc_log == -1) {
+		switch (cputype) {
+		case CPU_SANDY_BRIDGE_EP:
+			imc_log = 1;
+			break;
+		default:
+			imc_log = 0;
+			break;
+		}
+	}
+
 	modifier_finish();
 	if (av[optind])
 		logfn = av[optind++];
@@ -1335,6 +1354,8 @@ int main(int ac, char **av)
 			closedmi();
 		server_setup();
 		page_setup();
+		if (imc_log)
+			set_imc_log(cputype);
 		drop_cred();
 		register_pollcb(fd, POLLIN, process_mcefd, &d);
 		if (!foreground && daemon(0, need_stdout()) < 0)

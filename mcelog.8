@@ -214,6 +214,13 @@ option writes the process id of the daemon into file
 .I file.
 Only valid in daemon mode.
 
+Mcelog will enable extended error reporting from the memory
+controller on processors that support it unless you tell it
+not to with the
+.B \-\-no-imc-log
+option. You might need this option when decoding old logs
+from a system where this mode was not enabled.
+
 .\".B \-\-database filename
 .\"specifies the memory module error database file. Default is
 .\"/var/lib/memory-errors.  It is only used together with DMI decoding.

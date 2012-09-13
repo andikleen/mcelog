@@ -75,3 +75,61 @@ void snb_decode_model(int cputype, int bank, u64 status, u64 misc)
 		break;
 	}
 }
+
+/*
+ * Sandy Bridge EP and EP4S processors (family 6, model 45) support additional
+ * logging for corrected errors in the integrated memory controller (IMC)
+ * banks. The mode is off by default, but can be enabled by setting the
+ * "MemError Log Enable" * bit in MSR_ERROR_CONTROL (MSR 0x17f).
+ * The documentation in the August 2012 edition of Intel's Software developer
+ * manual has some minor errors because the worng version of table 16-16
+ * "Intel IMC MC Error Codes for IA32_MCi_MISC (i= 8, 11)" was included.
+ * Corrections are:
+ *  Bit 62 is the "VALID" bit for the "first-device" bits in MISC and STATUS
+ *  Bit 63 is the "VALID" bit for the "second-device" bits in MISC
+ *  Bits 58:56 and 61:59 should be marked as "reserved".
+ * There should also be a footnote explaining how the "failing rank" fields
+ * can be converted to a DIMM number within a channel for systems with either
+ * two or three DIMMs per channel.
+ */
+static int failrank2dimm(unsigned failrank, int socket, int channel)
+{
+	switch (failrank) {
+	case 0: case 1: case 2: case 3:
+		return 0;
+	case 4: case 5:
+		return 1;
+	case 6: case 7:
+		if (get_memdimm(socket, channel, 2, 0))
+			return 2;
+		else
+			return 1;
+	}
+	return -1;
+}
+
+void sandy_bridge_ep_memerr_misc(struct mce *m, int *channel, int *dimm)
+{
+	u64 status = m->status;
+	unsigned	failrank, chan;
+
+	/* Ignore unless this is an corrected extended error from an iMC bank */
+	if (!imc_log || m->bank < 8 || m->bank > 11 || (status & MCI_STATUS_UC) ||
+		!test_prefix(7, status & 0xefff))
+		return;
+
+	chan = EXTRACT(status, 0, 3);
+	if (chan == 0xf)
+		return;
+
+	if (EXTRACT(m->misc, 62, 62)) {
+		failrank = EXTRACT(m->misc, 46, 50);
+		dimm[0] = failrank2dimm(failrank, m->socketid, chan);
+		channel[0] = chan;
+	}
+	if (EXTRACT(m->misc, 63, 63)) {
+		failrank = EXTRACT(m->misc, 51, 55);
+		dimm[1] = failrank2dimm(failrank, m->socketid, chan);
+		channel[1] = chan;
+	}
+}
