@@ -499,11 +499,12 @@ int is_cpu_supported(void)
 		} 
 		if (seen == ALL) {
 			if (!strcmp(vendor,"AuthenticAMD")) {
-				if (family == 15)
+				if (family == 15) {
 					cputype = CPU_K8;
-				if (family >= 15)
-					SYSERRprintf("AMD Processor family %d: Please load edac_mce_amd module.\n", family);
-				return 0;
+				} else if (family >= 16) {
+					SYSERRprintf("AMD Processor family %d: Please use the edac_mce_amd module instead.\n", family);
+					return 0;
+				}
 			} else if (!strcmp(vendor,"GenuineIntel"))
 				cputype = select_intel_cputype(family, model);
 			/* Add checks for other CPUs here */	
