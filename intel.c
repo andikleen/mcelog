@@ -22,6 +22,7 @@
 #include "nehalem.h"
 #include "memdb.h"
 #include "page.h"
+#include "sandy-bridge.h"
 #include "xeon75xx.h"
 
 int memory_error_support;
