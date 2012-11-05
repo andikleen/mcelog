@@ -21,6 +21,7 @@
 #include "mcelog.h"
 #include "bitfield.h"
 #include "sandy-bridge.h"
+#include "memdb.h"
 
 /* See IA32 SDM Vol3B Appendix E.4 ff */
 
