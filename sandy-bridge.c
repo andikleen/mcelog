@@ -63,6 +63,21 @@ static struct field pcu_mc4[] = {
 	{}
 };
 
+static char *memctrl_1[] = {
+	[0x001] = "Address parity error",
+	[0x002] = "HA Wrt buffer Data parity error",
+	[0x004] = "HA Wrt byte enable parity error",
+	[0x008] = "Corrected patrol scrub error",
+	[0x010] = "Uncorrected patrol scrub error",
+	[0x020] = "Corrected spare error",
+	[0x040] = "Uncorrected spare error",
+};
+
+static struct field memctrl_mc8[] = {
+	FIELD(16, memctrl_1),
+	{}
+};
+
 void snb_decode_model(int cputype, int bank, u64 status, u64 misc)
 {
 	switch (bank) { 
@@ -77,6 +92,14 @@ void snb_decode_model(int cputype, int bank, u64 status, u64 misc)
 			/* MCACOD already decoded */
 			Wprintf("QPI\n");
 		}
+		break;
+	case 8:
+	case 9:
+	case 10:
+	case 11:
+		Wprintf("MemCtrl: ");
+		decode_bitfield(status, memctrl_mc8);
+		Wprintf("\n");
 		break;
 	}
 }
