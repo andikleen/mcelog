@@ -23,6 +23,7 @@
 #include "memdb.h"
 #include "page.h"
 #include "sandy-bridge.h"
+#include "ivy-bridge.h"
 #include "xeon75xx.h"
 
 int memory_error_support;
@@ -30,7 +31,8 @@ int memory_error_support;
 void intel_cpu_init(enum cputype cpu)
 {
 	if (cpu == CPU_NEHALEM || cpu == CPU_XEON75XX || cpu == CPU_INTEL ||
-	    cpu == CPU_SANDY_BRIDGE || cpu == CPU_SANDY_BRIDGE_EP)
+	    cpu == CPU_SANDY_BRIDGE || cpu == CPU_SANDY_BRIDGE_EP ||
+	    cpu == CPU_IVY_BRIDGE || cpu == CPU_IVY_BRIDGE_EPEX)
 		memory_error_support = 1;
 }
 
@@ -60,6 +62,10 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_SANDY_BRIDGE;
 		else if (model == 0x2d)
 			return CPU_SANDY_BRIDGE_EP;
+		else if (model == 0x3a)
+			return CPU_IVY_BRIDGE;
+		else if (model == 0x3e)
+			return CPU_IVY_BRIDGE_EPEX;
 		if (model > 0x1a) {
 			Eprintf("Family 6 Model %x CPU: only decoding architectural errors\n",
 				model);
@@ -101,6 +107,9 @@ static int intel_memory_error(struct mce *m, unsigned recordlen)
 			break;
 		case CPU_SANDY_BRIDGE_EP:
 			sandy_bridge_ep_memerr_misc(m, channel, dimm);
+			break;
+		case CPU_IVY_BRIDGE_EPEX:
+			ivy_bridge_ep_memerr_misc(m, channel, dimm);
 			break;
 		default:
 			break;

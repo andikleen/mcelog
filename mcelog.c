@@ -225,6 +225,8 @@ static char *cputype_name[] = {
 	[CPU_XEON75XX] = "Intel Xeon 7500 series",
 	[CPU_SANDY_BRIDGE] = "Sandy Bridge", /* Fill in better name */
 	[CPU_SANDY_BRIDGE_EP] = "Sandy Bridge EP", /* Fill in better name */
+	[CPU_IVY_BRIDGE] = "Ivy Bridge", /* Fill in better name */
+	[CPU_IVY_BRIDGE_EPEX] = "Ivy Bridge EP/EX", /* Fill in better name */
 };
 
 static struct config_choice cpu_choices[] = {
@@ -257,6 +259,9 @@ static struct config_choice cpu_choices[] = {
 	{ "xeon7100", CPU_P4 },
 	{ "sandybridge", CPU_SANDY_BRIDGE }, /* Fill in better name */
 	{ "sandybridge-ep", CPU_SANDY_BRIDGE_EP }, /* Fill in better name */
+	{ "ivybridge", CPU_IVY_BRIDGE }, /* Fill in better name */
+	{ "ivybridge-ep", CPU_IVY_BRIDGE_EPEX }, /* Fill in better name */
+	{ "ivybridge-ex", CPU_IVY_BRIDGE_EPEX }, /* Fill in better name */
 	{}
 };
 
@@ -417,7 +422,7 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 			fam,
 			mod);
 	}
-	if (cputype != CPU_SANDY_BRIDGE_EP)
+	if (cputype != CPU_SANDY_BRIDGE_EP && cputype != CPU_IVY_BRIDGE_EPEX)
 		resolveaddr(m->addr);
 	if (!ascii_mode && ismemerr && (m->status & MCI_STATUS_ADDRV)) {
 		diskdb_resolve_addr(m->addr);
@@ -1318,6 +1323,7 @@ int main(int ac, char **av)
 	if (imc_log == -1) {
 		switch (cputype) {
 		case CPU_SANDY_BRIDGE_EP:
+		case CPU_IVY_BRIDGE_EPEX:
 			imc_log = 1;
 			break;
 		default:

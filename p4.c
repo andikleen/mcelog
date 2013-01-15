@@ -32,6 +32,7 @@
 #include "yellow.h"
 #include "bitfield.h"
 #include "sandy-bridge.h"
+#include "ivy-bridge.h"
 
 /* decode mce for P4/Xeon and Core2 family */
 
@@ -354,6 +355,9 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 	case CPU_SANDY_BRIDGE:
 	case CPU_SANDY_BRIDGE_EP:
 		snb_decode_model(cputype, log->bank, log->status, log->misc);
+		break;
+	case CPU_IVY_BRIDGE_EPEX:
+		ivb_decode_model(cputype, log->bank, log->status, log->misc);
 		break;
 	}
 }
