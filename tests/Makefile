@@ -11,4 +11,4 @@ test:
 
 clean:
 	rm -f */*log
-	rm -f */results
+	rm -f */results*
