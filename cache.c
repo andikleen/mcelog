@@ -61,13 +61,15 @@ static void more_cpus(int cpu)
 
 static unsigned cpumap_len(char *s)
 {
-	unsigned len = 0;
-	while (*s) {
+	unsigned len = 0, width = 0;
+	do {
 		if (isxdigit(*s))
-			len++;
-		s++;
-	}
-	len = round_up(len * 4, BITS_PER_INT) / 8;
+			width++;
+		else {
+			len += round_up(width * 4, BITS_PER_INT) / 8;
+			width = 0;
+		}
+	} while (*s++);
 	return len;
 }
 
