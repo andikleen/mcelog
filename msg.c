@@ -22,7 +22,7 @@ int need_stdout(void)
 int open_logfile(char *fn)
 {
 	output_fh = fopen(fn, "a");
-	if (output_fh) { 
+	if (output_fh) {
 		char *old = output_fn;
 		output_fn = xstrdup(fn);
 		free(old);
@@ -44,7 +44,7 @@ static void opensyslog(void)
 void Lprintf(char *fmt, ...)
 {
 	va_list ap;
-	if (syslog_opt & SYSLOG_REMARK) { 
+	if (syslog_opt & SYSLOG_REMARK) {
 		va_start(ap, fmt);
 		opensyslog();
 		vsyslog(LOG_ERR, fmt, ap);
@@ -72,7 +72,7 @@ void Eprintf(char *fmt, ...)
 			fputc('\n', f);
 		va_end(ap);
 	}
-	if (syslog_opt & SYSLOG_ERROR) { 
+	if (syslog_opt & SYSLOG_ERROR) {
 		va_start(ap, fmt);
 		opensyslog();
 		vsyslog(LOG_ERR, fmt, ap);
@@ -93,7 +93,7 @@ void SYSERRprintf(char *fmt, ...)
 		fprintf(f, ": %s\n", err);
 		va_end(ap);
 	}
-	if (syslog_opt & SYSLOG_ERROR) { 
+	if (syslog_opt & SYSLOG_ERROR) {
 		char *fmt2;
 		va_start(ap, fmt);
 		opensyslog();
@@ -109,7 +109,7 @@ static int vlinesyslog(char *fmt, va_list ap)
 {
 	static char line[200];
 	int n;
-	int lend = strlen(line); 
+	int lend = strlen(line);
 	int w = vsnprintf(line + lend, sizeof(line)-lend, fmt, ap);
 	while (line[n = strcspn(line, "\n")] != 0) {
 		line[n] = 0;
@@ -147,7 +147,7 @@ void Gprintf(char *fmt, ...)
 		vlinesyslog(fmt, ap);
 		va_end(ap);
 	}
-	if (!(syslog_opt & SYSLOG_LOG) || output_fh) { 
+	if (!(syslog_opt & SYSLOG_LOG) || output_fh) {
 		va_start(ap,fmt);
 		vfprintf(output_fh ? output_fh : stdout, fmt, ap);
 		va_end(ap);
@@ -162,10 +162,10 @@ void flushlog(void)
 
 void reopenlog(void)
 {
-	if (output_fn && output_fh) { 
+	if (output_fn && output_fh) {
 		fclose(output_fh);
 		output_fh = NULL;
-		if (open_logfile(output_fn) < 0) 
+		if (open_logfile(output_fn) < 0)
 			SYSERRprintf("Cannot reopen logfile `%s'", output_fn);
-	}	
+	}
 }

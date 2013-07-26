@@ -1,4 +1,4 @@
-/* Copyright (C) 2008 Intel Corporation 
+/* Copyright (C) 2008 Intel Corporation
    Author: Andi Kleen
    Memory allocation utilities
 
@@ -13,7 +13,7 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
+   on your Linux system; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 #define _GNU_SOURCE 1
 #include <stdlib.h>
@@ -70,7 +70,7 @@ int asprintf(char **strp, const char *fmt, ...)
 	va_start(ap, fmt);
 	n = vasprintf(strp, fmt, ap);
 	va_end(ap);
-	if (n < 0) 
+	if (n < 0)
 		Enomem();
 	return n;
 }

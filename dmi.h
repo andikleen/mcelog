@@ -1,11 +1,11 @@
 
-struct dmi_entry { 
+struct dmi_entry {
 	unsigned char type;
 	unsigned char length;
 	unsigned short handle;
 };
 
-enum { 
+enum {
 	DMI_MEMORY_ARRAY = 16,
 	DMI_MEMORY_DEVICE = 17,
 	DMI_MEMORY_ARRAY_ADDR = 19,
@@ -18,10 +18,10 @@ struct dmi_memdev_addr {
 	unsigned end_addr;
 	unsigned short dev_handle;
 	unsigned short memarray_handle;
-	unsigned char row;	
+	unsigned char row;
 	unsigned char interleave_pos;
 	unsigned char interleave_depth;
-} __attribute__((packed)); 
+} __attribute__((packed));
 
 struct dmi_memdev {
 	struct dmi_entry header;
@@ -40,7 +40,7 @@ struct dmi_memdev {
 	unsigned char manufacturer;
 	unsigned char serial_number;
 	unsigned char asset_tag;
-	unsigned char part_number;	
+	unsigned char part_number;
 } __attribute__((packed));
 
 struct dmi_memarray {
@@ -73,10 +73,10 @@ extern void checkdmi(void);
 void closedmi(void);
 
 /* valid after opendmi: */
-extern struct dmi_memdev **dmi_dimms; 
-extern struct dmi_memdev_addr **dmi_ranges; 
-extern struct dmi_memarray **dmi_arrays; 
-extern struct dmi_memarray_addr **dmi_array_ranges; 
+extern struct dmi_memdev **dmi_dimms;
+extern struct dmi_memdev_addr **dmi_ranges;
+extern struct dmi_memarray **dmi_arrays;
+extern struct dmi_memarray_addr **dmi_array_ranges;
 
 extern int dmi_forced;
 extern int do_dmi;

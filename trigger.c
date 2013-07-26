@@ -1,4 +1,4 @@
-/* Copyright (C) 2009 Intel Corporation 
+/* Copyright (C) 2009 Intel Corporation
    Author: Andi Kleen
    Manage trigger commands running as separate processes.
 
@@ -13,7 +13,7 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
+   on your Linux system; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 #define _GNU_SOURCE 1
 #include <stdio.h>
@@ -66,25 +66,25 @@ void run_trigger(char *trigger, char *argv[], char **env)
 		NULL,
 	};
 
-	if (!argv) 
+	if (!argv)
 		argv = fallback_argv;
 
-	Lprintf("Running trigger `%s'\n", trigger);	
-	if (children_max > 0 && num_children >= children_max) { 
+	Lprintf("Running trigger `%s'\n", trigger);
+	if (children_max > 0 && num_children >= children_max) {
 		Eprintf("Too many trigger children running already\n");
 		return;
 	}
 
 	child = mcelog_fork(trigger);
-	if (child < 0) { 
+	if (child < 0) {
 		SYSERRprintf("Cannot create process for trigger");
 		return;
 	}
-	if (child == 0) { 
+	if (child == 0) {
 		if (trigger_dir)
 			chdir(trigger_dir);
-		execve(trigger, argv, env);	
-		_exit(127);	
+		execve(trigger, argv, env);
+		_exit(127);
 	}
 }
 
@@ -94,16 +94,16 @@ static void finish_child(pid_t child, int status)
 	struct child *c, *tmpc;
 
 	list_for_each_entry_safe (c, tmpc, &childlist, nd) {
-		if (c->child == child) { 
-			if (WIFEXITED(status) && WEXITSTATUS(status)) { 
+		if (c->child == child) {
+			if (WIFEXITED(status) && WEXITSTATUS(status)) {
 				Eprintf("Trigger `%s' exited with status %d\n",
 					c->name, WEXITSTATUS(status));
-			} else if (WIFSIGNALED(status)) { 
+			} else if (WIFSIGNALED(status)) {
 				Eprintf("Trigger `%s' died with signal %s\n",
 					c->name, strsignal(WTERMSIG(status)));
 			}
 			list_del(&c->nd);
-			free(c);		
+			free(c);
 			num_children--;
 			return;
 		}
@@ -121,7 +121,7 @@ static void child_handler(int sig, siginfo_t *si, void *ctx)
 	}
 	finish_child(si->si_pid, status);
 }
- 
+
 void trigger_setup(void)
 {
 	char *s;
@@ -135,8 +135,8 @@ void trigger_setup(void)
 	config_number("trigger", "children-max", "%d", &children_max);
 
 	s = config_string("trigger", "directory");
-	if (s) { 
-		if (access(s, R_OK|X_OK) < 0) 
+	if (s) {
+		if (access(s, R_OK|X_OK) < 0)
 			SYSERRprintf("Cannot access trigger directory `%s'", s);
 		trigger_dir = s;
 	}

@@ -1,4 +1,4 @@
-/* Copyright (C) 2009 Intel Corporation 
+/* Copyright (C) 2009 Intel Corporation
    Author: Andi Kleen
    Leaky bucket algorithm. This is used for all error triggers.
 
@@ -13,7 +13,7 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
+   on your Linux system; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 #define _GNU_SOURCE 1
 #include <stdio.h>
@@ -30,7 +30,7 @@ static void bucket_age(const struct bucket_conf *c, struct leaky_bucket *b,
 {
 	long diff;
 	diff = now - b->tstamp;
-	if (diff >= c->agetime) { 
+	if (diff >= c->agetime) {
 		unsigned age = (diff / (double)c->agetime) * c->capacity;
 		b->tstamp = now;
 		if (age > b->count)
@@ -42,13 +42,13 @@ static void bucket_age(const struct bucket_conf *c, struct leaky_bucket *b,
 }
 
 /* Account increase in leaky bucket. Return 1 if bucket overflowed. */
-int __bucket_account(const struct bucket_conf *c, struct leaky_bucket *b, 
+int __bucket_account(const struct bucket_conf *c, struct leaky_bucket *b,
 		   unsigned inc, time_t t)
 {
 	if (c->capacity == 0)
 		return 0;
 	bucket_age(c, b, t);
-	b->count += inc; 
+	b->count += inc;
 	if (b->count >= c->capacity) {
 		b->excess += b->count;
 		/* should disable overflow completely in the same time unit */
@@ -58,8 +58,8 @@ int __bucket_account(const struct bucket_conf *c, struct leaky_bucket *b,
 	return 0;
 }
 
-int bucket_account(const struct bucket_conf *c, struct leaky_bucket *b, 
-		   unsigned inc) 
+int bucket_account(const struct bucket_conf *c, struct leaky_bucket *b,
+		   unsigned inc)
 {
 	return __bucket_account(c, b, inc, bucket_time());
 }
@@ -67,7 +67,7 @@ int bucket_account(const struct bucket_conf *c, struct leaky_bucket *b,
 static int timeconv(char unit, int *out)
 {
 	unsigned corr = 1;
-	switch (unit) { 
+	switch (unit) {
 	case 'd': corr *= 24;
 	case 'h': corr *= 3600;
 	case 'm': corr *= 60;
@@ -84,18 +84,18 @@ char *bucket_output(const struct bucket_conf *c, struct leaky_bucket *b)
 	char *buf;
 	if (c->capacity == 0) {
 		asprintf(&buf, "not enabled");
-	} else { 
+	} else {
 		int unit = 0;
 		//bucket_age(c, b, bucket_time());
 		timeconv(c->tunit, &unit);
-		asprintf(&buf, "%u in %u%c", b->count + b->excess, 
+		asprintf(&buf, "%u in %u%c", b->count + b->excess,
 			c->agetime/unit, c->tunit);
 	}
 	return buf;
 }
 
 /* Parse user specified capacity / rate string */
-/* capacity / time 
+/* capacity / time
    time: number [hmds]
    capacity: number [kmg] */
 static int parse_rate(const char *rate, struct bucket_conf *c)
@@ -108,7 +108,7 @@ static int parse_rate(const char *rate, struct bucket_conf *c)
 	cunit[0] = 0;
 	tunit[0] = 0;
 	n = sscanf(rate, "%u %1s / %u %1s", &cap, cunit, &t, tunit);
-	if (n != 4)  { 
+	if (n != 4)  {
 		cunit[0] = 0;
 		tunit[0] = 0;
 		if (n <= 2) {
@@ -120,7 +120,7 @@ static int parse_rate(const char *rate, struct bucket_conf *c)
 	}
 	if (t == 0 || cap == 0)
 		return -1;
-	switch (tolower(cunit[0])) { 
+	switch (tolower(cunit[0])) {
 	case 'g': cap *= 1000;
 	case 'm': cap *= 1000;
 	case 'k': cap *= 1000;

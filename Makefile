@@ -10,14 +10,14 @@ etcprefix :=
 # Warning flags added implicitely to CFLAGS in the default rule
 # this is done so that even when CFLAGS are overriden we still get
 # the additional warnings
-# Some warnings require the global optimizer and are only output with 
+# Some warnings require the global optimizer and are only output with
 # -O2/-Os, so that should be tested occasionally
 WARNINGS := -Wall -Wextra -Wno-missing-field-initializers -Wno-unused-parameter \
 	    -Wstrict-prototypes -Wformat-security -Wmissing-declarations \
 	    -Wdeclaration-after-statement
 
 # The on disk database has still many problems (partly in this code and partly
-# due to missing support from BIOS), so it's disabled by default. You can 
+# due to missing support from BIOS), so it's disabled by default. You can
 # enable it here by uncommenting the following line
 # CONFIG_DISKDB = 1
 
@@ -60,14 +60,14 @@ install: mcelog
 		install -m 755 -p -b triggers/$$i $(DESTDIR)${etcprefix}/etc/mcelog ; 	\
 	done
 ifdef DOCDIR
-	install -m 644 -p ${DOC} $(DESTDIR)${DOCDIR} 
+	install -m 644 -p ${DOC} $(DESTDIR)${DOCDIR}
 else
 	echo
 	echo "Consider defining DOCDIR to install additional documentation"
 endif
 
 clean: test-clean
-	rm -f ${CLEAN} ${OBJ} 
+	rm -f ${CLEAN} ${OBJ}
 
 tsc:    tsc.c
 	gcc -o tsc ${CFLAGS} -DSTANDALONE tsc.c ${LDFLAGS}
@@ -92,7 +92,7 @@ Makefile: .depend
 DISABLED_DIAGS := -diag-disable 188,271,869,2259,981,12072,181,12331,1572
 
 iccverify:
-	icc -Wall -diag-enable sv3 $(DISABLED_DIAGS) $(ADD_DEFINES) $(SRC)	
+	icc -Wall -diag-enable sv3 $(DISABLED_DIAGS) $(ADD_DEFINES) $(SRC)
 
 clangverify:
 	clang --analyze $(ADD_DEFINES) $(SRC)

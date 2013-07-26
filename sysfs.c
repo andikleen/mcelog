@@ -1,4 +1,4 @@
-/* Copyright (C) 2008 Intel Corporation 
+/* Copyright (C) 2008 Intel Corporation
    Author: Andi Kleen
    Read/Write sysfs values
 
@@ -13,7 +13,7 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
+   on your Linux system; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 #define _GNU_SOURCE 1
 #include <stdio.h>
@@ -38,10 +38,10 @@ char *read_field(char *base, char *name)
 	asprintf(&fn, "%s/%s", base, name);
 	fd = open(fn, O_RDONLY);
 	if (fstat(fd, &st) < 0)
-		goto bad;		
+		goto bad;
 	buf = xalloc(st.st_size);
 	free(fn);
-	if (fd < 0) 
+	if (fd < 0)
 		goto bad;
 	n = read(fd, buf, st.st_size);
 	close(fd);
@@ -66,7 +66,7 @@ unsigned read_field_num(char *base, char *name)
 	char *val = read_field(base, name);
 	int n = sscanf(val, "%u", &num);
 	free(val);
-	if (n != 1) { 
+	if (n != 1) {
 		Eprintf("Cannot parse number in sysfs field %s/%s\n", base,name);
 		return 0;
 	}

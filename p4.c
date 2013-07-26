@@ -13,9 +13,9 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
-   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
-   
+   on your Linux system; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
    Authors:
         Racing Guo <racing.guo@intel.com>
 	Andi Kleen
@@ -120,7 +120,7 @@ static void decode_mca(__u32 mca, u64 track, int cpu, int *ismemerr, int socket)
 #define TLB_LL_MASK      0x3  /*bit 0, bit 1*/
 #define TLB_LL_SHIFT     0x0
 #define TLB_TT_MASK      0xc  /*bit 2, bit 3*/
-#define TLB_TT_SHIFT     0x2 
+#define TLB_TT_SHIFT     0x2
 
 #define CACHE_LL_MASK    0x3  /*bit 0, bit 1*/
 #define CACHE_LL_SHIFT   0x0
@@ -136,7 +136,7 @@ static void decode_mca(__u32 mca, u64 track, int cpu, int *ismemerr, int socket)
 #define BUS_RRRR_MASK    0xF0 /*bit 4, bit 5, bit 6, bit 7 */
 #define BUS_RRRR_SHIFT   0x4
 #define BUS_T_MASK       0x100 /*bit 8*/
-#define BUS_T_SHIFT      0x8   
+#define BUS_T_SHIFT      0x8
 #define BUS_PP_MASK      0x600 /*bit 9, bit 10*/
 #define BUS_PP_SHIFT     0x9
 
@@ -155,16 +155,16 @@ static void decode_mca(__u32 mca, u64 track, int cpu, int *ismemerr, int socket)
 	}
 
 	if (mca < NELE(msg)) {
-		Wprintf("%s\n", msg[mca]); 
+		Wprintf("%s\n", msg[mca]);
 		return;
 	}
 
-	if ((mca >> 2) == 3) { 
+	if ((mca >> 2) == 3) {
 		Wprintf("%s Generic memory hierarchy error\n", get_LL_str(mca & 3));
 	} else if (test_prefix(4, mca)) {
 		Wprintf("%s TLB %s Error\n",
 				get_TT_str((mca & TLB_TT_MASK) >> TLB_TT_SHIFT),
-				get_LL_str((mca & TLB_LL_MASK) >> 
+				get_LL_str((mca & TLB_LL_MASK) >>
 					    TLB_LL_SHIFT));
 	} else if (test_prefix(8, mca)) {
 		unsigned typenum = (mca & CACHE_TT_MASK) >> CACHE_TT_SHIFT;
@@ -172,7 +172,7 @@ static void decode_mca(__u32 mca, u64 track, int cpu, int *ismemerr, int socket)
 		char *type = get_TT_str(typenum);
 		char *level = get_LL_str(levelnum);
 		Wprintf("%s CACHE %s %s Error\n", type, level,
-				get_RRRR_str((mca & CACHE_RRRR_MASK) >> 
+				get_RRRR_str((mca & CACHE_RRRR_MASK) >>
 					      CACHE_RRRR_SHIFT));
 		if (track == 2)
 			run_yellow_trigger(cpu, typenum, levelnum, type, level, socket);
@@ -185,14 +185,14 @@ static void decode_mca(__u32 mca, u64 track, int cpu, int *ismemerr, int socket)
 		Wprintf("BUS %s %s %s %s %s Error\n",
 				get_LL_str((mca & BUS_LL_MASK) >> BUS_LL_SHIFT),
 				get_PP_str((mca & BUS_PP_MASK) >> BUS_PP_SHIFT),
-				get_RRRR_str((mca & BUS_RRRR_MASK) >> 
+				get_RRRR_str((mca & BUS_RRRR_MASK) >>
 					      BUS_RRRR_SHIFT),
 				get_II_str((mca & BUS_II_MASK) >> BUS_II_SHIFT),
 				get_T_str((mca & BUS_T_MASK) >> BUS_T_SHIFT));
 	} else if (test_prefix(7, mca)) {
 		decode_memory_controller(mca);
 		*ismemerr = 1;
-	} else 
+	} else
 		Wprintf("Unknown Error %x\n", mca);
 }
 
@@ -223,8 +223,8 @@ static void p4_decode_model(__u32 model)
 
 static void decode_tracking(u64 track)
 {
-	static char *msg[] = { 
-		[1] = "green", 
+	static char *msg[] = {
+		[1] = "green",
 		[2] = "yellow\n"
 "Large number of corrected cache errors. System operating, but might lead\n"
 "to uncorrected errors soon",
@@ -234,9 +234,9 @@ static void decode_tracking(u64 track)
 	}
 }
 
-static const char *arstate[4] = { 
+static const char *arstate[4] = {
 	[0] = "UCNA",
-	[1] = "AR", 	
+	[1] = "AR",
 	[2] = "SRAO",
 	[3] = "SRAR"
 };
@@ -252,8 +252,8 @@ static void decode_mci(__u64 status, int cpu, unsigned mcgcap, int *ismemerr,
 
 	if (status & MCI_STATUS_OVER)
 		Wprintf("Error overflow\n");
-	
-	if (status & MCI_STATUS_UC) 
+
+	if (status & MCI_STATUS_UC)
 		Wprintf("Uncorrected error\n");
 	else
 		Wprintf("Corrected error\n");
@@ -261,7 +261,7 @@ static void decode_mci(__u64 status, int cpu, unsigned mcgcap, int *ismemerr,
 	if (status & MCI_STATUS_EN)
 		Wprintf("Error enabled\n");
 
-	if (status & MCI_STATUS_MISCV) 
+	if (status & MCI_STATUS_MISCV)
 		Wprintf("MCi_MISC register valid\n");
 
 	if (status & MCI_STATUS_ADDRV)
@@ -300,9 +300,9 @@ static void decode_thermal(struct mce *log, int cpu)
 "Processor %d heated above trip temperature. Throttling enabled.\n", cpu);
 		Gprintf(
 "Please check your system cooling. Performance will be impacted\n");
-	} else { 
+	} else {
 		Gprintf("Processor %d below trip temperature. Throttling disabled\n", cpu);
-	} 
+	}
 }
 
 void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
@@ -310,7 +310,7 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 	int socket = size > offsetof(struct mce, socketid) ? (int)log->socketid : -1;
 	int cpu = log->extcpu ? log->extcpu : log->cpu;
 
-	if (log->bank == MCE_THERMAL_BANK) { 
+	if (log->bank == MCE_THERMAL_BANK) {
 		decode_thermal(log, cpu);
 		return;
 	}
@@ -339,7 +339,7 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 	}
 
 	/* Model specific addon information */
-	switch (cputype) { 
+	switch (cputype) {
 	case CPU_NEHALEM:
 		nehalem_decode_model(log->status, log->misc);
 		break;

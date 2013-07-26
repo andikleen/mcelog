@@ -41,7 +41,7 @@ static int fmt_tsc(char **buf, u64 tsc, double mhz)
 	hours = scale(&tsc, 3600, mhz);
 	mins = scale(&tsc, 60, mhz);
 	secs = scale(&tsc, 1, mhz);
-	asprintf(buf, "[at %.0f Mhz %u days %u:%u:%u uptime (unreliable)]", 
+	asprintf(buf, "[at %.0f Mhz %u days %u:%u:%u uptime (unreliable)]",
 		mhz, days, hours, mins, secs);
 	return 0;
 }
@@ -101,7 +101,7 @@ static int deep_sleep_states(int cpu)
 			if (n > 1) {
 				char *p = strstr(line, "usage");
 				if (p && sscanf(p, "usage[%d]", &n) == 1 && n > 0)
-					return 1;					
+					return 1;
 			}
 		}
 	}
@@ -120,10 +120,10 @@ static int tsc_reliable(int cputype, int cpunum)
 		return 1;
 	/* TSC does not change frequency TBD: really old kernels don't set that */
 	if (!strstr(processor_flags, "constant_tsc"))
-		return 0;	
+		return 0;
 	/* We don't know the frequency on non Intel CPUs because the
 	   kernel doesn't report them (e.g. AMD GH TSC doesn't run at highest
-	   P-state). But then the kernel can just report the real time too. 
+	   P-state). But then the kernel can just report the real time too.
 	   Also a lot of AMD and VIA CPUs have unreliable TSC, so would
 	   need special rules here too. */
 	if (!is_intel_cpu(cputype))
@@ -133,7 +133,7 @@ static int tsc_reliable(int cputype, int cpunum)
 	return 1;
 }
 
-int decode_tsc_current(char **buf, int cpunum, enum cputype cputype, double mhz, 
+int decode_tsc_current(char **buf, int cpunum, enum cputype cputype, double mhz,
 		       unsigned long long tsc)
 {
 	double cmhz;

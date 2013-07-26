@@ -6,7 +6,7 @@ struct field {
 	unsigned stringlen;
 };
 
-struct numfield { 
+struct numfield {
 	unsigned start, end;
 	char *name;
 	char *fmt;

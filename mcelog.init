@@ -1,18 +1,18 @@
 #!/bin/sh
-# 
+#
 # Startup script for mcelog
-# 
+#
 # This should be customized for distribution standards
 # (using rc_status etc.)
 # The paths are hardcoded and are not automatically adjusted
 # for different prefix
 #
 ### BEGIN INIT INFO
-# Provides:		mcelog 
+# Provides:		mcelog
 # Default-Start:	3 5
 # Default-Stop:		0 1 2 6
 # Short-Description:	mcelog hardware error logging
-# Description:          Start the mcelog hardware error logging. 
+# Description:          Start the mcelog hardware error logging.
 #                       This logs and handles CPU hardware errors on x86 systems.
 ### END INIT INFO
 
@@ -64,7 +64,7 @@ stop)
 	if [ "$MCELOG_MODE" = "daemon" ] ; then
 		echo "Stopping mcelog"
 		killproc -TERM $MCELOG
-	elif [ "$MCELOG_MODE" = "trigger" -a -f "$TRIGGER" ]; then 
+	elif [ "$MCELOG_MODE" = "trigger" -a -f "$TRIGGER" ]; then
 		echo "" > "$TRIGGER"
 	else
 		echo mcelog not running

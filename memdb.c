@@ -1,4 +1,4 @@
-/* Copyright (C) 2009 Intel Corporation 
+/* Copyright (C) 2009 Intel Corporation
    Author: Andi Kleen
    Simple in memory error database for mcelog running in daemon mode
 
@@ -13,7 +13,7 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
+   on your Linux system; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 #define _GNU_SOURCE 1
 #include <stddef.h>
@@ -83,11 +83,11 @@ struct memdimm *get_memdimm(int socketid, int channel, int dimm, int insert)
 	unsigned h;
 
 	h = dimmhash(socketid, dimm, channel);
-	for (md = md_dimms[h]; md; md = md->next) { 
-		if (md->socketid == socketid && 
-			md->channel == channel && 
+	for (md = md_dimms[h]; md; md = md->next) {
+		if (md->socketid == socketid &&
+			md->channel == channel &&
 			md->dimm == dimm)
-			break;	
+			break;
 	}
 	if (md || !insert)
 		return md;
@@ -121,12 +121,12 @@ static char *format_location(struct memdimm *md)
 	char *location;
 
 	asprintf(&location, "SOCKET:%d CHANNEL:%s DIMM:%s [%s%s%s]",
-		md->socketid, 
+		md->socketid,
 		md->channel == -1 ? "?" : number(numbuf, md->channel),
 		md->dimm == -1 ? "?" : number(numbuf2, md->dimm),
 		md->location ? md->location : "",
 		md->location && md->name ? " " : "",
-		md->name ? md->name : ""); 
+		md->name ? md->name : "");
 	return location;
 }
 
@@ -135,7 +135,7 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 		struct err_type *et, struct bucket_conf *bc)
 {
 	struct leaky_bucket *bucket = &et->bucket;
-	char *env[MAX_ENV]; 
+	char *env[MAX_ENV];
 	int ei = 0;
 	int i;
 	char *location = format_location(md);
@@ -143,8 +143,8 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 	char *out;
 
 	asprintf(&out, "%s: %s", msg, thresh);
-	if (bc->log) { 
-		Gprintf("%s\n", out); 
+	if (bc->log) {
+		Gprintf("%s\n", out);
 		Gprintf("Location %s\n", location);
 	}
 	if (bc->trigger == NULL)
@@ -170,7 +170,7 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 	// XXX human readable version of agetime
 	asprintf(&env[ei++], "MESSAGE=%s", out);
 	asprintf(&env[ei++], "THRESHOLD_COUNT=%d", bucket->count);
-	env[ei] = NULL;	
+	env[ei] = NULL;
 	assert(ei < MAX_ENV);
 	run_trigger(bc->trigger, NULL, env);
 	for (i = 0; i < ei; i++)
@@ -181,7 +181,7 @@ out:
 	free(thresh);
 }
 
-/* 
+/*
  * Lost some errors. Assume they were CE. Only works for the sockets because
  * we have no clues where they are.
  */
@@ -190,9 +190,9 @@ account_over(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigned
 {
 	if (corr_err_cnt && --corr_err_cnt > 0) {
 		md->ce.count += corr_err_cnt;
-		if (__bucket_account(&t->ce_bucket_conf, &md->ce.bucket, corr_err_cnt, m->time)) { 
+		if (__bucket_account(&t->ce_bucket_conf, &md->ce.bucket, corr_err_cnt, m->time)) {
 			char *msg;
-			asprintf(&msg, "Fallback %s memory error count %d exceeded threshold", 
+			asprintf(&msg, "Fallback %s memory error count %d exceeded threshold",
 				 t->type, corr_err_cnt);
 			memdb_trigger(msg, md, 0, &md->ce, &t->ce_bucket_conf);
 			free(msg);
@@ -200,15 +200,15 @@ account_over(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigned
 	}
 }
 
-static void 
+static void
 account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m)
 {
 	char *msg;
 
-	asprintf(&msg, "%scorrected %s memory error count exceeded threshold", 
+	asprintf(&msg, "%scorrected %s memory error count exceeded threshold",
 		(m->status & MCI_STATUS_UC) ? "Un" : "", t->type);
 
-	if (m->status & MCI_STATUS_UC) { 
+	if (m->status & MCI_STATUS_UC) {
 		md->uc.count++;
 		if (__bucket_account(&t->uc_bucket_conf, &md->uc.bucket, 1, m->time))
 			memdb_trigger(msg, md, m->time, &md->uc, &t->uc_bucket_conf);
@@ -220,17 +220,17 @@ account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m)
 	free(msg);
 }
 
-/* 
+/*
  * A memory error happened, record it in the memdb database and run
  * triggers if needed.
  * ch/dimm == -1: Unspecified DIMM on the channel
  */
-void memory_error(struct mce *m, int ch, int dimm, unsigned corr_err_cnt, 
+void memory_error(struct mce *m, int ch, int dimm, unsigned corr_err_cnt,
 		unsigned recordlen)
 {
 	struct memdimm *md;
 
-	if (recordlen < offsetof(struct mce, socketid)) { 
+	if (recordlen < offsetof(struct mce, socketid)) {
 		static int warned;
 		if (!warned) {
 			Eprintf("Cannot account memory errors because kernel does not report socketid");
@@ -277,7 +277,7 @@ static void dump_errtype(char *name, struct err_type *e, FILE *f, enum printflag
 	}
 	if (bc->capacity && (e->bucket.count || all)) {
 		s = bucket_output(bc, &e->bucket);
-		fprintf(f, "\t%s\n", s);  
+		fprintf(f, "\t%s\n", s);
 		free(s);
 	}
 }
@@ -288,7 +288,7 @@ static void dump_bios(struct memdimm *md, FILE *f)
 
 	if (md->name)
 		n += fprintf(f, "DMI_NAME \"%s\"", md->name);
-	if (md->location) { 
+	if (md->location) {
 		if (n > 0)
 			fputc(' ', f);
 		n += fprintf(f, "DMI_LOCATION \"%s\"", md->location);
@@ -305,7 +305,7 @@ static void dump_dimm(struct memdimm *md, FILE *f, enum printflags flags)
 			fprintf(f, " CHANNEL any");
 		else
 			fprintf(f, " CHANNEL %d", md->channel);
-		if (md->dimm == -1) 
+		if (md->dimm == -1)
 			fprintf(f, " DIMM any");
 		else
 			fprintf(f, " DIMM %d", md->dimm);
@@ -313,9 +313,9 @@ static void dump_dimm(struct memdimm *md, FILE *f, enum printflags flags)
 
 		if (flags & DUMP_BIOS)
 			dump_bios(md, f);
-		dump_errtype("corrected memory errors", &md->ce, f, flags, 
+		dump_errtype("corrected memory errors", &md->ce, f, flags,
 				&dimms.ce_bucket_conf);
-		dump_errtype("uncorrected memory errors", &md->uc, f, flags, 
+		dump_errtype("uncorrected memory errors", &md->uc, f, flags,
 				&dimms.uc_bucket_conf);
 	}
 }
@@ -334,7 +334,7 @@ void dump_memory_errors(FILE *f, enum printflags flags)
 	}
 	qsort(da, md_numdimms, sizeof(void *), cmp_dimm);
 	for (i = 0; i < md_numdimms; i++)  {
-		if (i > 0)  
+		if (i > 0)
 			fputc('\n', f);
 		else
 			fprintf(f, "Memory errors\n");
@@ -348,37 +348,37 @@ void memdb_config(void)
 	int n;
 
 	n = config_bool("dimm", "dimm-tracking-enabled");
-	if (n < 0) 
+	if (n < 0)
 		memdb_enabled = memory_error_support;
 	else
-		memdb_enabled = n; 
+		memdb_enabled = n;
 
 	config_trigger("dimm", "ce-error", &dimms.ce_bucket_conf);
 	config_trigger("dimm", "uc-error", &dimms.uc_bucket_conf);
 
 	n = config_bool("socket", "socket-tracking-enabled");
-	if (n < 0) 
+	if (n < 0)
 		sockdb_enabled = memory_error_support;
 	else
-		sockdb_enabled = n; 
+		sockdb_enabled = n;
 
 	config_trigger("socket", "mem-ce-error", &sockets.ce_bucket_conf);
 	config_trigger("socket", "mem-uc-error", &sockets.uc_bucket_conf);
 }
 
-static int 
+static int
 parse_dimm_addr(char *bl, unsigned *socketid, unsigned *channel, unsigned *dimm)
 {
 	if (!bl)
 		return 0;
-	if (sscanf(bl + strcspn(bl, "_"), "_Node%u_Channel%u_Dimm%u", socketid, 
+	if (sscanf(bl + strcspn(bl, "_"), "_Node%u_Channel%u_Dimm%u", socketid,
 		   channel, dimm) == 3)
 		return 1;
 	if (sscanf(bl, "NODE %u CHANNEL %u DIMM %u", socketid,
 		   channel, dimm) == 3)
 		return 1;
 	/* Add more DMI formats here */
-	return 0;		
+	return 0;
 }
 
 /* Prepopulate DIMM database from BIOS information */
@@ -412,7 +412,7 @@ void prefill_memdb(void)
 		}
 
 		md = get_memdimm(socketid, channel, dimm, 1);
-		if (md->memdev) { 
+		if (md->memdev) {
 			/* dups -- likely parse error */
 			missed++;
 			continue;
@@ -421,7 +421,7 @@ void prefill_memdb(void)
 		md->location = xstrdup(bl);
 		md->name = xstrdup(dmi_getstring(&d->header, d->device_locator));
 	}
-	if (missed) { 
+	if (missed) {
 		static int warned;
 		if (!warned) {
 			Eprintf("failed to prefill DIMM database from DMI data");

@@ -1,4 +1,4 @@
-/* Copyright (C) 2009 Intel Corporation 
+/* Copyright (C) 2009 Intel Corporation
    Author: Andi Kleen
    Memory error accounting per page
 
@@ -13,16 +13,16 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
+   on your Linux system; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 
-/* NB 
-   investigate other data structures. Primary consideration would 
-   be space efficiency. rbtree nodes are rather large. 
+/* NB
+   investigate other data structures. Primary consideration would
+   be space efficiency. rbtree nodes are rather large.
 
    Do we need aging? Right now the only way to get rid of old nodes
    is to restart. */
-#define _GNU_SOURCE 1 
+#define _GNU_SOURCE 1
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -43,7 +43,7 @@
 
 enum { PAGE_ONLINE = 0, PAGE_OFFLINE = 1, PAGE_OFFLINE_FAILED = 2 };
 
-struct mempage { 
+struct mempage {
 	struct rb_node nd;
 	u64 addr;
 	struct err_type ce;
@@ -111,15 +111,15 @@ static struct mempage *mempage_insert(u64 addr, struct mempage *mp)
 
 /* Following arrays need to be all kept in sync with the enum */
 
-enum otype { 
-	OFFLINE_OFF, 
-	OFFLINE_ACCOUNT, 
-	OFFLINE_SOFT, 
+enum otype {
+	OFFLINE_OFF,
+	OFFLINE_ACCOUNT,
+	OFFLINE_SOFT,
 	OFFLINE_HARD,
-	OFFLINE_SOFT_THEN_HARD 
+	OFFLINE_SOFT_THEN_HARD
 };
 
-static const char *kernel_offline[] = { 
+static const char *kernel_offline[] = {
 	[OFFLINE_SOFT] = "/sys/devices/system/memory/soft_offline_page",
 	[OFFLINE_HARD] = "/sys/devices/system/memory/hard_offline_page",
 	[OFFLINE_SOFT_THEN_HARD] = "/sys/devices/system/memory/soft_offline_page"
@@ -144,10 +144,10 @@ static int do_memory_offline(u64 addr, enum otype type)
 static int memory_offline(u64 addr)
 {
 	if (offline == OFFLINE_SOFT_THEN_HARD) {
-		if (do_memory_offline(addr, OFFLINE_SOFT) < 0)  { 
+		if (do_memory_offline(addr, OFFLINE_SOFT) < 0)  {
 			Lprintf("Soft offlining of page %llx failed, trying hard offlining\n",
 				addr);
-			return do_memory_offline(addr, OFFLINE_HARD); 
+			return do_memory_offline(addr, OFFLINE_HARD);
 		}
 		return 0;
 	}
@@ -204,7 +204,7 @@ void account_page_error(struct mce *m, int channel, int dimm)
 	        mempage_insert(addr, mp);
 	}
 	++mp->ce.count;
-	if (__bucket_account(&page_trigger_conf, &mp->ce.bucket, 1, t)) { 
+	if (__bucket_account(&page_trigger_conf, &mp->ce.bucket, 1, t)) {
 		struct memdimm *md;
 		char *msg;
 		char *thresh;
@@ -231,7 +231,7 @@ void dump_page_errors(FILE *f)
 	long k;
 
 	k = 0;
-	for (r = rb_first(&mempage_root); r; r = rb_next(r)) { 
+	for (r = rb_first(&mempage_root); r; r = rb_next(r)) {
 		struct mempage *p = rb_entry(r, struct mempage, nd);
 
 		if (k++ == 0)
@@ -251,12 +251,12 @@ void dump_page_errors(FILE *f)
 void page_setup(void)
 {
 	int n;
-	
+
 	config_trigger("page", "memory-ce", &page_trigger_conf);
 	n = config_choice("page", "memory-ce-action", offline_choice);
 	if (n >= 0)
 		offline = n;
-	if (offline > OFFLINE_ACCOUNT && 
+	if (offline > OFFLINE_ACCOUNT &&
 	    !sysfs_available(kernel_offline[offline], W_OK)) {
 		Lprintf("Kernel does not support page offline interface\n");
 		offline = OFFLINE_ACCOUNT;

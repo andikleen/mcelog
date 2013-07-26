@@ -12,10 +12,10 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
-   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+   on your Linux system; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-   Author: Andi Kleen 
+   Author: Andi Kleen
 */
 
 #include <string.h>
@@ -42,7 +42,7 @@ static struct field qpi_status[] = {
 	SBITFIELD(25, "QPI Sender sent a failed response to receiver"),
 	SBITFIELD(26, "Clock jitter detected in internal QPI clocking"),
 	{}
-}; 
+};
 
 static struct field qpi_misc[] = {
 	SBITFIELD(14, "QPI misc reserved 14"),
@@ -66,7 +66,7 @@ static struct field nhm_memory_status[] = {
 	SBITFIELD(19, "Memory error in half of redundant memory"),
 	SBITFIELD(20, "Memory reserved 20"),
 	SBITFIELD(21, "Memory access out of range"),
-	SBITFIELD(22, "Memory internal RTID invalid"), 
+	SBITFIELD(22, "Memory internal RTID invalid"),
 	SBITFIELD(23, "Memory address parity error"),
 	SBITFIELD(24, "Memory byte enable parity error"),
 	{}
@@ -102,7 +102,7 @@ static struct field internal_error_status[] = {
 	{}
 };
 
-static struct numfield internal_error_numbers[] = { 
+static struct numfield internal_error_numbers[] = {
 	HEXNUMBER(16, 23, "Internal machine check status reserved 16..23"),
 	HEXNUMBER(32, 56, "Internal machine check status reserved 32..56"),
 	{},
@@ -110,10 +110,10 @@ static struct numfield internal_error_numbers[] = {
 
 /* Generic architectural memory controller encoding */
 
-static char *mmm_mnemonic[] = { 
-	"GEN", "RD", "WR", "AC", "MS", "RES5", "RES6", "RES7" 
+static char *mmm_mnemonic[] = {
+	"GEN", "RD", "WR", "AC", "MS", "RES5", "RES6", "RES7"
 };
-static char *mmm_desc[] = { 
+static char *mmm_desc[] = {
 	"Generic undefined request",
 	"Memory read error",
 	"Memory write error",
@@ -127,11 +127,11 @@ static char *mmm_desc[] = {
 void decode_memory_controller(u32 status)
 {
 	char channel[30];
-	if ((status & 0xf) == 0xf) 
-		strcpy(channel, "unspecified"); 
+	if ((status & 0xf) == 0xf)
+		strcpy(channel, "unspecified");
 	else
 		sprintf(channel, "%u", status & 0xf);
-	Wprintf("MEMORY CONTROLLER %s_CHANNEL%s_ERR\n", 
+	Wprintf("MEMORY CONTROLLER %s_CHANNEL%s_ERR\n",
 		mmm_mnemonic[(status >> 4) & 7],
 		channel);
 	Wprintf("Transaction: %s\n", mmm_desc[(status >> 4) & 7]);

@@ -12,8 +12,8 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
-   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+   on your Linux system; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
    Author: Tony Luck
 */
@@ -38,7 +38,7 @@ static char *pcu_1[] = {
 	[9] = "D_Parity_Error"
 };
 
-static char *pcu_2[] = { 
+static char *pcu_2[] = {
 	[0x00] = "No Error",
 	[0x0D] = "MC_IMC_FORCE_SR_S3_TIMEOUT",
 	[0x0E] = "MC_MC_CPD_UNCPD_ST_TIMEOUT",
@@ -60,7 +60,7 @@ static char *pcu_2[] = {
 	[0x81] = "MC_RECOVERABLE_DIE_THERMAL_TOO_HOT",
 };
 
-static struct field pcu_mc4[] = { 
+static struct field pcu_mc4[] = {
 	FIELD(16, pcu_1),
 	FIELD(24, pcu_2),
 	{}
@@ -86,7 +86,7 @@ static struct field memctrl_mc9[] = {
 
 void ivb_decode_model(int cputype, int bank, u64 status, u64 misc)
 {
-	switch (bank) { 
+	switch (bank) {
 	case 4:
 		Wprintf("PCU: ");
 		decode_bitfield(status, pcu_mc4);
