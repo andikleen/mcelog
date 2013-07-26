@@ -13,18 +13,18 @@ It is recommended that mcelog runs on all x86 machines, both
 mcelog can run in several modi: cronjob, trigger, daemon
 
 cronjob is the old method. mcelog runs every 5 minutes from cron and checks
-for errors. Disadvantage of this is that it can delay error reporting 
+for errors. Disadvantage of this is that it can delay error reporting
 significantly (upto 10 minutes) and does not allow mcelog to keep extended state.
 
 trigger is a newer method where the kernel runs mcelog on a error.
-This is configured with 
+This is configured with
 echo /usr/sbin/mcelog > /sys/devices/system/machinecheck/machinecheck0/trigger
 This is faster, but still doesn't allow mcelog to keep state,
 and has relatively high overhead for each error because a program has
 to be initialized from scratch.
 
 In daemon mode mcelog runs continuously as a daemon in the background
-and wait for errors. It is enabled by running mcelog --daemon & 
+and wait for errors. It is enabled by running mcelog --daemon &
 from a init script. This is the fastest and most feature-ful.
 
 The recommended mode is daemon, because several new functions (like page error
@@ -43,8 +43,8 @@ For distributors:
 Please install a init script by default that runs mcelog in daemon mode.
 The mcelog.init script is a good starting point.
 
-Also install a logrotated file (mcelog.logrotate) or equivalent 
-when mcelog is running in daemon mode. 
+Also install a logrotated file (mcelog.logrotate) or equivalent
+when mcelog is running in daemon mode.
 
 These two are not in make install.
 
@@ -70,7 +70,7 @@ doing corrective action that require root.
 
 In principle it would be possible to only keep CAP_SYS_ADMIN
 for page-offling, but that would prevent triggers from doing root
-only actions not covered by it (and CAP_SYS_ADMIN is not that different 
+only actions not covered by it (and CAP_SYS_ADMIN is not that different
 from full root)
 
 In daemon mode mcelog listens to a unix socket and processes
@@ -82,8 +82,8 @@ of the daemon.
 
 Testing:
 
-There is a simple test suite in tests/. The test suite requires root to 
-run and access to mce-inject and a kernel with MCE injection support 
+There is a simple test suite in tests/. The test suite requires root to
+run and access to mce-inject and a kernel with MCE injection support
 (CONFIG_X86_MCE_INJECT).  It will kill any running mcelog daemon.
 
 Run it with "make test"
@@ -93,9 +93,9 @@ git://git.kernel.org/pub/utils/cpu/mce/mce-inject.git
 The mce-inject executable must be either in $PATH or in the
 ../mce-inject directory.
 
-You can also test under valgrind with "make valgrind-test". For 
+You can also test under valgrind with "make valgrind-test". For
 this valgrind needs to be installed of course.  Advanced
-valgrind options can be specified with 
+valgrind options can be specified with
 make VALGRIND="valgrind --option" valgrind-test
 
 Other checks:

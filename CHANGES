@@ -29,7 +29,7 @@ Add in memory dimm database in daemon mode
 	error thresholds are exceeded.
 	This can be all configured using the configuration file.
 	Add mcelog --client to query a running mcelog daemon for errors
-	Works only on specific Intel systems for now with integrated 
+	Works only on specific Intel systems for now with integrated
 	memory controllers that report DIMM errors.
 Keep stdout open in daemon mode when no syslog
 Add --foreground option
@@ -60,7 +60,7 @@ Add --intel-family=... argument
 Better decoding of core2 events and explicit decoding of pre Core P6 cores
 Add decoding of broadcast timeouts
 Add --version argument
-Fix parsing of multiple fields on a line in --ascii 
+Fix parsing of multiple fields on a line in --ascii
 Add --raw mode for easier machine decoding (Ying Huang)
 Skip printk timestamp headers in --ascii (Ying Huang)
 Support more than 255 CPUs (requires updated kernel)
@@ -79,26 +79,26 @@ Add support for decoding Intel Core2 machine checks
 Simple decoding of the TSC value into uptime for Intel CPUs
 Add the MCE design paper.
 Decode Intel thermal events properly
-Add some "RAMs" to K8 ECC strings in futile hope that users will get 
+Add some "RAMs" to K8 ECC strings in futile hope that users will get
 	the hint
 Allow modifier command line options after --ascii
 Don't print decoded address twice for --ascii
-Fix SMBIOS anchor scan to work on more machines and don't crash when 
+Fix SMBIOS anchor scan to work on more machines and don't crash when
 	no anchor found.
 Fix --ascii reparsing of mcelog output.
 Add --filter and filter out known broken K8 GART errors
 Add --ignorenodev argument and use in cron script (avoids cron errors
-in Xen guest kernels) 
+in Xen guest kernels)
 Add new --dmi argument to look up machine check addresses in SMBIOS
-(warning unreliable due to wide spread bios bugs) 
+(warning unreliable due to wide spread bios bugs)
 Fix argument decoding (support --, allow arguments in any order)
 Clarify --ascii in the manpage
-Support for AMD K8 Revision F machine check DRAM error thresholding 
+Support for AMD K8 Revision F machine check DRAM error thresholding
 	from Jacob Shin <jacob.shin@amd.com>
 Add P4 decoder contributed by "Guo, Racing" <racing.guo@intel.com> for
 	Intel P4 and Xeon.
 Add K8 decoder from 2.4 kernel code to decode Opteron/Athlon64 logs.
-	(code mostly from Eric Morton and Andi Kleen)  
+	(code mostly from Eric Morton and Andi Kleen)
 Add --ascii function to decode fatal kernel output.
 Improve manpage
 Fix 32bit bugs

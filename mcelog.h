@@ -89,7 +89,7 @@ struct mce {
 #define PRINTFLIKE __attribute__((format(printf,1,2)))
 #define noreturn   __attribute__((noreturn))
 #else
-#define PRINTFLIKE 
+#define PRINTFLIKE
 #define noreturn
 #endif
 
@@ -112,11 +112,11 @@ enum cputype {
 	CPU_DUNNINGTON,
 	CPU_TULSA,
 	CPU_INTEL, /* Intel architectural errors */
-	CPU_XEON75XX, 
-	CPU_SANDY_BRIDGE, 
-	CPU_SANDY_BRIDGE_EP, 
-	CPU_IVY_BRIDGE, 
-	CPU_IVY_BRIDGE_EPEX, 
+	CPU_XEON75XX,
+	CPU_SANDY_BRIDGE,
+	CPU_SANDY_BRIDGE_EP,
+	CPU_IVY_BRIDGE,
+	CPU_IVY_BRIDGE_EPEX,
 	CPU_HASWELL,
 };
 
@@ -125,7 +125,7 @@ enum option_ranges {
 	O_DISKDB = 1000,
 };
 
-enum syslog_opt { 
+enum syslog_opt {
 	SYSLOG_LOG = (1 << 0),		/* normal decoding output to syslog */
 	SYSLOG_REMARK = (1 << 1), 	/* special warnings to syslog */
 	SYSLOG_ERROR  = (1 << 2),	/* errors during operation to syslog */

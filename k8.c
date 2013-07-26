@@ -1,11 +1,11 @@
-/* Based on K8 decoding code written for the 2.4 kernel by Andi Kleen and 
+/* Based on K8 decoding code written for the 2.4 kernel by Andi Kleen and
  * Eric Morton. Hacked and extended for mcelog by AK.
  *
- * Original copyright: 
+ * Original copyright:
  * K8 parts Copyright 2002,2003 Andi Kleen, SuSE Labs.
- * Additional K8 decoding and simplification Copyright 2003 Eric Morton, Newisys Inc 
+ * Additional K8 decoding and simplification Copyright 2003 Eric Morton, Newisys Inc
  * K8 threshold counters decoding Copyright 2005,2006 Jacob Shin, AMD Inc.
- * 
+ *
  * Subject to the GNU General Public License
  */
 
@@ -21,30 +21,30 @@ static char *k8bank[] = {
 	"northbridge",
 	"fixed-issue reoder"
 };
-static char *transaction[] = { 
+static char *transaction[] = {
 	"instruction", "data", "generic", "reserved"
-}; 
-static char *cachelevel[] = { 
+};
+static char *cachelevel[] = {
 	"0", "1", "2", "generic"
 };
-static char *memtrans[] = { 
+static char *memtrans[] = {
 	"generic error", "generic read", "generic write", "data read",
 	"data write", "instruction fetch", "prefetch", "evict", "snoop",
 	"?", "?", "?", "?", "?", "?", "?"
 };
-static char *partproc[] = { 
-	"local node origin", "local node response", 
+static char *partproc[] = {
+	"local node origin", "local node response",
 	"local node observed", "generic participation"
 };
-static char *timeout[] = { 
+static char *timeout[] = {
 	"request didn't time out",
 	"request timed out"
 };
-static char *memoryio[] = { 
+static char *memoryio[] = {
 	"memory", "res.", "i/o", "generic"
 };
-static char *nbextendederr[] = { 
-	"RAM ECC error", 
+static char *nbextendederr[] = {
+	"RAM ECC error",
 	"CRC error",
 	"Sync error",
 	"Master abort",
@@ -52,7 +52,7 @@ static char *nbextendederr[] = {
 	"GART error",
 	"RMW error",
 	"Watchdog error",
-	"RAM Chipkill ECC error", 
+	"RAM Chipkill ECC error",
 	"DEV Error",
 	"Link Data Error",
 	"Link Protocol Error",
@@ -64,14 +64,14 @@ static char *nbextendederr[] = {
 	"L3 Cache Tag Error",
 	"L3 Cache LRU Error"
 };
-static char *highbits[32] = { 
+static char *highbits[32] = {
 	[31] = "valid",
 	[30] = "error overflow (multiple errors)",
 	[29] = "error uncorrected",
 	[28] = "error enable",
 	[27] = "misc error valid",
-	[26] = "error address valid", 
-	[25] = "processor context corrupt", 
+	[26] = "error address valid",
+	[25] = "processor context corrupt",
 	[24] = "res24",
 	[23] = "res23",
 	/* 22-15 ecc syndrome bits */
@@ -81,8 +81,8 @@ static char *highbits[32] = {
 	[11] = "L3 subcache in error bit 1",
 	[10] = "L3 subcache in error bit 0",
 	[9] = "sublink or DRAM channel",
-	[8] = "error found by scrub", 
-	/* 7-4 ht link number of error */ 
+	[8] = "error found by scrub",
+	/* 7-4 ht link number of error */
 	[3] = "err cpu3",
 	[2] = "err cpu2",
 	[1] = "err cpu1",
@@ -94,8 +94,8 @@ static char *k8threshold[] = {
 	[K8_MCELOG_THRESHOLD_LINK] = "MC4_MISC1 Link threshold",
 	[K8_MCELOG_THRESHOLD_L3_CACHE] = "MC4_MISC2 L3 Cache threshold",
 	[K8_MCELOG_THRESHOLD_FBDIMM] = "MC4_MISC3 FBDIMM threshold",
-	[K8_MCELOG_THRESHOLD_FBDIMM + 1 ... 
-	 K8_MCE_THRESHOLD_TOP - K8_MCE_THRESHOLD_BASE - 1] = 
+	[K8_MCELOG_THRESHOLD_FBDIMM + 1 ...
+	 K8_MCE_THRESHOLD_TOP - K8_MCE_THRESHOLD_BASE - 1] =
                 "Unknown threshold counter",
 };
 
@@ -198,25 +198,25 @@ static void decode_k8_nb_mc(u64 status, int *memerr)
 
 	Wprintf("  Northbridge %s\n", nbextendederr[exterrcode]);
 
-	switch (exterrcode) { 
+	switch (exterrcode) {
 	case 0:
 		*memerr = 1;
 		Wprintf("  ECC syndrome = %x\n",
 		       (u32) (status >> 47) & 0xff);
 		break;
-	case 8:	
+	case 8:
 		*memerr = 1;
 		Wprintf("  Chipkill ECC syndrome = %x\n",
 		       (u32) ((((status >> 24) & 0xff) << 8) | ((status >> 47) & 0xff)));
 		break;
-	case 1: 
+	case 1:
 	case 2:
 	case 3:
 	case 4:
 	case 6:
 		Wprintf("  link number = %x\n",
 		       (u32) (status >> 36) & 0xf);
-		break;		   
+		break;
 	}
 
 	decode_k8_generic_errcode(status);
@@ -228,21 +228,21 @@ static void decode_k8_fr_mc(u64 status, int *err)
 }
 
 static void decode_k8_threshold(u64 misc)
-{	
+{
 	if (misc & MCI_THRESHOLD_OVER)
 		Wprintf("  Threshold error count overflow\n");
 }
 
-typedef void (*decoder_t)(u64, int *ismemerr); 
+typedef void (*decoder_t)(u64, int *ismemerr);
 
-static decoder_t decoders[] = { 
+static decoder_t decoders[] = {
 	[0] = decode_k8_dc_mc,
 	[1] = decode_k8_ic_mc,
 	[2] = decode_k8_bu_mc,
 	[3] = decode_k8_ls_mc,
 	[4] = decode_k8_nb_mc,
 	[5] = decode_k8_fr_mc,
-}; 
+};
 
 void decode_k8_mc(struct mce *mce, int *ismemerr)
 {
@@ -256,12 +256,12 @@ void decode_k8_mc(struct mce *mce, int *ismemerr)
 }
 
 char *k8_bank_name(unsigned num)
-{ 
+{
 	static char buf[64];
 	char *s = "unknown";
 	if (num < NELE(k8bank))
 		s = k8bank[num];
-	else if (num >= K8_MCE_THRESHOLD_BASE && 
+	else if (num >= K8_MCE_THRESHOLD_BASE &&
 		 num < K8_MCE_THRESHOLD_TOP)
 		s = k8threshold[num - K8_MCE_THRESHOLD_BASE];
 	buf[sizeof(buf)-1] = 0;
@@ -270,12 +270,12 @@ char *k8_bank_name(unsigned num)
 }
 
 int mce_filter_k8(struct mce *m)
-{	
+{
 	/* Filter out GART errors */
-	if (m->bank == 4) { 
+	if (m->bank == 4) {
 		unsigned short exterrcode = (m->status >> 16) & 0x0f;
 		if (exterrcode == 5 && (m->status & (1ULL<<61)))
 			return 0;
-	} 
+	}
 	return 1;
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2008 Intel Corporation 
+/* Copyright (C) 2008 Intel Corporation
    Author: Andi Kleen
    Parse sysfs exported CPU cache topology
 
@@ -13,7 +13,7 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
+   on your Linux system; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 #define _GNU_SOURCE 1
 #include <string.h>
@@ -27,10 +27,10 @@
 #include "sysfs.h"
 #include "cache.h"
 
-struct cache { 
+struct cache {
 	unsigned level;
 	/* Numerical values must match MCACOD */
-	enum { INSTR, DATA, UNIFIED } type; 
+	enum { INSTR, DATA, UNIFIED } type;
 	unsigned *cpumap;
 	unsigned cpumaplen;
 };
@@ -53,7 +53,7 @@ static void more_cpus(int cpu)
 {
 	int old = cachelen;
 	if (!cachelen)
-		cachelen = MIN_CPUS/2;	
+		cachelen = MIN_CPUS/2;
 	cachelen *= 2;
 	caches = xrealloc(caches, cachelen * sizeof(struct cache *));
 	memset(caches + old, 0, (cachelen - old) * sizeof(struct cache *));
@@ -80,9 +80,9 @@ static void parse_cpumap(char *map, unsigned *buf, unsigned len)
 
 	c = 0;
 	s = map + strlen(map);
-	for (;;) { 
+	for (;;) {
 		s = memrchr(map, ',', s - map);
-		if (!s) 
+		if (!s)
 			s = map;
 		else
 			s++;
@@ -107,13 +107,13 @@ static int read_caches(void)
 {
 	DIR *cpus = opendir(PREFIX);
 	struct dirent *de;
-	if (!cpus) { 
+	if (!cpus) {
 		Wprintf("Cannot read cache topology from %s", PREFIX);
 		return -1;
 	}
 	while ((de = readdir(cpus)) != NULL) {
 		unsigned cpu;
-		if (sscanf(de->d_name, "cpu%u", &cpu) == 1) { 
+		if (sscanf(de->d_name, "cpu%u", &cpu) == 1) {
 			struct stat st;
 			char *fn;
 			int i;
@@ -126,7 +126,7 @@ static int read_caches(void)
 					numindex = MIN_INDEX;
 				if (cachelen <= cpu)
 					more_cpus(cpu);
-				caches[cpu] = xalloc(sizeof(struct cache) * 
+				caches[cpu] = xalloc(sizeof(struct cache) *
 						     (numindex+1));
 				for (i = 0; i < numindex; i++) {
 					char *cfn;
@@ -145,21 +145,21 @@ static int read_caches(void)
 	return 0;
 }
 
-int cache_to_cpus(int cpu, unsigned level, unsigned type, 
+int cache_to_cpus(int cpu, unsigned level, unsigned type,
 		   int *cpulen, unsigned **cpumap)
 {
 	struct cache *c;
 	if (!caches) {
 		if (read_caches() < 0)
 			return -1;
-		if (!caches) { 
+		if (!caches) {
 			Wprintf("No caches found in sysfs");
 			return -1;
 		}
 	}
-	for (c = caches[cpu]; c && c->cpumap; c++) { 
+	for (c = caches[cpu]; c && c->cpumap; c++) {
 		//printf("%d level %d type %d\n", cpu, c->level, c->type);
-		if (c->level == level && c->type == type) { 
+		if (c->level == level && c->type == type) {
 			*cpumap = c->cpumap;
 			*cpulen = c->cpumaplen;
 			return 0;

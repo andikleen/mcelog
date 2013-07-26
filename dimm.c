@@ -1,7 +1,7 @@
 /* Copyright (C) 2006 Andi Kleen, SuSE Labs.
    Manage dimm database.
    this is used to keep track of the error counts per DIMM
-   so that we can take action when one starts to experience a 
+   so that we can take action when one starts to experience a
    unusual large number of them.
    Note: obsolete, not used anymore, new design is in memdb.c
 
@@ -16,7 +16,7 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
+   on your Linux system; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 
 /* TBD:
@@ -34,7 +34,7 @@
 #include "db.h"
 #include "dimm.h"
 
-/* the algorithms are mostly brute force, only the generally small number of 
+/* the algorithms are mostly brute force, only the generally small number of
    dimms saves us.
    advantage it is a quite simple and straight forward. */
 
@@ -81,7 +81,7 @@ static void fmt_size(struct dmi_memdev *a, char *buf)
 	char *unit;
 	unit = buf + sprintf(buf, "%u ", a->size);
 	dmi_dimm_size(a->size, unit);
-	*++unit = 0;	
+	*++unit = 0;
 }
 
 static char *d_string(struct dmi_memdev *d, struct key *k, char *buf)
@@ -137,7 +137,7 @@ static void d_to_group(struct dmi_memdev *de, struct group *g)
 		char *s = d_string(de, k, buf);
 		if (s)
 			change_entry(dimm_db, g, k->name, s);
-	}		
+	}
 }
 
 /* TBD get this into syslog somehow without spamming? */
@@ -162,7 +162,7 @@ static struct dmi_memdev *matching_dimm_group(struct group *g)
 			nmatch++;
 		}
 	}
-	if (nmatch > 1) { 
+	if (nmatch > 1) {
 		unique_warning();
 		return NULL;
 	}
@@ -174,12 +174,12 @@ static struct group *matching_dimm_dmi(struct dmi_memdev *d)
 	struct group *match = NULL, *g;
 	int nmatch = 0;
 	for (g = first_group(dimm_db); g; g = next_group(g)) {
-		if (!cmp_dimm(d, g)) { 
+		if (!cmp_dimm(d, g)) {
 			match = g;
 			nmatch++;
 		}
-	} 
-	if (nmatch > 1) { 
+	}
+	if (nmatch > 1) {
 		unique_warning();
 		return NULL;
 	}
@@ -244,7 +244,7 @@ void move_dimm(struct group *g, struct dmi_memdev *newpos, char *loc)
 	change_entry(dimm_db, g, "Locator", newloc);
 	delete_entry(dimm_db, g, "removed at");
 	change_entry(dimm_db, g, "moved at", timestamp());
-}			
+}
 
 void new_dimm(struct dmi_memdev *d, char *loc)
 {
@@ -257,7 +257,7 @@ void new_dimm(struct dmi_memdev *d, char *loc)
 	Wprintf("Found new %s at %s\n", name, loc);
 	/* Run uniqueness check */
 	(void)matching_dimm_group(g);
-}	
+}
 
 /* check if reported dimms are at their places */
 void check_dimm_positions(void)
@@ -272,18 +272,18 @@ void check_dimm_positions(void)
 		g = find_entry(dimm_db, NULL, "Locator", loc);
 		/* In the database, but somewhere else? */
 		if (g && !cmp_dimm(d, g)) {
-			match = matching_dimm_group(g); 
+			match = matching_dimm_group(g);
 			if (match)
 				move_dimm(g, match, loc);
 			else
 				remove_dimm(g);
 			g = NULL;
 		/* In DMI but somewhere else? */
-		} else if (!g) { 
+		} else if (!g) {
 			g = matching_dimm_dmi(d);
-			if (g) 
+			if (g)
 				move_dimm(g, d, loc);
-		} 
+		}
 		if (!g)
 			new_dimm(d, loc);
 	}
@@ -295,9 +295,9 @@ int sync_dimms(void)
 	if (!dmi_dimms)
 		return -1;
 	check_dimm_positions();
-	disable_leftover_dimms();	
+	disable_leftover_dimms();
 	sync_db(dimm_db);
-	return 0;	
+	return 0;
 }
 
 void gc_dimms(void)
@@ -370,7 +370,7 @@ void new_error(unsigned long addr, unsigned long max_error, char *trigger)
 			return;
 		}
 		unsigned long val = inc_val(g, "corrected errors");
-		if (val == max_error) { 
+		if (val == max_error) {
 			Lprintf("Large number of corrected errors in memory at %s", loc);
 			Lprintf("Consider replacing it");
 			if (trigger && trigger[0])

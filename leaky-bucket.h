@@ -19,9 +19,9 @@ struct leaky_bucket {
 	time_t   tstamp;
 };
 
-int bucket_account(const struct bucket_conf *c, struct leaky_bucket *b, 
+int bucket_account(const struct bucket_conf *c, struct leaky_bucket *b,
 		   unsigned inc);
-int __bucket_account(const struct bucket_conf *c, struct leaky_bucket *b, 
+int __bucket_account(const struct bucket_conf *c, struct leaky_bucket *b,
 		   unsigned inc, time_t time);
 char *bucket_output(const struct bucket_conf *c, struct leaky_bucket *b);
 int bucket_conf_init(struct bucket_conf *c, const char *rate);

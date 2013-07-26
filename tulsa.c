@@ -12,10 +12,10 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
-   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+   on your Linux system; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-   Author: Andi Kleen 
+   Author: Andi Kleen
 */
 
 #include <string.h>
@@ -26,13 +26,13 @@
 
 /* See IA32 SDM Vol3B Appendix E.4.1 ff */
 
-static struct numfield corr_numbers[] = { 
+static struct numfield corr_numbers[] = {
 	NUMBER(32, 39, "Corrected events"),
 	{}
 };
 
-static struct numfield ecc_numbers[] = { 
-	HEXNUMBER(44, 51, "ECC syndrome"),	
+static struct numfield ecc_numbers[] = {
+	HEXNUMBER(44, 51, "ECC syndrome"),
 	{},
 };
 

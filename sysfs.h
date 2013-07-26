@@ -1,5 +1,5 @@
 
-struct map { 
+struct map {
 	char *name;
 	int value;
 };

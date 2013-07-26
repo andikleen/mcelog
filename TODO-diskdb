@@ -2,7 +2,7 @@
 diskdb was a experimental attempt to track errors per DIMM
 on disk. It ran into problems unfortunately.
 
-diskdb is not compiled by default now. It can be enabled with 
+diskdb is not compiled by default now. It can be enabled with
 make CONFIG_DISKDB=1
 
 It is replaced with a new memory only database now that

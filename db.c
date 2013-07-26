@@ -17,7 +17,7 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
+   on your Linux system; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 
 /* TBD:
@@ -61,18 +61,18 @@ code doesnt check for unique records/entries right now. first wins.
 
 */
 
-struct entry { 
+struct entry {
 	char *name;
 	char *val;
 };
-	
+
 struct group {
 	struct group *next;
 	char *name;
 	struct entry *entries;
 	char *comment;
 	int numentries;
-};	
+};
 
 #define ENTRY_CHUNK (128 / sizeof(struct entry))
 
@@ -81,7 +81,7 @@ struct database {
 	FILE *fh;
 	char *fn;
 	int dirty;
-}; 	
+};
 
 static int read_db(struct database *db);
 static FILE *open_file(char *fn, int wr);
@@ -117,7 +117,7 @@ static char *cleanline(char *s)
 	p = strchr(s, '\n');
 	if (p)
 		*p = 0;
-	return s;	
+	return s;
 }
 
 struct database *open_db(char *fn, int wr)
@@ -157,10 +157,10 @@ static int read_db(struct database *db)
 			pgroup = &cmt->next;
 			cmt->comment = xstrdup(s + 1);
 			*s = 0;
-		} 	
+		}
 		s = cleanline(line);
 		linenr++;
-		if (!s) 	
+		if (!s)
 			continue;
 		if (*s == '[') {
 			int n;
@@ -188,20 +188,20 @@ static int read_db(struct database *db)
 				goto parse_error;
 			change_entry(db, group, line, p);
 		}
-	}								
+	}
 
 	if (ferror(db->fh)) {
 		DBerror("IO error while reading database %s: %s\n", db->fn,
 			strerror(errno));
 		goto error;
-	}	
-		
+	}
+
 	free(line);
 	return 0;
 
 parse_error:
 	DBerror("Parse error in database %s at line %d\n", db->fn, linenr);
-error: 	
+error:
 	free(line);
 	return -1;
 }
@@ -270,32 +270,32 @@ static int rewrite_db(struct database *db)
 		DBerror("Cannot open `%s' output file: %s\n", fn_out,
 			strerror(errno));
 		return -1;
-	}	
-	
+	}
+
 	dump_database(db, fhtmp);
-	
+
 	err = 0;
 	/* Finish the output file */
 	if (ferror(fhtmp) || fflush(fhtmp) != 0 || fsync(fileno(fhtmp)) != 0 ||
 	    fclose(fhtmp))
 		err = -1;
-	/* Rename to .complete */	
+	/* Rename to .complete */
 	else if (force_rename(fn_out, fn_complete))
 		err = -1;
-	/* RED-PEN: need to do retry for race */	
+	/* RED-PEN: need to do retry for race */
 	/* Move to final name */
 	else if (force_rename(db->fn, fn_old) || rename(fn_complete, db->fn))
 		err = -1;
-	/* Hit disk */	
+	/* Hit disk */
 	else if (flush_dir(db->fn))
 		err = -1;
-		
+
 	if (err) {
 		DBerror("Error writing to database %s: %s\n", db->fn,
 				strerror(errno));
 	}
-				
-	return err;			
+
+	return err;
 }
 
 int sync_db(struct database *db)
@@ -305,12 +305,12 @@ int sync_db(struct database *db)
 	/* RED-PEN window without lock */
 	if (rewrite_db(db))
 		return -1;
-	fclose(db->fh);		
+	fclose(db->fh);
 	db->dirty = 0;
 	db->fh = open_file(db->fn, 1);
 	if (!db->fh)
 		return -1;
-	return 0;	
+	return 0;
 }
 
 static void free_group(struct group *g)
@@ -318,7 +318,7 @@ static void free_group(struct group *g)
 	free(g->entries);
 	free(g->name);
 	free(g->comment);
-	free(g); 	
+	free(g);
 }
 
 static void free_data(struct database *db)
@@ -339,7 +339,7 @@ int close_db(struct database *db)
 	free_data(db);
 	free(db->fn);
 	free(db);
-	return 0; 	
+	return 0;
 }
 
 static FILE *open_file(char *fn, int wr)
@@ -351,7 +351,7 @@ static FILE *open_file(char *fn, int wr)
 		case EROFS:
 			wr = 0;
 			break;
-		case ENOENT:	
+		case ENOENT:
 			/* No main DB file */
 			sprintf(tmp, "%s.complete", fn);
 			/* Handle race */
@@ -369,8 +369,8 @@ static FILE *open_file(char *fn, int wr)
 			fclose(fh);
 			return NULL;
 		}
-	}	
-	return fh;		
+	}
+	return fh;
 }
 
 void dump_group(struct group *g, FILE *out)
@@ -383,7 +383,7 @@ void dump_group(struct group *g, FILE *out)
 
 void dump_database(struct database *db, FILE *out)
 {
-	struct group *g; 	
+	struct group *g;
 	for (g = db->groups; g && !ferror(out); g = g->next) {
 		if (g->comment) {
 			fprintf(out, "#%s", g->comment);
@@ -399,7 +399,7 @@ struct group *find_group(struct database *db, char *name)
 	for (g = db->groups; g; g = g->next)
 		if (g->name && !strcmp(g->name, name))
 			return g;
-	return NULL;		
+	return NULL;
 }
 
 int delete_group(struct database *db, struct group *group)
@@ -414,13 +414,13 @@ int delete_group(struct database *db, struct group *group)
 		}
 	}
 	db->dirty = 1;
-	return -1;		
+	return -1;
 }
 
 char *entry_val(struct group *g, char *entry)
 {
 	struct entry *e;
-	for (e = &g->entries[0]; e->name; e++) 
+	for (e = &g->entries[0]; e->name; e++)
 		if (!strcmp(e->name, entry))
 			return e->val;
 	return NULL;
@@ -451,8 +451,8 @@ void change_entry(struct database *db, struct group *g,
 	struct entry *e, *entries;
 	db->dirty = 1;
 	entries = &g->entries[0];
-	for (e = entries; e->name; e++) { 
-		if (!strcmp(e->name, entry)) { 
+	for (e = entries; e->name; e++) {
+		if (!strcmp(e->name, entry)) {
 			free(e->val);
 			e->val = xstrdup(newval);
 			return;
@@ -460,10 +460,10 @@ void change_entry(struct database *db, struct group *g,
 	}
 	i = e - entries;
 	assert(i == g->numentries);
-	if (i > 0 && (i % ENTRY_CHUNK) == 0) { 
+	if (i > 0 && (i % ENTRY_CHUNK) == 0) {
 		int new = (i + ENTRY_CHUNK) * sizeof(struct entry);
 		g->entries = xrealloc(g->entries, new);
-	} 
+	}
 	entries = &g->entries[0];
 	e = &entries[i];
 	e->name = xstrdup(entry);
@@ -474,7 +474,7 @@ void change_entry(struct database *db, struct group *g,
 void delete_entry(struct database *db, struct group *g, char *entry)
 {
 	struct entry *e;
-	for (e = &g->entries[0]; e->name; e++) 
+	for (e = &g->entries[0]; e->name; e++)
 		if (!strcmp(e->name, entry))
 			break;
 	if (e->name == NULL)
@@ -489,7 +489,7 @@ clone_group(struct database *db, struct group *gold, char *newname)
 {
 	struct entry *e;
 	struct group *gnew = add_group(db, newname, NULL);
-	for (e = &gold->entries[0]; e->name; e++) 
+	for (e = &gold->entries[0]; e->name; e++)
 		change_entry(db, gnew, e->name, e->val);
 	return gnew;
 }
@@ -497,11 +497,11 @@ clone_group(struct database *db, struct group *gold, char *newname)
 static char *save_comment(char *c)
 {
 	int len = strlen(c);
-	char *s = xalloc(len + 2); 	
+	char *s = xalloc(len + 2);
 	strcpy(s, c);
 	if (len == 0 || c[len - 1] != '\n')
 		s[len] = '\n';
-	return s;	
+	return s;
 }
 
 void add_comment(struct database *db, struct group *group, char *comment)
@@ -543,7 +543,7 @@ char *group_name(struct group *g)
 struct group *find_entry(struct database *db, struct group *prev,
 			 char *entry, char *value)
 {
-	int previ = 0; 
+	int previ = 0;
 	struct entry *e;
 	struct group *g;
 	if (prev)
@@ -551,19 +551,19 @@ struct group *find_entry(struct database *db, struct group *prev,
 	else
 		g = db->groups;
 	for (; g; g = g->next) {
-		if (g->comment) 
+		if (g->comment)
 			continue;
 		/* Short cut when entry is at the same place as previous */
-		if (previ < g->numentries) { 
-			e = &g->entries[previ]; 
+		if (previ < g->numentries) {
+			e = &g->entries[previ];
 			if (!strcmp(e->name, entry)) {
 				if (!strcmp(e->val, value))
 					return g;
 				continue;
 			}
 		}
-		for (e = &g->entries[0]; e->name; e++) { 
-			if (strcmp(e->name, entry)) 
+		for (e = &g->entries[0]; e->name; e++) {
+			if (strcmp(e->name, entry))
 				continue;
 			if (!strcmp(e->val, value))
 				return g;

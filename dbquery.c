@@ -26,7 +26,7 @@ void usage(void)
 	"q close/quit\n"
 	"ggroup find group\n"
 	"G delete group\n"
-	"agroup add group\n" 
+	"agroup add group\n"
 	"ventry dump entry\n"
 	"centry,val change entry to val\n"
 	"fentry,val find entry with value and dump its group\n"
@@ -34,7 +34,7 @@ void usage(void)
 	"Lnewname clone group to newname\n"
 	"d dump group\n"
 	"D dump database\n");
-}	
+}
 
 int main(int ac, char **av)
 {
@@ -47,57 +47,57 @@ int main(int ac, char **av)
 		exit(1);
 	}
 	printf("dbtest\n");
-	db = open_db(av[1], 1);  
-	while (printf("> "), 
-		fflush(stdout), 
-		getline(&line, &linesz, stdin) > 0) { 
+	db = open_db(av[1], 1);
+	while (printf("> "),
+		fflush(stdout),
+		getline(&line, &linesz, stdin) > 0) {
 		char *p = line + strlen(line) - 1;
 		while (p >= line && isspace(*p))
-			*p-- = 0; 
-		switch (line[0]) { 
+			*p-- = 0;
+		switch (line[0]) {
 		case 's':
 			C(sync_db(db));
 			break;
 		case 'q':
-			C(close_db(db)); 
+			C(close_db(db));
 			exit(0);
 		case 'g':
-			group = find_group(db, line + 1); 
+			group = find_group(db, line + 1);
 			if (group)
-				printf("found\n"); 
+				printf("found\n");
 			break;
 		case 'G':
-			NEEDGROUP; 
+			NEEDGROUP;
 			C(delete_group(db, group));
 			group = NULL;
-			break;			
-		case 'a': { 
+			break;
+		case 'a': {
 			int existed = 0;
 			group = add_group(db, line + 1, &existed);
-			if (existed) 
+			if (existed)
 				printf("existed\n");
 			break;
 		}
 		case 'v':
-			NEEDGROUP; 
-			printf("%s\n", entry_val(group, line + 1)); 
+			NEEDGROUP;
+			printf("%s\n", entry_val(group, line + 1));
 			break;
 		case 'c': {
 			p = line + 1;
-			char *entry = strsep(&p, ","); 
-			NEEDGROUP; 
+			char *entry = strsep(&p, ",");
+			NEEDGROUP;
 			change_entry(db, group, entry, strsep(&p, ""));
 			break;
-		} 
+		}
 		case 'L':
-			NEEDGROUP; 
-			clone_group(db, group, line + 1); 
+			NEEDGROUP;
+			clone_group(db, group, line + 1);
 			break;
-		case 'f': { 
+		case 'f': {
 			struct group *g;
-			p = line + 1; 
+			p = line + 1;
 			char *entry = strsep(&p, ",");
-			char *val = strsep(&p, "");	
+			char *val = strsep(&p, "");
 			g = NULL;
 			int nr = 0;
 			while ((g = find_entry(db, g, entry, val)) != NULL) {
@@ -106,17 +106,17 @@ int main(int ac, char **av)
 				nr++;
 				dump_group(group, stdout);
 			}
-			if (nr == 0) 
+			if (nr == 0)
 				printf("not found\n");
 			break;
 		}
 		case 'C':
 			NEEDGROUP;
-			add_comment(db, group, line + 1); 
+			add_comment(db, group, line + 1);
 			break;
 		case 'd':
 			NEEDGROUP;
-			dump_group(group, stdout); 
+			dump_group(group, stdout);
 			break;
 		case 'D':
 			dump_database(db, stdout);

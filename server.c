@@ -1,4 +1,4 @@
-/* Copyright (C) 2009 Intel Corporation 
+/* Copyright (C) 2009 Intel Corporation
    Author: Andi Kleen
    Simple event-driven unix network server for client access.
    Process commands and buffer output.
@@ -14,7 +14,7 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
+   on your Linux system; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 
 #define _GNU_SOURCE 1
@@ -41,7 +41,7 @@
 
 #define PAIR(x) x, sizeof(x)-1
 
-struct clientcon { 
+struct clientcon {
 	char *inbuf;	/* 0 terminated */
 	char *inptr;
 	char *outbuf;
@@ -71,7 +71,7 @@ static void free_cc(struct clientcon *cc)
 {
 	free(cc->outbuf);
 	free(cc->inbuf);
-	free(cc);	
+	free(cc);
 }
 
 static void sendstring(int fd, char *str)
@@ -91,9 +91,9 @@ static void dispatch_dump(FILE *fh, char *s)
 			printflags |= DUMP_BIOS;
 		else if (!strcmp(p, "all"))
 			printflags |= DUMP_ALL;
-		else 
+		else
 			fprintf(fh, "Unknown dump parameter\n");
-	}			
+	}
 
 	dump_memory_errors(fh, printflags);
 	fprintf(fh, "done\n");
@@ -108,7 +108,7 @@ static void dispatch_pages(FILE *fh)
 static void dispatch_commands(char *line, FILE *fh)
 {
 	char *s;
-	while ((s = strsep(&line, "\n")) != NULL) { 
+	while ((s = strsep(&line, "\n")) != NULL) {
 		while (isspace(*s))
 			line++;
 		if (!strncmp(s, "dump", 4))
@@ -140,20 +140,20 @@ static void process_cmd(struct clientcon *cc)
 /* check if client is allowed to access */
 static int access_check(int fd, struct msghdr *msg)
 {
-	struct cmsghdr *cmsg;	
+	struct cmsghdr *cmsg;
 	struct ucred *uc;
 
 	/* check credentials */
 	cmsg = CMSG_FIRSTHDR(msg);
-	if (cmsg == NULL || 
+	if (cmsg == NULL ||
 		cmsg->cmsg_level != SOL_SOCKET ||
-		cmsg->cmsg_type != SCM_CREDENTIALS) { 
+		cmsg->cmsg_type != SCM_CREDENTIALS) {
 		Eprintf("Did not receive credentials over client unix socket %p\n",
 			cmsg);
 		return -1;
 	}
 	uc = (struct ucred *)CMSG_DATA(cmsg);
-	if (uc->uid == 0 || 
+	if (uc->uid == 0 ||
 		(acc.uid != -1U && uc->uid == acc.uid) ||
 		(acc.gid != -1U && uc->gid == acc.gid))
 		return 0;
@@ -173,7 +173,7 @@ static int client_input(int fd, struct clientcon *cc)
 		.msg_iovlen = 1,
 		.msg_control = ctlbuf,
 		.msg_controllen = sizeof(ctlbuf),
-	}; 	
+	};
 	int n, n2;
 
 	assert(cc->inbuf == NULL);
@@ -207,8 +207,8 @@ static void client_event(struct pollfd *pfd, void *data)
 
 	if (events & POLLOUT) {
 		if (cc->outcur < cc->outlen) {
-			n = send(pfd->fd, cc->outbuf + cc->outcur, 
-				 cc->outlen - cc->outcur, 
+			n = send(pfd->fd, cc->outbuf + cc->outcur,
+				 cc->outlen - cc->outcur,
 				 MSG_DONTWAIT|MSG_NOSIGNAL);
 			if (n < 0) {
 				/* EAGAIN here? but should not happen */
@@ -241,7 +241,7 @@ error:
 static void client_accept(struct pollfd *pfd, void *data)
 {
 	struct clientcon *cc = NULL;
-	int nfd = accept(pfd->fd, NULL, 0);	
+	int nfd = accept(pfd->fd, NULL, 0);
 	int on;
 
 	if (nfd < 0) {
@@ -297,7 +297,7 @@ static int server_ping(struct sockaddr_un *un)
 	if (fd < 0)
 		return 0;
 
-	sigaction(SIGALRM, &sa, &oldsa);	
+	sigaction(SIGALRM, &sa, &oldsa);
 	if (sigsetjmp(ping_timeout_ctx, 1) == 0) {
 		alarm(initial_ping_timeout);
 		if (connect(fd, un, sizeof(struct sockaddr_un)) < 0)
@@ -313,13 +313,13 @@ cleanup:
 	sigaction(SIGALRM, &oldsa, NULL);
 	alarm(0);
 	close(fd);
-	return ret;	
+	return ret;
 }
 
 void server_setup(void)
 {
 	int fd;
-	struct sockaddr_un adr; 
+	struct sockaddr_un adr;
 
 	server_config();
 

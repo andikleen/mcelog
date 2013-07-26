@@ -14,10 +14,10 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
-   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+   on your Linux system; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-   Author: Andi Kleen 
+   Author: Andi Kleen
 */
 
 #include <stdio.h>
@@ -28,7 +28,7 @@
 /* This used to decode the old xeon 75xx memory error aux format. But that has never
    been merged into mainline kernels, so removed it again. */
 
-void 
+void
 xeon75xx_memory_error(struct mce *m, unsigned msize, int *channel, int *dimm)
 {
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2009 Intel Corporation 
+/* Copyright (C) 2009 Intel Corporation
    Author: Andi Kleen
    Handle 'yellow bit' cache error threshold indications.
 
@@ -13,7 +13,7 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
+   on your Linux system; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 #define _GNU_SOURCE 1
 #include <stdio.h>
@@ -68,11 +68,11 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls, int soc
 	char *msg;
 	char *location;
 
-	if (socket >= 0) 
+	if (socket >= 0)
 		asprintf(&location, "CPU %d on socket %d", cpu, socket);
 	else
 		asprintf(&location, "CPU %d", cpu);
-	asprintf(&msg, "%s has large number of corrected cache errors in %s %s", 
+	asprintf(&msg, "%s has large number of corrected cache errors in %s %s",
 		location, ls, ts);
 	free(location);
 	if (yellow_log) {
@@ -89,8 +89,8 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls, int soc
 	asprintf(&env[ei++], "LEVEL=%d", lnum);
 	asprintf(&env[ei++], "TYPE=%s", ts);
 	if (cache_to_cpus(cpu, lnum, tnum, &cpumasklen, &cpumask) >= 0)
-		env[ei++] = cpulist("AFFECTED_CPUS=", cpumask, cpumasklen); 
-	env[ei] = NULL;	
+		env[ei++] = cpulist("AFFECTED_CPUS=", cpumask, cpumasklen);
+	env[ei] = NULL;
 	assert(ei < MAX_ENV);
 
 	run_trigger(yellow_trigger, NULL, env);
@@ -104,9 +104,9 @@ void yellow_setup(void)
 {
 	int n;
 
-	yellow_trigger = config_string("cache", "cache-threshold-trigger"); 
+	yellow_trigger = config_string("cache", "cache-threshold-trigger");
 	if (yellow_trigger && trigger_check(yellow_trigger) < 0) {
-		SYSERRprintf("Cannot access cache threshold trigger `%s'", 
+		SYSERRprintf("Cannot access cache threshold trigger `%s'",
 				yellow_trigger);
 		exit(1);
 	}
