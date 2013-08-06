@@ -58,7 +58,7 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_NEHALEM;
 		else if (model == 0x2e || model == 0x2f)
 			return CPU_XEON75XX;
-		else if (model == 0x2a || model == 0x3a)
+		else if (model == 0x2a)
 			return CPU_SANDY_BRIDGE;
 		else if (model == 0x2d)
 			return CPU_SANDY_BRIDGE_EP;
