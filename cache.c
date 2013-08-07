@@ -61,13 +61,15 @@ static void more_cpus(int cpu)
 
 static unsigned cpumap_len(char *s)
 {
-	unsigned len = 0;
-	while (*s) {
+	unsigned len = 0, width = 0;
+	do {
 		if (isxdigit(*s))
-			len++;
-		s++;
-	}
-	len = round_up(len * 4, BITS_PER_INT) / 8;
+			width++;
+		else {
+			len += round_up(width * 4, BITS_PER_INT) / 8;
+			width = 0;
+		}
+	} while (*s++);
 	return len;
 }
 
@@ -118,22 +120,23 @@ static int read_caches(void)
 			int numindex;
 
 			asprintf(&fn, "%s/%s/cache", PREFIX, de->d_name);
-			stat(fn, &st);
-			numindex = st.st_nlink - 2;
-			if (numindex < 0)
-				numindex = MIN_INDEX;
-			if (cachelen <= cpu)
-				more_cpus(cpu);
-			caches[cpu] = xalloc(sizeof(struct cache) * 
-					     (numindex+1));
-			for (i = 0; i < numindex; i++) {
-				char *cfn;
-				struct cache *c = caches[cpu] + i;
-				asprintf(&cfn, "%s/index%d", fn, i);
-				c->type = read_field_map(cfn, "type", type_map);
-				c->level = read_field_num(cfn, "level");
-				read_cpu_map(c, cfn);
-				free(cfn);
+			if (!stat(fn, &st)) {
+				numindex = st.st_nlink - 2;
+				if (numindex < 0)
+					numindex = MIN_INDEX;
+				if (cachelen <= cpu)
+					more_cpus(cpu);
+				caches[cpu] = xalloc(sizeof(struct cache) * 
+						     (numindex+1));
+				for (i = 0; i < numindex; i++) {
+					char *cfn;
+					struct cache *c = caches[cpu] + i;
+					asprintf(&cfn, "%s/index%d", fn, i);
+					c->type = read_field_map(cfn, "type", type_map);
+					c->level = read_field_num(cfn, "level");
+					read_cpu_map(c, cfn);
+					free(cfn);
+				}
 			}
 			free(fn);
 		}

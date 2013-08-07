@@ -227,6 +227,7 @@ static char *cputype_name[] = {
 	[CPU_SANDY_BRIDGE_EP] = "Sandy Bridge EP", /* Fill in better name */
 	[CPU_IVY_BRIDGE] = "Ivy Bridge", /* Fill in better name */
 	[CPU_IVY_BRIDGE_EPEX] = "Ivy Bridge EP/EX", /* Fill in better name */
+	[CPU_HASWELL] = "Haswell", /* Fill in better name */
 };
 
 static struct config_choice cpu_choices[] = {
@@ -262,6 +263,7 @@ static struct config_choice cpu_choices[] = {
 	{ "ivybridge", CPU_IVY_BRIDGE }, /* Fill in better name */
 	{ "ivybridge-ep", CPU_IVY_BRIDGE_EPEX }, /* Fill in better name */
 	{ "ivybridge-ex", CPU_IVY_BRIDGE_EPEX }, /* Fill in better name */
+	{ "haswell", CPU_HASWELL }, /* Fill in better name */
 	{}
 };
 
