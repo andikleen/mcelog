@@ -360,6 +360,23 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 		ivb_decode_model(cputype, log->bank, log->status, log->misc);
 		break;
 	}
+
+	/* IO MCA - reported as bus/interconnect with specific PP,T,RRRR,II,LL values
+	 * and MISCV set. MISC register points to root port that reported the error
+	 * need to cross check with AER logs for more details.
+	 * See: http://www.intel.com/content/www/us/en/architecture-and-technology/enhanced-mca-logging-xeon-paper.html
+	 */
+	if ((log->status & MCI_STATUS_MISCV) &&
+	    (log->status & 0xefff) == 0x0e0b) {
+		int	seg, bus, dev, fn;
+
+		seg = EXTRACT(log->misc, 32, 39);
+		bus = EXTRACT(log->misc, 24, 31);
+		dev = EXTRACT(log->misc, 19, 23);
+		fn = EXTRACT(log->misc, 16, 18);
+		Wprintf("IO MCA reported by root port %x:%02x:%02x.%x\n",
+			seg, bus, dev, fn);
+	}
 }
 
 char *intel_bank_name(int num)
