@@ -151,3 +151,70 @@ void bucket_init(struct leaky_bucket *b)
 	b->excess = 0;
 	b->tstamp = bucket_time();
 }
+
+
+#ifdef TEST_LEAKY_BUCKET
+/* Stolen from the cpp documentation */
+#define xstr(_s) str(_s)
+#define str(_s) #_s
+
+#define THRESHOLD_EVENTS_PER_PERIOD 100
+#define EVENTS_PER_LOGGED_EVENT 10
+#define SECONDS_PER_EVENT 86
+/* Needs to be SECONDS_PER_EVENT * EVENTS_PER_LOGGED_EVENT * THRESHOLD_EVENTS_PER_PERIOD */
+#define THRESHOLD_PERIOD 86000
+#if THRESHOLD_PERIOD != (SECONDS_PER_EVENT * EVENTS_PER_LOGGED_EVENT * THRESHOLD_EVENTS_PER_PERIOD)
+#  error THRESHOLD_PERIOD is Wrong!
+#endif
+#define RATE_STRING xstr(THRESHOLD_EVENTS_PER_PERIOD) " / " xstr(THRESHOLD_PERIOD)
+
+#define EVENTS_PER_PERIOD_IN_TEST (THRESHOLD_EVENTS_PER_PERIOD * EVENTS_PER_LOGGED_EVENT)
+
+#define PERIODS_TO_TEST 3
+#define TOTAL_SECONDS_FOR_TEST (PERIODS_TO_TEST * THRESHOLD_PERIOD)
+#define TOTAL_EVENTS (PERIODS_TO_TEST * EVENTS_PER_PERIOD_IN_TEST)
+
+int main(int argc, char **argv)
+{
+	struct bucket_conf c;
+	struct leaky_bucket b;
+	time_t start_time;
+	time_t event_time;
+	int ret;
+	int i;
+
+#ifdef TEST_LEAKY_BUCKET_DEBUG
+	printf("Testing with a rate of " RATE_STRING "\n");
+#endif
+	ret = bucket_conf_init(&c, RATE_STRING);
+	if (ret)
+		return ret;
+
+	bucket_init(&b);
+	start_time = b.tstamp;
+
+	for (i = 1; i <= TOTAL_EVENTS; i++) {
+		event_time = start_time + i * SECONDS_PER_EVENT;
+		ret = __bucket_account(&c, &b, 1, event_time);
+
+#ifdef TEST_LEAKY_BUCKET_DEBUG
+		if (ret)
+			printf("Logging entry %d at %ld %ld\n", i, event_time - start_time, b.tstamp);
+#else
+		if (i < THRESHOLD_EVENTS_PER_PERIOD) {
+			if (!ret){
+				fprintf(stderr, "Did not log initial events - FAIL.\n");
+				return -1;
+			}
+		} else {
+			if (!(i % EVENTS_PER_LOGGED_EVENT) && !ret) {
+				fprintf(stderr, "Did not log initial events - FAIL.\n");
+				return -1;
+			}
+		}
+#endif
+	}
+
+	return 0;
+}
+#endif
