@@ -29,16 +29,15 @@ static void bucket_age(const struct bucket_conf *c, struct leaky_bucket *b,
 			time_t now)
 {
 	long diff;
+	unsigned age;
+
 	diff = now - b->tstamp;
-	if (diff >= c->agetime) { 
-		unsigned age = (diff / (double)c->agetime) * c->capacity;
-		b->tstamp = now;
-		if (age > b->count)
-			b->count = 0;
-		else
-			b->count -= age;
-		b->excess = 0;
-	}
+	age = (diff / (double)c->agetime) * c->capacity;
+ 
+	if (age > b->count)
+		b->count = 0;
+	else
+		b->count -= age;
 }
 
 /* Account increase in leaky bucket. Return 1 if bucket overflowed. */
@@ -48,11 +47,9 @@ int __bucket_account(const struct bucket_conf *c, struct leaky_bucket *b,
 	if (c->capacity == 0)
 		return 0;
 	bucket_age(c, b, t);
-	b->count += inc; 
-	if (b->count >= c->capacity) {
-		b->excess += b->count;
-		/* should disable overflow completely in the same time unit */
-		b->count = 0;
+	if (b->count < c->capacity) {
+		b->count += inc;
+		b->tstamp = t;
 		return 1;
 	}
 	return 0;
