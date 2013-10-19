@@ -1,0 +1,10 @@
+
+mcelog used to do released, but now switched to a rolling release
+scheme. That means the git tree is always kept stable and can
+be used directly in production.
+
+To simplify package management which likes to have 
+increasing version numbers the commits are regularly tagged
+with a number. The number starts (arbitarily) with 100.
+
+The tags are named vXXX (e.g. v100)
