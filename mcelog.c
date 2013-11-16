@@ -856,7 +856,7 @@ static void remove_pidfile(void)
 static void signal_exit(int sig)
 {
 	remove_pidfile();
-	_exit(sig);
+	_exit(EXIT_SUCCESS);
 }
 
 static void setup_pidfile(char *s)
