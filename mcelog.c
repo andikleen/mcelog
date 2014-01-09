@@ -1174,8 +1174,8 @@ static void drop_cred(void)
 static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 {	
 	int i; 
-	int len;
-	int finish = 0;
+	int len, count;
+	int finish = 0, flags;
 
 	if (recordlen == 0) {
 		Wprintf("no data in mce record\n");
@@ -1188,7 +1188,14 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 		return;
 	}
 
-	for (i = 0; (i < len / (int)recordlen) && !finish; i++) { 
+	count = len / (int)recordlen;
+	if (count == (int)loglen) {
+		if ((ioctl(fd, MCE_GETCLEAR_FLAGS, &flags) == 0) &&
+		    (flags & MCE_OVERFLOW))
+			Eprintf("Warning: MCE buffer is overflowed.\n");
+	}
+
+	for (i = 0; (i < count) && !finish; i++) {
 		struct mce *mce = (struct mce *)(buf + i*recordlen);
 		mce_prepare(mce);
 		if (numerrors > 0 && --numerrors == 0)
