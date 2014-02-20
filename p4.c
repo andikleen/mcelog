@@ -147,6 +147,7 @@ static void decode_mca(__u32 mca, u64 track, int cpu, int *ismemerr, int socket)
 		[3] = "External error",
 		[4] = "FRC error",
 		[5] = "Internal parity error",
+		[6] = "SMM Handler Code Access Violation",
 	};
 
 	if (mca & (1UL << 12)) {
