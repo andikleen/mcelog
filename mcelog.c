@@ -1069,11 +1069,8 @@ static int modifier(int opt)
 		break;
 	case O_DAEMON:
 		daemon_mode = 1;
-		if (!logfile && !foreground)
-			logfile = logfile_default;
 		if (!(syslog_opt & SYSLOG_FORCE))
 			syslog_opt = SYSLOG_REMARK|SYSLOG_ERROR;
-
 		break;
 	case O_FILE:
 		inputfile = optarg;
@@ -1082,8 +1079,6 @@ static int modifier(int opt)
 		foreground = 1;	
 		if (!(syslog_opt & SYSLOG_FORCE))
 			syslog_opt = SYSLOG_FORCE;
-		if (logfile == logfile_default)
-			logfile = NULL;
 		break;
 	case O_NUMERRORS:
 		numerrors = atoi(optarg);
@@ -1110,6 +1105,9 @@ static int modifier(int opt)
 
 static void modifier_finish(void)
 {
+	if(!foreground && daemon_mode && !logfile && !(syslog_opt & SYSLOG_LOG)) {
+		logfile = logfile_default;
+	}
 	if (logfile) {
 		if (open_logfile(logfile) < 0) {
 			if (daemon_mode && !(syslog_opt & SYSLOG_FORCE))

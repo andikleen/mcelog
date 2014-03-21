@@ -181,7 +181,13 @@ With the
 .B \-\-daemon
 option mcelog will run in the background. This gives the fastest reaction
 time and is the recommended operating mode.
-This option implies 
+If an output option isn't selected (
+.I \-\-logfile
+or
+.I \-\-syslog
+or
+.I \-\-syslog-error
+), this option implies
 .I \-\-logfile=/var/log/mcelog. 
 Important messages will be logged as one-liner summaries to syslog
 unless 
