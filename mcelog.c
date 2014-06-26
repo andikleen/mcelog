@@ -508,11 +508,12 @@ int is_cpu_supported(void)
 		} 
 		if (seen == ALL) {
 			if (!strcmp(vendor,"AuthenticAMD")) {
-				if (family == 15)
+				if (family == 15) {
 					cputype = CPU_K8;
-				if (family >= 15)
-					SYSERRprintf("AMD Processor family %d: Please load edac_mce_amd module.\n", family);
-				return 0;
+				} else if (family >= 16) {
+					SYSERRprintf("AMD Processor family %d: Please use the edac_mce_amd module instead.\n", family);
+					return 0;
+				}
 			} else if (!strcmp(vendor,"GenuineIntel"))
 				cputype = select_intel_cputype(family, model);
 			/* Add checks for other CPUs here */	
@@ -1069,11 +1070,8 @@ static int modifier(int opt)
 		break;
 	case O_DAEMON:
 		daemon_mode = 1;
-		if (!logfile && !foreground)
-			logfile = logfile_default;
 		if (!(syslog_opt & SYSLOG_FORCE))
 			syslog_opt = SYSLOG_REMARK|SYSLOG_ERROR;
-
 		break;
 	case O_FILE:
 		inputfile = optarg;
@@ -1082,8 +1080,6 @@ static int modifier(int opt)
 		foreground = 1;	
 		if (!(syslog_opt & SYSLOG_FORCE))
 			syslog_opt = SYSLOG_FORCE;
-		if (logfile == logfile_default)
-			logfile = NULL;
 		break;
 	case O_NUMERRORS:
 		numerrors = atoi(optarg);
@@ -1110,6 +1106,9 @@ static int modifier(int opt)
 
 static void modifier_finish(void)
 {
+	if(!foreground && daemon_mode && !logfile && !(syslog_opt & SYSLOG_LOG)) {
+		logfile = logfile_default;
+	}
 	if (logfile) {
 		if (open_logfile(logfile) < 0) {
 			if (daemon_mode && !(syslog_opt & SYSLOG_FORCE))
@@ -1174,8 +1173,8 @@ static void drop_cred(void)
 static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 {	
 	int i; 
-	int len;
-	int finish = 0;
+	int len, count;
+	int finish = 0, flags;
 
 	if (recordlen == 0) {
 		Wprintf("no data in mce record\n");
@@ -1188,7 +1187,14 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 		return;
 	}
 
-	for (i = 0; (i < len / (int)recordlen) && !finish; i++) { 
+	count = len / (int)recordlen;
+	if (count == (int)loglen) {
+		if ((ioctl(fd, MCE_GETCLEAR_FLAGS, &flags) == 0) &&
+		    (flags & MCE_OVERFLOW))
+			Eprintf("Warning: MCE buffer is overflowed.\n");
+	}
+
+	for (i = 0; (i < count) && !finish; i++) {
 		struct mce *mce = (struct mce *)(buf + i*recordlen);
 		mce_prepare(mce);
 		if (numerrors > 0 && --numerrors == 0)

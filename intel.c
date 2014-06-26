@@ -67,7 +67,8 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_IVY_BRIDGE;
 		else if (model == 0x3e)
 			return CPU_IVY_BRIDGE_EPEX;
-		else if (model == 0x3c || model == 0x45 || model == 0x46)
+		else if (model == 0x3c || model == 0x3f || model == 0x45 ||
+			 model == 0x46)
 			return CPU_HASWELL;
 		if (model > 0x1a) {
 			Eprintf("Family 6 Model %x CPU: only decoding architectural errors\n",
