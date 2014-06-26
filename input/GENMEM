@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # GENMEM socketid channel dimm corr-err-cnt uc-flag
 # generate a memory error. All fields are optional.
 # suitable to be fed into mce-inject or mcelog --ascii

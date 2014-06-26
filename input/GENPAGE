@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # GENMPAGE pfn socketid channel dimm corr-err-cnt
 # generate a memory error on a page. All fields are optional.
 # dimm/channel can be out of sync with the address

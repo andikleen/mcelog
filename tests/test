@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # simple test harness for mcelog daemon trigger test cases
 # ./test subdir [debugger]
 # run mcelog test in specific sub directory

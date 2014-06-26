@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # GENCACHE cpu level type track
 # generate a memory error. All fields are optional.
 # see SDM 3a chapter 15 for details
