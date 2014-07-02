@@ -15,16 +15,11 @@
 # this can be changed in mcelog.conf
 
 #
-# offline the CPUs (except CPU #0) sharing the affected cache
+# offline the CPUs sharing the affected cache
 #
 EXIT=0
 
 for i in $AFFECTED_CPUS ; do
-	if [ $i = 0 ] ; then
-		logger -s -p daemon.warn -t mcelog "Not offlining CPU 0"	
-		EXIT=1
-		continue
-	fi
 	logger -s -p daemon.crit -t mcelog "Offlining CPU $i due to cache error threshold"
 	F=$(printf "/sys/devices/system/cpu/cpu%d/online" $i)
 	echo 0 > $F
