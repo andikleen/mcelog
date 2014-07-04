@@ -174,8 +174,10 @@ check_symbol:
 	if (fclose(efi_systab) != 0)
 		perror(filename);
 
-	if (!ret)
-		Eprintf("%s: SMBIOS entry point missing", filename);
+	if (!ret || !*address){
+		Lprintf("No valid SMBIOS entry point: Continue without DMI decoding");
+		return 0;
+	}
 
 	if (verbose)
 		printf("%s: SMBIOS entry point at 0x%08lx\n", filename,
@@ -224,6 +226,8 @@ int opendmi(void)
 		}
 		a = (struct anchor*)((char*)abase + (entry_point_addr - addr_start));
 		goto fill_entries;
+	} else {
+		return -1;
 	}
 
 legacy:
