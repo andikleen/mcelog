@@ -1190,7 +1190,7 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 	count = len / (int)recordlen;
 	if (count == (int)loglen) {
 		if ((ioctl(fd, MCE_GETCLEAR_FLAGS, &flags) == 0) &&
-		    (flags & MCE_OVERFLOW))
+		    (flags & (1 << MCE_OVERFLOW)))
 			Eprintf("Warning: MCE buffer is overflowed.\n");
 	}
 
