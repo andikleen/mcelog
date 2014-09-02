@@ -63,18 +63,14 @@ static struct field pcu_mc4[] = {
 	{}
 };
 
-static char *memctrl_1[] = {
-	[0x001] = "Address parity error",
-	[0x002] = "HA Wrt buffer Data parity error",
-	[0x004] = "HA Wrt byte enable parity error",
-	[0x008] = "Corrected patrol scrub error",
-	[0x010] = "Uncorrected patrol scrub error",
-	[0x020] = "Corrected spare error",
-	[0x040] = "Uncorrected spare error",
-};
-
 static struct field memctrl_mc8[] = {
-	FIELD(16, memctrl_1),
+	SBITFIELD(16, "Address parity error"),
+	SBITFIELD(17, "HA Wrt buffer Data parity error"),
+	SBITFIELD(18, "HA Wrt byte enable parity error"),
+	SBITFIELD(19, "Corrected patrol scrub error"),
+	SBITFIELD(20, "Uncorrected patrol scrub error"),
+	SBITFIELD(21, "Corrected spare error"),
+	SBITFIELD(22, "Uncorrected spare error"),
 	{}
 };
 
