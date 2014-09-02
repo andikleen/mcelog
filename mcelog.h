@@ -118,6 +118,7 @@ enum cputype {
 	CPU_IVY_BRIDGE, 
 	CPU_IVY_BRIDGE_EPEX, 
 	CPU_HASWELL,
+	CPU_HASWELL_EPEX,
 };
 
 enum option_ranges {

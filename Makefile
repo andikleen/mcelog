@@ -32,7 +32,7 @@ OBJ := p4.o k8.o mcelog.o dmi.o tsc.o core2.o bitfield.o intel.o \
        nehalem.o dunnington.o tulsa.o config.o memutil.o msg.o   \
        eventloop.o leaky-bucket.o memdb.o server.o trigger.o 	 \
        client.o cache.o sysfs.o yellow.o page.o rbtree.o 	 \
-       xeon75xx.o sandy-bridge.o ivy-bridge.o msr.o
+       xeon75xx.o sandy-bridge.o ivy-bridge.o haswell.o msr.o
 DISKDB_OBJ := diskdb.o dimm.o db.o
 CLEAN := mcelog dmi tsc dbquery .depend .depend.X dbquery.o ${DISKDB_OBJ}
 DOC := mce.pdf

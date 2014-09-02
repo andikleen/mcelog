@@ -228,6 +228,7 @@ static char *cputype_name[] = {
 	[CPU_IVY_BRIDGE] = "Ivy Bridge", /* Fill in better name */
 	[CPU_IVY_BRIDGE_EPEX] = "Ivy Bridge EP/EX", /* Fill in better name */
 	[CPU_HASWELL] = "Haswell", /* Fill in better name */
+	[CPU_HASWELL_EPEX] = "Haswell EP/EX", /* Fill in better name */
 };
 
 static struct config_choice cpu_choices[] = {
@@ -264,6 +265,8 @@ static struct config_choice cpu_choices[] = {
 	{ "ivybridge-ep", CPU_IVY_BRIDGE_EPEX }, /* Fill in better name */
 	{ "ivybridge-ex", CPU_IVY_BRIDGE_EPEX }, /* Fill in better name */
 	{ "haswell", CPU_HASWELL }, /* Fill in better name */
+	{ "haswell-ep", CPU_HASWELL_EPEX }, /* Fill in better name */
+	{ "haswell-ex", CPU_HASWELL_EPEX }, /* Fill in better name */
 	{}
 };
 
@@ -424,7 +427,8 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 			fam,
 			mod);
 	}
-	if (cputype != CPU_SANDY_BRIDGE_EP && cputype != CPU_IVY_BRIDGE_EPEX)
+	if (cputype != CPU_SANDY_BRIDGE_EP && cputype != CPU_IVY_BRIDGE_EPEX &&
+	    cputype != CPU_HASWELL_EPEX)
 		resolveaddr(m->addr);
 	if (!ascii_mode && ismemerr && (m->status & MCI_STATUS_ADDRV)) {
 		diskdb_resolve_addr(m->addr);

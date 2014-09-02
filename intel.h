@@ -18,5 +18,6 @@ extern int memory_error_support;
 	case CPU_SANDY_BRIDGE: \
 	case CPU_IVY_BRIDGE: \
 	case CPU_IVY_BRIDGE_EPEX: \
-	case CPU_HASWELL
+	case CPU_HASWELL: \
+	case CPU_HASWELL_EPEX
 
