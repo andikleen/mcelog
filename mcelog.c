@@ -226,9 +226,9 @@ static char *cputype_name[] = {
 	[CPU_SANDY_BRIDGE] = "Sandy Bridge", /* Fill in better name */
 	[CPU_SANDY_BRIDGE_EP] = "Sandy Bridge EP", /* Fill in better name */
 	[CPU_IVY_BRIDGE] = "Ivy Bridge", /* Fill in better name */
-	[CPU_IVY_BRIDGE_EPEX] = "Ivy Bridge EP/EX", /* Fill in better name */
+	[CPU_IVY_BRIDGE_EPEX] = "Intel Xeon v2 (Ivy Bridge) EP/EX", /* Fill in better name */
 	[CPU_HASWELL] = "Haswell", /* Fill in better name */
-	[CPU_HASWELL_EPEX] = "Haswell EP/EX", /* Fill in better name */
+	[CPU_HASWELL_EPEX] = "Intel Xeon v3 (Haswell) EP/EX",
 };
 
 static struct config_choice cpu_choices[] = {
@@ -262,12 +262,13 @@ static struct config_choice cpu_choices[] = {
 	{ "sandybridge", CPU_SANDY_BRIDGE }, /* Fill in better name */
 	{ "sandybridge-ep", CPU_SANDY_BRIDGE_EP }, /* Fill in better name */
 	{ "ivybridge", CPU_IVY_BRIDGE }, /* Fill in better name */
-	{ "ivybridge-ep", CPU_IVY_BRIDGE_EPEX }, /* Fill in better name */
-	{ "ivybridge-ex", CPU_IVY_BRIDGE_EPEX }, /* Fill in better name */
+	{ "ivybridge-ep", CPU_IVY_BRIDGE_EPEX },
+	{ "ivybridge-ex", CPU_IVY_BRIDGE_EPEX },
 	{ "haswell", CPU_HASWELL }, /* Fill in better name */
-	{ "haswell-ep", CPU_HASWELL_EPEX }, /* Fill in better name */
-	{ "haswell-ex", CPU_HASWELL_EPEX }, /* Fill in better name */
-	{}
+	{ "haswell-ep", CPU_HASWELL_EPEX },
+	{ "haswell-ex", CPU_HASWELL_EPEX },
+	{ "xeon-v2", CPU_IVY_BRIDGE_EPEX },
+	{ "xeon-v3", CPU_HASWELL_EPEX },
 };
 
 static void print_cputypes(void)
