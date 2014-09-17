@@ -1,0 +1,23 @@
+#!/bin/sh
+#  This shell script can be executed by mcelog in daemon mode when a sockets
+#  receives Bus and Interconnect errors
+#
+# environment:
+# MESSAGE	Human readable consolidated error message
+# LOCATION	Consolidated location as a single string
+# SOCKETID	Socket ID of CPU that includes the memory controller with the DIMM
+# LEVEL		Interconnect level
+# PARTICIPATION	Processor Participation (Originator, Responder or Observer)
+# REQUEST	Request type (read, write, prefetch, etc.)
+# ORIGIN	Memory or IO
+# TIMEOUT	The request timed out or not
+#
+# note: will run as mcelog configured user
+# this can be changed in mcelog.conf
+
+logger -s -p daemon.err -t mcelog "$MESSAGE"
+logger -s -p daemon.err -t mcelog "Location: $LOCATION"
+
+[ -x ./bus-error-trigger.local ] && . ./bus-error-trigger.local
+
+exit 0

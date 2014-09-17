@@ -1,0 +1,23 @@
+#!/bin/sh
+#  This shell script can be executed by mcelog in daemon mode when a sockets
+#  receives Bus and Interconnect errors
+#
+# environment:
+# MESSAGE	Human readable consolidated error message
+# LOCATION	Consolidated location as a single string
+# SOCKETID	Socket ID of CPU that includes the memory controller with the DIMM
+# CPU		Linux CPU number that triggered the error
+# SET		PCI segment number
+# BUS		PCI bus number
+# DEVICE	PCI device number
+# FUNCTION	PCI function number
+#
+# note: will run as mcelog configured user
+# this can be changed in mcelog.conf
+
+logger -s -p daemon.err -t mcelog "$MESSAGE"
+logger -s -p daemon.err -t mcelog "Location: $LOCATION"
+
+[ -x ./iomca-error-trigger.local ] && . ./iomca-error-trigger.local
+
+exit 0

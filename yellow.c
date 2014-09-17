@@ -90,6 +90,8 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls, int soc
 	asprintf(&env[ei++], "TYPE=%s", ts);
 	if (cache_to_cpus(cpu, lnum, tnum, &cpumasklen, &cpumask) >= 0)
 		env[ei++] = cpulist("AFFECTED_CPUS=", cpumask, cpumasklen); 
+	else
+		asprintf(env[ei++], "AFFECTED_CPUS=unknown");
 	env[ei] = NULL;	
 	assert(ei < MAX_ENV);
 
