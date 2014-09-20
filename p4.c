@@ -31,6 +31,7 @@
 #include "intel.h"
 #include "yellow.h"
 #include "bus.h"
+#include "unknown.h"
 #include "bitfield.h"
 #include "sandy-bridge.h"
 #include "ivy-bridge.h"
@@ -117,7 +118,7 @@ static char* get_II_str(__u8 i)
 	return II[i];
 }
 
-static void decode_mca(u64 status, u64 misc, u64 track, int cpu, int *ismemerr, int socket)
+static int decode_mca(u64 status, u64 misc, u64 track, int cpu, int *ismemerr, int socket)
 {
 #define TLB_LL_MASK      0x3  /*bit 0, bit 1*/
 #define TLB_LL_SHIFT     0x0
@@ -143,6 +144,7 @@ static void decode_mca(u64 status, u64 misc, u64 track, int cpu, int *ismemerr, 
 #define BUS_PP_SHIFT     0x9
 
 	u32 mca;
+	int ret = 0;
 	static char *msg[] = {
 		[0] = "No Error",
 		[1] = "Unclassified",
@@ -161,7 +163,7 @@ static void decode_mca(u64 status, u64 misc, u64 track, int cpu, int *ismemerr, 
 
 	if (mca < NELE(msg)) {
 		Wprintf("%s\n", msg[mca]); 
-		return;
+		return ret;
 	}
 
 	if ((mca >> 2) == 3) { 
@@ -197,6 +199,8 @@ static void decode_mca(u64 status, u64 misc, u64 track, int cpu, int *ismemerr, 
 			Wprintf("Internal Timer error\n");
 		else
 			Wprintf("Internal unclassified error: %x\n", mca & 0xffff);
+
+		ret = 1;
 	} else if (test_prefix(11, mca)) {
 		char *level, *pp, *rrrr, *ii, *timeout;
 
@@ -229,8 +233,11 @@ static void decode_mca(u64 status, u64 misc, u64 track, int cpu, int *ismemerr, 
 	} else if (test_prefix(7, mca)) {
 		decode_memory_controller(mca);
 		*ismemerr = 1;
-	} else 
+	} else {
 		Wprintf("Unknown Error %x\n", mca);
+		ret = 1;
+	}
+	return ret;
 }
 
 static void p4_decode_model(__u32 model)
@@ -278,7 +285,7 @@ static const char *arstate[4] = {
 	[3] = "SRAR"
 };
 
-static void decode_mci(__u64 status, __u64 misc, int cpu, unsigned mcgcap, int *ismemerr,
+static int decode_mci(__u64 status, __u64 misc, int cpu, unsigned mcgcap, int *ismemerr,
 		       int socket)
 {
 	u64 track = 0;
@@ -315,7 +322,7 @@ static void decode_mci(__u64 status, __u64 misc, int cpu, unsigned mcgcap, int *
 		decode_tracking(track);
 	}
 	Wprintf("MCA: ");
-	decode_mca(status, misc, track, cpu, ismemerr, socket);
+	return decode_mca(status, misc, track, cpu, ismemerr, socket);
 }
 
 static void decode_mcg(__u64 mcgstatus)
@@ -349,11 +356,14 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 
 	if (log->bank == MCE_THERMAL_BANK) { 
 		decode_thermal(log, cpu);
+		run_unknown_trigger(socket, cpu, log);
 		return;
 	}
 
 	decode_mcg(log->mcgstatus);
-	decode_mci(log->status, log->misc, cpu, log->mcgcap, ismemerr, socket);
+	if (decode_mci(log->status, log->misc, cpu, log->mcgcap, ismemerr,
+		socket))
+		run_unknown_trigger(socket, cpu, log);
 
 	if (test_prefix(11, (log->status & 0xffffL))) {
 		switch (cputype) {

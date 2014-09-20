@@ -1,0 +1,26 @@
+#!/bin/sh
+#  This shell script is executed by mcelog in daemon mode when
+#  an not otherwise handled machine check error happens.
+#
+# environment:
+# MESSAGE	Human readable consolidated error message
+# LOCATION	Consolidated location as a single string
+# SOCKETID	Socket ID of CPU that includes the memory controller with the DIMM
+# CPU		Linux CPU number that triggered the error
+# STATUS	IA32_MCi_STATUS register value
+# ADDR		IA32_MCi_ADDR register value
+# MISC		IA32_MCi_MISC regiser value
+# MCGSTATUS	IA32_MCG_STATUS register value
+# MCGCAP	IA32_MCG_CAP register value
+# For details on the register layout please see the Intel SDM http://www.intel.com/sdm
+# volume 3, chapter 15
+#
+# note: will run as mcelog configured user
+# this can be changed in mcelog.conf
+
+logger -s -p daemon.err -t mcelog "$MESSAGE"
+logger -s -p daemon.err -t mcelog "Location: $LOCATION"
+
+[ -x ./unknown-error-trigger.local ] && . ./unknown-error-trigger.local
+
+exit 0

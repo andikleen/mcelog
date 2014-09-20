@@ -59,6 +59,7 @@
 #include "yellow.h"
 #include "page.h"
 #include "bus.h"
+#include "unknown.h"
 
 enum cputype cputype = CPU_GENERIC;	
 
@@ -1155,6 +1156,7 @@ static void general_setup(void)
 	trigger_setup();
 	yellow_setup();
 	bus_setup();
+	unknown_setup();
 	config_cred("global", "run-credentials", &runcred);
 	if (config_bool("global", "filter-memory-errors") == 1)
 		filter_memory_errors = 1;
