@@ -36,10 +36,8 @@ static void domsr(int cpu, int msr, int bit)
 		SYSERRprintf("Cannot re-read MSR_ERROR_CONTROL from %s\n", fpath);
 		exit(1);
 	}
-	if ((data & bit) == 0) {
-		SYSERRprintf("Failed to set imc_log on cpu %d\n", cpu);
-		exit(1);
-	}
+	if ((data & bit) == 0)
+		Lprintf("No DIMM detection available on cpu %d (normal in virtual environments)\n", cpu);
 	close(fd);
 }
 
