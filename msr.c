@@ -52,6 +52,8 @@ void set_imc_log(int cputype)
 		msr = 0x17f;	/* MSR_ERROR_CONTROL */
 		bit = 0x2;	/* MemError Log Enable */
 		break;
+	default:
+		return;
 	}
 
 	for (cpu = 0; cpu < ncpus; cpu++)
