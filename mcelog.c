@@ -569,6 +569,12 @@ static char *skipgunk(char *s)
 		if (*s == ']')
 			++s;
 	}
+
+	s = skipspace(s);
+
+	if (strncmp(s, "mce: [Hardware Error]:", 22) == 0)
+		s += 22;
+
 	return skipspace(s);
 }
 
