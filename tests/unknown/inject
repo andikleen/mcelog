@@ -1,0 +1,8 @@
+#!/bin/sh
+
+B=$(pwd)/../..
+
+PATH=$PATH:$B/../mce-inject
+
+mce-inject $B/input/iomca
+mce-inject $B/input/unknown
