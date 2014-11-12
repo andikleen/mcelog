@@ -29,9 +29,9 @@ void ask_server(char *command)
 {
 	struct sockaddr_un sun;
 	int fd;
+	FILE * fp;
 	int n;
 	char buf[1024];
-	int done;
 	char *path = config_string("server", "socket-path");
 	if (!path)
 		path = SOCKET_PATH;
@@ -52,14 +52,18 @@ void ask_server(char *command)
 	if (write(fd, command, n) != n)
 		SYSERRprintf("client command write");
 
-	done = 0;	
-	while (!done && (n = read(fd, buf, sizeof buf)) > 0) { 
-		if (n >= 5 && !memcmp(buf + n - 5, "done\n", 5)) { 
-			n -= 5;
-			done = 1;
+	if ((fp = fdopen(fd, "r")) != NULL) {
+		while (fgets(buf, sizeof buf, fp)) {
+			n = strlen(buf);
+			if (n >= 5 && !memcmp(buf + n - 5, "done\n", 5)) {
+				fclose(fp);
+				return;
+			}
+
+			fputs(buf, stdout);
 		}
-		write(1, buf, n);
+		fclose(fp);
 	}
-	if (n < 0) 
-		SYSERRprintf("client read");
+
+	SYSERRprintf("client read");
 }
