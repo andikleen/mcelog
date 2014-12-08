@@ -34,7 +34,7 @@ void intel_cpu_init(enum cputype cpu)
 	if (cpu == CPU_NEHALEM || cpu == CPU_XEON75XX || cpu == CPU_INTEL ||
 	    cpu == CPU_SANDY_BRIDGE || cpu == CPU_SANDY_BRIDGE_EP ||
 	    cpu == CPU_IVY_BRIDGE || cpu == CPU_IVY_BRIDGE_EPEX ||
-	    cpu == CPU_HASWELL || cpu == CPU_HASWELL_EPEX)
+	    cpu == CPU_HASWELL || cpu == CPU_HASWELL_EPEX || CPU_BROADWELL)
 		memory_error_support = 1;
 }
 
@@ -72,6 +72,8 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_HASWELL;
 		else if (model == 0x3f)
 			return CPU_HASWELL_EPEX;
+		else if (model == 0x3d)
+			return CPU_BROADWELL;
 		if (model > 0x1a) {
 			Eprintf("Family 6 Model %x CPU: only decoding architectural errors\n",
 				model);
