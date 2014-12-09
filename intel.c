@@ -34,7 +34,7 @@ void intel_cpu_init(enum cputype cpu)
 	if (cpu == CPU_NEHALEM || cpu == CPU_XEON75XX || cpu == CPU_INTEL ||
 	    cpu == CPU_SANDY_BRIDGE || cpu == CPU_SANDY_BRIDGE_EP ||
 	    cpu == CPU_IVY_BRIDGE || cpu == CPU_IVY_BRIDGE_EPEX ||
-	    cpu == CPU_HASWELL || cpu == CPU_HASWELL_EPEX || CPU_BROADWELL)
+	    cpu == CPU_HASWELL || cpu == CPU_HASWELL_EPEX || cpu == CPU_BROADWELL)
 		memory_error_support = 1;
 }
 
