@@ -273,6 +273,7 @@ static struct config_choice cpu_choices[] = {
 	{ "broadwell", CPU_BROADWELL },
 	{ "xeon-v2", CPU_IVY_BRIDGE_EPEX },
 	{ "xeon-v3", CPU_HASWELL_EPEX },
+	{ NULL }
 };
 
 static void print_cputypes(void)
