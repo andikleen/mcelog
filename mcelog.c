@@ -745,7 +745,7 @@ restart:
 			else
 				s += 3; 
 
-			n = sscanf(s, "%02x:<%016Lx> {%100s}%n",
+			n = sscanf(s, "%02x:<%016Lx> {%99s}%n",
 				   &cs,
 				   &m.ip, 
 				   symbol, &next); 
