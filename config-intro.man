@@ -1,0 +1,10 @@
+.SH NAME
+mcelog.conf \- mcelog.conf reference
+.SH SYNOPSIS
+.B /etc/mcelog.conf
+.SH DESCRIPTION
+
+/etc/mcelog.conf is the main configuration file for
+.B mcelog(8).
+This is configuration file separated into sections including
+a default section.
