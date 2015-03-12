@@ -74,6 +74,11 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_HASWELL_EPEX;
 		else if (model == 0x3d)
 			return CPU_BROADWELL;
+		else if (model == 0x1c || model == 0x26 || model == 0x27 ||
+			 model == 0x35 || model == 0x36 || model == 0x36 ||
+			 model == 0x37 || model == 0x4a || model == 0x4c ||
+			 model == 0x4d || model == 0x5a || model == 0x5d)
+			return CPU_ATOM;
 		if (model > 0x1a) {
 			Eprintf("Family 6 Model %x CPU: only decoding architectural errors\n",
 				model);

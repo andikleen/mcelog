@@ -232,6 +232,7 @@ static char *cputype_name[] = {
 	[CPU_HASWELL] = "Haswell", /* Fill in better name */
 	[CPU_HASWELL_EPEX] = "Intel Xeon v3 (Haswell) EP/EX",
 	[CPU_BROADWELL] = "Broadwell",
+	[CPU_ATOM] = "ATOM",
 };
 
 static struct config_choice cpu_choices[] = {
@@ -273,6 +274,7 @@ static struct config_choice cpu_choices[] = {
 	{ "broadwell", CPU_BROADWELL },
 	{ "xeon-v2", CPU_IVY_BRIDGE_EPEX },
 	{ "xeon-v3", CPU_HASWELL_EPEX },
+	{ "atom", CPU_ATOM },
 	{ NULL }
 };
 
