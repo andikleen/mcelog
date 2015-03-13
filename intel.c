@@ -72,7 +72,7 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_HASWELL;
 		else if (model == 0x3f)
 			return CPU_HASWELL_EPEX;
-		else if (model == 0x3d)
+		else if (model == 0x3d || model == 0x56)
 			return CPU_BROADWELL;
 		else if (model == 0x1c || model == 0x26 || model == 0x27 ||
 			 model == 0x35 || model == 0x36 || model == 0x36 ||
