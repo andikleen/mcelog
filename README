@@ -2,10 +2,14 @@ mcelog is the user space backend for logging machine check errors
 reported by the hardware to the kernel. The kernel does the immediate
 actions (like killing processes etc.) and mcelog decodes the errors
 and manages various other advanced error responses like
-offlining memory, CPUs or triggering events.
+offlining memory, CPUs or triggering events. In addition
+mcelog also handles corrected errors, by logging and accounting them.
 
 It primarily handles machine checks and thermal events, which
 are reported for errors detected by the CPU.
+
+For more details on what mcelog can do and the underlying theory
+see http://www.mcelog.org
 
 It is recommended that mcelog runs on all x86 machines, both
 64bit (since early 2.6) and 32bit (since 2.6.32)
