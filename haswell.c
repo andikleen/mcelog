@@ -1,5 +1,5 @@
 /* Copyright (C) 2013 Intel Corporation
-   Decode Intel Ivy Bridge specific machine check errors.
+   Decode Intel Haswell specific machine check errors.
 
    mcelog is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public
