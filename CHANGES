@@ -1,5 +1,9 @@
 <newer changes first>
 
+Changes file is obsolete.
+Please see git log on https://git.kernel.org/cgit/utils/cpu/mce/mcelog.git/
+for newer changes.
+
 Add Linux Kongress 2010 paper
 Add Sandy Bridge Support
 Write pid file by default in daemon mode
