@@ -44,6 +44,11 @@ mce.pdf is a very old paper describing the first releases of mcelog
 
 For distributors:
 
+You can run mcelog from systemd or similar daemons. An example
+systemd unit file is in mcelog.service.
+
+For older distributions using init scripts:
+
 Please install a init script by default that runs mcelog in daemon mode.
 The mcelog.init script is a good starting point.
 
