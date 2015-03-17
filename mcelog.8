@@ -1,5 +1,4 @@
-.\" disk db commented out for now because it's not usable enough
-.TH MCELOG 8 "May 2009" "" "Linux's Administrator's Manual"
+.TH MCELOG 8 "Mar 2015" "" "Linux's Administrator's Manual"
 .SH NAME
 mcelog \- Decode kernel machine check log on x86 machines
 .SH SYNOPSIS
@@ -26,13 +25,16 @@ in main memory by an integrated memory controller, data
 transfer errors on the front side bus or CPU interconnect or other internal
 errors. 
 Possible causes can be cosmic radiation, instable power supplies,
-cooling problems, broken hardware, or bad luck.
+cooling problems, broken hardware, running systems out of specification,
+or bad luck.
 
 Most errors can be corrected by the CPU by internal error correction
 mechanisms. Uncorrected errors cause machine check exceptions which
-may panic the machine.
+may kill processes or panic the machine. A small number of corrected
+errors is usually not a cause for worry, but a large number can indicate
+future failure.
 
-When a corrected error happens the x86 kernel writes a record describing 
+When a corrected or recovered error happens the x86 kernel writes a record describing
 the MCE into a internal ring buffer available through the
 .I /dev/mcelog
 device
@@ -43,7 +45,11 @@ decodes them into a human readable format and prints them
 on the standard output or optionally into the system log. 
 
 Optionally it can also take more options like keeping statistics or
-triggering shell scripts on specific events.
+triggering shell scripts on specific events. By default mcelog
+supports offlining memory pages with persistent corrected errors,
+offlining CPU cores if they developed cache problems,
+and otherwise logging specific events to the system log after
+they crossed a threshold.
 
 The normal operating modi for mcelog are running 
 as a regular cron job (traditional way, deprecated), 
@@ -112,12 +118,12 @@ and undocumented now.
 
 With the
 .B \-\-dmi
-option mcelog will look up the addresses reported in machine
+option mcelog will look up the DIMMs reported in machine
 checks in the 
 .I SMBIOS/DMI
-tables of the BIOS.
-This can sometimes tell you which DIMM or memory controller
-has developed a problem. More often the information reported
+tables of the BIOS and map the DIMMs to board identifiers.
+This only works when the BIOS reports the identifiers correctly.
+Unfortunately often the information reported
 by the BIOS is either subtly or obviously wrong or useless.
 This option requires that mcelog has read access to /dev/mem
 (normally requires root) and runs on the same machine
@@ -281,6 +287,9 @@ option use
 use
 .I logfile = /tmp/logfile
 
+For more information on the config file please see
+.B mcelog.conf(5).
+
 .SH NOTES
 The kernel prefers old messages over new. If the log buffer overflows
 only old ones will be kept.
@@ -308,9 +317,13 @@ restarting the daemon.
 
 .\"/var/lib/memory-errors
 .SH SEE ALSO
+mcelog.conf(5)
+
+http://www.mcelog.org
+
 AMD x86-64 architecture programmer's manual, Volume 2, System programming
 
 Intel 64 and IA32 Architectures Software Developer's manual, Volume 3, System programming guide
-Parts 1 and 2. Machine checks are described in Chapter 14 in Part1 and in Appendix E in Part2.
+Chapter 15 and 16.  http://www.intel.com/sdm
 
 Datasheet of your CPU.
