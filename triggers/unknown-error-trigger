@@ -9,7 +9,7 @@
 # CPU		Linux CPU number that triggered the error
 # STATUS	IA32_MCi_STATUS register value
 # ADDR		IA32_MCi_ADDR register value
-# MISC		IA32_MCi_MISC regiser value
+# MISC		IA32_MCi_MISC register value
 # MCGSTATUS	IA32_MCG_STATUS register value
 # MCGCAP	IA32_MCG_CAP register value
 # For details on the register layout please see the Intel SDM http://www.intel.com/sdm
