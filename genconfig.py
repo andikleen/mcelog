@@ -75,5 +75,6 @@ parse(args.config)
 print """
 .SH SEE ALSO
 .BR mcelog (8),
+.BR mcelog.triggers (5)
 .B http://www.mcelog.org
 """

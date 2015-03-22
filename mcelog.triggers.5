@@ -1,0 +1,231 @@
+'\" t
+.TH "mcelog.triggers" 5 "mcelog"
+.SH NAME
+mcelog.triggers \- mcelog trigger scripts reference
+.SH SYNOPSIS
+.B /etc/mcelog/bus-error-trigger
+.br
+.B /etc/mcelog/cache-error-trigger
+.br
+.B /etc/mcelog/dimm-error-trigger
+.br
+.B /etc/mcelog/iomca-error-trigger
+.br
+.B /etc/mcelog/page-error-trigger
+.br
+.B /etc/mcelog/socket-memory-error-trigger
+.br
+.B /etc/mcelog/unknown-error-trigger
+.br
+.SH DESCRIPTION
+.BR mcelog(8) 
+maintains thresholds of errors using a 
+.I leaky-bucket
+algorithm.
+When the number of errors in a specific
+time window exceeds a pre-configured threshold a 
+.I trigger
+will be executed. Triggers are usually shell scripts in the
+.B /etc/mcelog 
+directory
+but can be also other internal actions. Thresholds and triggers
+can be configured in
+.BR mcelog.conf(5)
+
+Trigger will run as the user configured for mcelog
+in 
+.I mcelog.conf,
+by default root. The default trigger action can
+be overridden by specifying a different trigger script in the configuration file.
+Actions in addition to the default trigger
+(like notifying an administrator) can be put into the respective
+.I /etc/mcelog/*.local
+script which is executed after the default action. This allows updating the default
+scripts without overriding local actions. All trigger actions are also
+logged to syslog.
+.PP
+.B "The DIMM and socket memory error triggers"
+.PP
+The 
+.B /etc/mcelog/dimm-error-trigger
+and 
+.B /etc/mcelog/socket-memory-error-trigger
+scripts are executed when a DIMM or a CPU socket exceeds
+a configured corrected or uncorrected memory error threshold.
+The thresholds are configured in the 
+.B mcelog.conf
+.I [dimm]
+and
+.I [socket]
+sections.
+The default triggers log a warning message in the system log.
+The triggers are only executed when mcelog runs as a daemon.
+
+Arguments are passed as environment variables
+.TS
+tab(:);
+l l.
+THRESHOLD:human readable threshold status
+MESSAGE:Human readable consolidated error message
+TOTALCOUNT:total corrected or uncorrected count of errors for current DIMM  depending on what triggered the event
+LOCATION:Consolidated location as a single string
+DMI_LOCATION:DIMM location from DMI/SMBIOS if available
+DMI_NAME:DIMM identifier from DMI/SMBIOS if available
+DIMM:DIMM number reported by hardware
+CHANNEL:Channel number reported by hardware
+SOCKETID:Socket ID of CPU that includes the memory controller with the DIMM
+CECOUNT:Total corrected error count for DIMM
+UCCOUNT:Total uncorrected error count for DIMM
+LASTEVENT:Time stamp of event that triggered threshold (in time_t format, seconds)
+THRESHOLD_COUNT:Total umber of events in current threshold time period of specific type
+.TE
+
+After the default action local actions in 
+.B /etc/mcelog/dimm-error-trigger.local
+or respective 
+.B /etc/mcelog/socket-memory-error-trigger.local
+are executed.
+
+.PP
+.B "The page error trigger"
+.PP
+The 
+.B /etc/mcelog/page-error-trigger 
+script is 
+executed by mcelog in daemon mode when a page
+in memory exceeds a pre-configured corrected or uncorrected error threshold.
+mcelog internally also implements offlining the page through the kernel.
+This is configured through the 
+.I [page]
+section of 
+.BR mcelog.conf(5)
+.PP
+The environment arguments are the same as for the 
+.I dimm-error-trigger
+script
+.PP
+After the default action local actions in 
+.I /etc/mcelog/page-error-trigger.loccal are executed.
+
+.PP
+.B "The cache error trigger"
+.PP
+The
+.I /etc/mcelog/cache-error-trigger
+shell script is called for cache error handling in daemon mode
+when a CPU reports excessive corrected cache errors.
+This could be a indication for future uncorrected errors.
+.PP
+This trigger is configured through the 
+.B [cache]
+section in the 
+.BR mcelog.conf(5) 
+configuration file. The threshold is defined by the CPU.  The default trigger offlines the affected CPU cores, unless it is the last core running. 
+.PP
+Arguments are passed as environment variables
+.TS
+tab(:);
+l l.
+MESSAGE:Human readable error message
+CPU:Linux CPU number that triggered the error
+LEVEL:Cache level affected by error
+TYPE:Cache type affected by error (Data,Instruction,Generic)
+AFFECTED_CPUS:List of CPUs sharing the affected cache
+SOCKETID:Socket ID of affected CPU
+.TE
+.PP
+After the default action local actions in 
+.I /etc/mcelog/cache-error-trigger.local are executed.
+.PP
+.B "The bus-uc-threshold-trigger"
+.PP
+The 
+.B bus-uc-threshold-trigger
+runs on uncorrected errors on a IO bus. It is configured through the 
+.B bus-uc-threshold-trigger
+and
+.B bus-uc-threshold-trigger-threshold
+options in
+.I /etc/mcelog.conf(5). 
+By default it logs a message with the error location to the system log.
+After the default action local actions in 
+.I /etc/mcelog/bus-uc-error-trigger.local 
+are executed.
+.PP
+Arguments are passed as environment variables
+.TS
+tab(:);
+l l.
+MESSAGE:Human readable consolidated error message. 
+LOCATION:Consolidated location as a single string 
+SOCKETID:Socket ID of CPU that includes the memory controller with the DIMM
+LEVEL:Interconnect level 
+PARTICIPATION:Processor Participation (Originator, Responder or Observer) 
+REQUEST:Request type (read, write, prefetch, etc.) 
+ORIGIN :Memory or IO
+TIMEOUT:The request timed out or not 
+.TE
+.PP
+.B "The iomca-error-trigger"
+.PP
+The 
+.B iomca-error-trigger
+runs when a socket receives bus or interconnect errors.
+It is configured through the 
+.B iomca-error-trigger 
+and 
+.B iomca-error-trigger-threshold
+options in
+.I /etc/mcelog.conf. By default it logs a message with the error location to the system log.
+After the default action local actions in 
+.I /etc/mcelog/iomca-error-trigger.local are executed.
+.PP
+Arguments are passed as environment variables
+.TS
+tab(:);
+l l.
+MESSAGE:Human readable consolidated error message
+LOCATION:Consolidated location as a single string
+SOCKETID:Socket ID of CPU that includes the memory controller with the DIMM
+CPU:Linux CPU number that triggered the error
+SET:PCI segment number
+BUS:PCI bus number
+DEVICE:PCI device number
+FUNCTION:PCI function number
+.TE
+.PP
+.B "The unknown-error-trigger"
+.PP
+The 
+.B unknown-error-trigger
+runs on any errors not otherwise categorized.
+It is configured through the 
+.B unknown-error-trigger
+and
+.B unknown-error-trigger-threshold
+options in
+.I /etc/mcelog.conf. 
+By default it logs a message to the system log.
+After the default action local actions in 
+.I /etc/mcelog/unknown-error-trigger.local 
+are executed.
+.PP
+Arguments are passed as environment variables
+.TS
+tab(:);
+l l.
+MESSAGE:Human readable consolidated error message
+LOCATION:Consolidated location as a single string
+SOCKETID:Socket ID of CPU that includes the memory controller with the DIMM
+CPU:Linux CPU number that triggered the error
+STATUS:IA32_MCi_STATUS register value
+ADDR:IA32_MCi_ADDR register value
+MISC:IA32_MCi_MISC register value
+MCGSTATUS:IA32_MCG_STATUS register value
+MCGCAP:IA32_MCG_CAP register value
+.TE
+.SH SEE ALSO
+http://www.mcelog.org
+
+.B mcelog(8),
+.B mcelog.conf(5)
