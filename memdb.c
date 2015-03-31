@@ -270,6 +270,7 @@ static void dump_errtype(char *name, struct err_type *e, FILE *f, enum printflag
 	int all = (flags & DUMP_ALL);
 	char *s;
 
+	bucket_age(bc, &e->bucket, bucket_time());
 	if (e->count || e->bucket.count || all)
 		fprintf(f, "%s:\n", name);
 	if (e->count || all) {

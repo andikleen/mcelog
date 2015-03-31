@@ -25,7 +25,7 @@ time_t __attribute__((weak)) bucket_time(void)
 	return time(NULL);
 }
 
-static void bucket_age(const struct bucket_conf *c, struct leaky_bucket *b,
+void bucket_age(const struct bucket_conf *c, struct leaky_bucket *b,
 			time_t now)
 {
 	long diff;

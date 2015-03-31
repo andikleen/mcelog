@@ -27,5 +27,7 @@ char *bucket_output(const struct bucket_conf *c, struct leaky_bucket *b);
 int bucket_conf_init(struct bucket_conf *c, const char *rate);
 void bucket_init(struct leaky_bucket *b);
 time_t bucket_time(void);
+void bucket_age(const struct bucket_conf *c, struct leaky_bucket *b,
+			time_t now);
 
 #endif
