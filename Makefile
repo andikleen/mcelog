@@ -65,6 +65,7 @@ install: mcelog mcelog.conf mcelog.conf.5 mcelog.triggers.5
 		install -m 755 -p -b triggers/$$i $(DESTDIR)${etcprefix}/etc/mcelog ; 	\
 	done
 ifdef DOCDIR
+	install -d 755 $(DESTDIR)${DOCDIR} 
 	install -m 644 -p ${DOC} $(DESTDIR)${DOCDIR} 
 else
 	echo
