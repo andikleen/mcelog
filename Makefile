@@ -1,6 +1,7 @@
 CFLAGS := -g -Os
 prefix := /usr
 etcprefix :=
+MANDIR := ${prefix}/share/man
 # Define appropiately for your distribution
 # DOCDIR := /usr/share/doc/packages/mcelog
 
@@ -55,11 +56,11 @@ mcelog: ${OBJ}
 
 # dbquery intentionally not installed by default
 install: mcelog mcelog.conf mcelog.conf.5 mcelog.triggers.5
-	mkdir -p $(DESTDIR)${etcprefix}/etc/mcelog $(DESTDIR)${prefix}/sbin $(DESTDIR)${prefix}/share/man/man8
+	mkdir -p $(DESTDIR)${etcprefix}/etc/mcelog $(DESTDIR)${prefix}/sbin $(DESTDIR)$(MANDIR)/man5 $(DESTDIR)$(MANDIR)/man8
 	install -m 755 -p mcelog $(DESTDIR)${prefix}/sbin/mcelog
-	install -m 644 -p mcelog.8 $(DESTDIR)${prefix}/share/man/man8
-	install -m 644 -p mcelog.conf.5 $(DESTDIR)${prefix}/share/man/man5
-	install -m 644 -p mcelog.triggers.5 $(DESTDIR)${prefix}/share/man/man5
+	install -m 644 -p mcelog.8 $(DESTDIR)$(MANDIR)/man8
+	install -m 644 -p mcelog.conf.5 $(DESTDIR)$(MANDIR)/man5
+	install -m 644 -p mcelog.triggers.5 $(DESTDIR)$(MANDIR)/man5
 	install -m 644 -p -b mcelog.conf $(DESTDIR)${etcprefix}/etc/mcelog/mcelog.conf
 	for i in ${TRIGGERS} ; do 						\
 		install -m 755 -p -b triggers/$$i $(DESTDIR)${etcprefix}/etc/mcelog ; 	\
