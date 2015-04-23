@@ -20,5 +20,6 @@ extern int memory_error_support;
 	case CPU_IVY_BRIDGE_EPEX: \
 	case CPU_HASWELL: \
 	case CPU_HASWELL_EPEX: \
-	case CPU_BROADWELL
+	case CPU_BROADWELL: \
+	case CPU_KNIGHTS_LANDING
 
