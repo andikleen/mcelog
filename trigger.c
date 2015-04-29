@@ -115,11 +115,18 @@ static void finish_child(pid_t child, int status)
 static void child_handler(int sig, siginfo_t *si, void *ctx)
 {
 	int status;
+	pid_t pid;
+
 	if (waitpid(si->si_pid, &status, WNOHANG) < 0) {
 		SYSERRprintf("Cannot collect child %d", si->si_pid);
 		return;
 	}
 	finish_child(si->si_pid, status);
+
+	/* Check other child(ren)'s status to avoid zombie process */
+	while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+		finish_child(pid, status);
+	}
 }
  
 void trigger_setup(void)
