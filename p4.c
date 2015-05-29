@@ -317,6 +317,10 @@ static int decode_mci(__u64 status, __u64 misc, int cpu, unsigned mcgcap, int *i
 	if (status & (MCI_STATUS_S|MCI_STATUS_AR))
 		Wprintf("%s\n", arstate[(status >> 55) & 3]);
 
+	if ((mcgcap & MCG_SER_P) && (status & MCI_STATUS_FWST)) {
+		Wprintf("Firmware may have updated this error\n");
+	}
+
 	if ((mcgcap == 0 || (mcgcap & MCG_TES_P)) && !(status & MCI_STATUS_UC)) {
 		track = (status >> 53) & 3;
 		decode_tracking(track);
@@ -334,6 +338,8 @@ static void decode_mcg(__u64 mcgstatus)
 		Wprintf("EIPV ");
 	if (mcgstatus & MCG_STATUS_MCIP)
 		Wprintf("MCIP ");
+	if (mcgstatus & MCG_STATUS_LMCES)
+		Wprintf("LMCE ");
 	Wprintf("\n");
 }
 

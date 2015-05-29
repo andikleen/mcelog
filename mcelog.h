@@ -65,14 +65,18 @@ struct mce {
 #define MCI_STATUS_PCC   (1ULL<<57)  /* processor context corrupt */
 #define MCI_STATUS_S	 (1ULL<<56)  /* signalled */
 #define MCI_STATUS_AR	 (1ULL<<55)  /* action-required */
+#define MCI_STATUS_FWST  (1ULL<<37)  /* Firmware updated status indicator */
 
 #define MCG_STATUS_RIPV  (1ULL<<0)   /* restart ip valid */
 #define MCG_STATUS_EIPV  (1ULL<<1)   /* eip points to correct instruction */
 #define MCG_STATUS_MCIP  (1ULL<<2)   /* machine check in progress */
+#define MCG_STATUS_LMCES (1ULL<<3)   /* local machine check signaled */
 
 #define MCG_CMCI_P		(1ULL<<10)   /* CMCI supported */
 #define MCG_TES_P		(1ULL<<11)   /* Yellow bit cache threshold supported */
 #define MCG_SER_P		(1ULL<<24)   /* MCA recovery / new status */
+#define MCG_ELOG_P		(1ULL<<26)   /* Extended error log supported */
+#define MCG_LMCE_P		(1ULL<<27)   /* Local machine check supported */
 
 #define NELE(x) (sizeof(x)/sizeof(*(x)))
 #define err(x) perror(x),exit(1)
