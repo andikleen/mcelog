@@ -1386,7 +1386,7 @@ int main(int ac, char **av)
 
 	d.buf = xalloc(d.recordlen * d.loglen); 
 	if (daemon_mode) {
-		prefill_memdb();
+		prefill_memdb(do_dmi);
 		if (!do_dmi)
 			closedmi();
 		server_setup();

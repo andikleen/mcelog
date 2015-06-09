@@ -11,7 +11,7 @@ enum printflags {
 	DUMP_BIOS = (1 << 1),
 };	
 
-void prefill_memdb(void);
+void prefill_memdb(int do_dmi);
 void memdb_config(void);
 void dump_memory_errors(FILE *f, enum printflags flags);
 

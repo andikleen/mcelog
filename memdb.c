@@ -383,7 +383,7 @@ parse_dimm_addr(char *bl, unsigned *socketid, unsigned *channel, unsigned *dimm)
 }
 
 /* Prepopulate DIMM database from BIOS information */
-void prefill_memdb(void)
+void prefill_memdb(int do_dmi)
 {
 	static int initialized;
 	int i;
@@ -396,7 +396,7 @@ void prefill_memdb(void)
 	if (!memdb_enabled)
 		return;
 	initialized = 1;
-	if (config_bool("dimm", "dmi-prepopulate") == 0)
+	if (config_bool("dimm", "dmi-prepopulate") == 0 || !do_dmi)
 		return;
 	if (opendmi() < 0)
 		return;
