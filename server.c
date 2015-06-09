@@ -291,7 +291,7 @@ static int server_ping(struct sockaddr_un *un)
 {
 	struct sigaction oldsa;
 	struct sigaction sa = { .sa_handler = ping_timeout };
-	int ret = -1, n;
+	int ret, n;
 	char buf[10];
 	int fd = socket(PF_UNIX, SOCK_STREAM, 0);
 	if (fd < 0)
@@ -299,6 +299,7 @@ static int server_ping(struct sockaddr_un *un)
 
 	sigaction(SIGALRM, &sa, &oldsa);	
 	if (sigsetjmp(ping_timeout_ctx, 1) == 0) {
+		ret = 0;
 		alarm(initial_ping_timeout);
 		if (connect(fd, un, sizeof(struct sockaddr_un)) < 0)
 			goto cleanup;
@@ -308,7 +309,8 @@ static int server_ping(struct sockaddr_un *un)
 			goto cleanup;
 		if (n == 5 && !memcmp(buf, "pong\n", 5))
 			ret = 0;
-	}
+	} else
+		ret = -1;
 cleanup:
 	sigaction(SIGALRM, &oldsa, NULL);
 	alarm(0);
