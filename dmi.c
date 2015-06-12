@@ -162,6 +162,8 @@ static int get_efi_base_addr(size_t *address)
 check_symbol:
 	while ((fgets(linebuf, sizeof(linebuf) - 1, efi_systab)) != NULL) {
 		char *addrp = strchr(linebuf, '=');
+		if (!addrp)
+			break;
 		*(addrp++) = '\0';
 
 		if (strcmp(linebuf, "SMBIOS") == 0) {
