@@ -379,6 +379,14 @@ parse_dimm_addr(char *bl, unsigned *socketid, unsigned *channel, unsigned *dimm)
 		   channel, dimm) == 3)
 		return 1;
 	/* Add more DMI formats here */
+	/* For new AMI BIOS Node0_Bank0 */
+	if (sscanf(bl, "Node%u_Bank%u", socketid, dimm) == 2)
+		return 1;
+
+	/* For old AMI BIOS A1_BANK0*/
+	if (sscanf(bl, "A%u_BANK%u", socketid, dimm) == 2)
+		return 1;
+
 	return 0;		
 }
 
