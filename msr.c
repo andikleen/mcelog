@@ -49,6 +49,7 @@ void set_imc_log(int cputype)
 	switch (cputype) {
 	case CPU_SANDY_BRIDGE_EP:
 	case CPU_IVY_BRIDGE_EPEX:
+	case CPU_HASWELL_EPEX:
 		msr = 0x17f;	/* MSR_ERROR_CONTROL */
 		bit = 0x2;	/* MemError Log Enable */
 		break;

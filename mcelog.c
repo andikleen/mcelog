@@ -1355,6 +1355,7 @@ int main(int ac, char **av)
 		switch (cputype) {
 		case CPU_SANDY_BRIDGE_EP:
 		case CPU_IVY_BRIDGE_EPEX:
+		case CPU_HASWELL_EPEX:
 			imc_log = 1;
 			break;
 		default:
