@@ -228,8 +228,6 @@ int opendmi(void)
 		}
 		a = (struct anchor*)((char*)abase + (entry_point_addr - addr_start));
 		goto fill_entries;
-	} else {
-		return -1;
 	}
 
 legacy:
