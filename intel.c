@@ -35,7 +35,7 @@ void intel_cpu_init(enum cputype cpu)
 	    cpu == CPU_SANDY_BRIDGE || cpu == CPU_SANDY_BRIDGE_EP ||
 	    cpu == CPU_IVY_BRIDGE || cpu == CPU_IVY_BRIDGE_EPEX ||
 	    cpu == CPU_HASWELL || cpu == CPU_HASWELL_EPEX || cpu == CPU_BROADWELL ||
-	    cpu == CPU_KNIGHTS_LANDING)
+	    cpu == CPU_KNIGHTS_LANDING || cpu == CPU_SKYLAKE)
 		memory_error_support = 1;
 }
 
@@ -82,6 +82,8 @@ enum cputype select_intel_cputype(int family, int model)
 			 model == 0x37 || model == 0x4a || model == 0x4c ||
 			 model == 0x4d || model == 0x5a || model == 0x5d)
 			return CPU_ATOM;
+		else if (model == 0x4e || model == 0x5e)
+			return CPU_SKYLAKE;
 		if (model > 0x1a) {
 			Eprintf("Family 6 Model %x CPU: only decoding architectural errors\n",
 				model);

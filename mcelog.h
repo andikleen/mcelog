@@ -126,6 +126,7 @@ enum cputype {
 	CPU_BROADWELL,
 	CPU_KNIGHTS_LANDING,
 	CPU_ATOM,
+	CPU_SKYLAKE,
 };
 
 enum option_ranges {

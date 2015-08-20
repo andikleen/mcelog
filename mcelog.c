@@ -234,6 +234,7 @@ static char *cputype_name[] = {
 	[CPU_BROADWELL] = "Broadwell",
 	[CPU_KNIGHTS_LANDING] = "Knights Landing",
 	[CPU_ATOM] = "ATOM",
+	[CPU_SKYLAKE] "Skylake",
 };
 
 static struct config_choice cpu_choices[] = {
@@ -277,6 +278,7 @@ static struct config_choice cpu_choices[] = {
 	{ "xeon-v2", CPU_IVY_BRIDGE_EPEX },
 	{ "xeon-v3", CPU_HASWELL_EPEX },
 	{ "atom", CPU_ATOM },
+	{ "skylake", CPU_SKYLAKE },
 	{ NULL }
 };
 
@@ -439,7 +441,7 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 	}
 	if (cputype != CPU_SANDY_BRIDGE_EP && cputype != CPU_IVY_BRIDGE_EPEX &&
 	    cputype != CPU_HASWELL_EPEX && cputype != CPU_BROADWELL &&
-	    cputype != CPU_KNIGHTS_LANDING)
+	    cputype != CPU_KNIGHTS_LANDING && cputype != CPU_SKYLAKE)
 		resolveaddr(m->addr);
 	if (!ascii_mode && ismemerr && (m->status & MCI_STATUS_ADDRV)) {
 		diskdb_resolve_addr(m->addr);
