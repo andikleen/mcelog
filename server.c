@@ -297,9 +297,9 @@ static int server_ping(struct sockaddr_un *un)
 	if (fd < 0)
 		return 0;
 
-	sigaction(SIGALRM, &sa, &oldsa);	
+	sigaction(SIGALRM, &sa, &oldsa);
 	if (sigsetjmp(ping_timeout_ctx, 1) == 0) {
-		ret = 0;
+		ret = -1;
 		alarm(initial_ping_timeout);
 		if (connect(fd, un, sizeof(struct sockaddr_un)) < 0)
 			goto cleanup;
@@ -315,7 +315,7 @@ cleanup:
 	sigaction(SIGALRM, &oldsa, NULL);
 	alarm(0);
 	close(fd);
-	return ret;	
+	return ret;
 }
 
 void server_setup(void)
