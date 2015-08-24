@@ -16,6 +16,8 @@ mcelog [options] \-\-ascii
 .\".br
 .\"mcelog [options] \-\-dump-memory[=locator]
 .br
+mcelog [options] \-\-is\-cpu\-supported
+.br
 mcelog \-\-version
 .SH DESCRIPTION
 X86 CPUs report errors detected by the CPU as
@@ -80,6 +82,10 @@ store it anymore (different from
 .I dmesg(1)),
 so the output should be always saved somewhere and mcelog
 not run in uncontrolled ways.
+
+When invoked with the
+.I \-\-is\-cpu\-supported
+option mcelog exits with code 0 if the current CPU is supported, 1 otherwise.
 
 .SH OPTIONS
 When the 

@@ -85,6 +85,7 @@ static char *pidfile = pidfile_default;
 static char *logfile;
 static int debug_numerrors;
 int imc_log = -1;
+static int check_only = 0;
 
 static int is_cpu_supported(void);
 
@@ -950,6 +951,7 @@ void usage(void)
 "--num-errors N      Only process N errors (for testing)\n"
 "--pidfile file	     Write pid of daemon into file\n"
 "--no-imc-log	     Disable extended iMC logging\n"
+"--is-cpu-supported  Exit with return code indicating whether the CPU is supported\n"
 		);
 	diskdb_usage();
 	print_cputypes();
@@ -984,6 +986,7 @@ enum options {
 	O_PIDFILE,
 	O_DEBUG_NUMERRORS,
 	O_NO_IMC_LOG,
+	O_IS_CPU_SUPPORTED,
 };
 
 static struct option options[] = {
@@ -1017,6 +1020,7 @@ static struct option options[] = {
 	{ "pidfile", 1, NULL, O_PIDFILE },
 	{ "debug-numerrors", 0, NULL, O_DEBUG_NUMERRORS }, /* undocumented: for testing */
 	{ "no-imc-log", 0, NULL, O_NO_IMC_LOG },
+	{ "is-cpu-supported", 0, NULL, O_IS_CPU_SUPPORTED },
 	DISKDB_OPTIONS
 	{}
 };
@@ -1118,6 +1122,9 @@ static int modifier(int opt)
 		break;
 	case O_NO_IMC_LOG:
 		imc_log = 0;
+		break;
+	case O_IS_CPU_SUPPORTED:
+		check_only = 1;
 		break;
 	case 0:
 		break;
@@ -1348,9 +1355,12 @@ int main(int ac, char **av)
 
 	/* before doing anything else let's see if the CPUs are supported */
 	if (!cpu_forced && !is_cpu_supported()) {
-		fprintf(stderr, "CPU is unsupported\n");
+		if (!check_only)
+			fprintf(stderr, "CPU is unsupported\n");
 		exit(1);
 	}
+	if (check_only)
+		exit(0);
 
 	/* If the user didn't tell us not to use iMC logging, check if CPU supports it */
 	if (imc_log == -1) {
