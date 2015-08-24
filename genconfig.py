@@ -66,7 +66,7 @@ def new_option():
 
 
 print """
-.\" Auto generated mcelog.conf manpage. Do not edit.
+.\\" Auto generated mcelog.conf manpage. Do not edit.
 .TH "mcelog.conf" 5 "mcelog"
 """
 
