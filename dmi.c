@@ -270,6 +270,7 @@ fill_entries:
 			round_down(a->table, pagesize));
 	if (entries == (struct dmi_entry *)-1) { 
 		Eprintf("Cannot mmap SMBIOS tables at %x", a->table);
+		entries = NULL;
 		goto out_mmap;
 	}
 	entries = (struct dmi_entry *)(((char *)entries) + corr);
