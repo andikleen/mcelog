@@ -499,7 +499,7 @@ int dmi_sanity_check(void)
 						dmi_dimms[i]->device_locator);
 			if (!strcmp(b, loc)) {
 				if (verbose > 0)
-					printf("Ambigious locators `%s'<->`%s'."
+					printf("Ambiguous locators `%s'<->`%s'."
 					       FAILED, b, loc);
 				return 0;
 			}
