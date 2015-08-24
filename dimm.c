@@ -351,14 +351,14 @@ static void run_trigger(char *trigger, char *loc, unsigned long val,
 		Eprintf("Cannot run error trigger %s for %s\n", trigger, loc);
 	open_dimm_db(NULL);
 }
-void new_error(unsigned long addr, unsigned long max_error, char *trigger)
+void new_error(unsigned long long addr, unsigned long max_error, char *trigger)
 {
 	struct dmi_memdev **devs;
 	int i;
 
 	devs = dmi_find_addr(addr);
 	if (devs[0] == NULL) {
-		Wprintf("No memory found for address %lx\n", addr);
+		Wprintf("No memory found for address %Lx\n", addr);
 		exit(1);
 	}
 	for (i = 0; devs[i]; i++) {
@@ -366,7 +366,7 @@ void new_error(unsigned long addr, unsigned long max_error, char *trigger)
 		char *loc = dmi_getstring(&d->header, d->device_locator);
 		struct group *g = find_entry(dimm_db, NULL, "Locator", loc);
 		if (!g) { // shouldn't happen
-			Eprintf("No record found for %lx\n", addr);
+			Eprintf("No record found for %Lx\n", addr);
 			return;
 		}
 		unsigned long val = inc_val(g, "corrected errors");

@@ -131,7 +131,7 @@ static char *bankname(unsigned bank)
 	}
 } 
 
-static void resolveaddr(unsigned long addr)
+static void resolveaddr(unsigned long long addr)
 {
 	if (addr && do_dmi && dmi_forced)
 		dmi_decodeaddr(addr);

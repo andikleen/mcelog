@@ -335,7 +335,7 @@ static void dump_type_details(unsigned short td)
 			Wprintf("%s ", type_details[i]);
 }
 
-static void dump_memdev(struct dmi_memdev *md, unsigned long addr)
+static void dump_memdev(struct dmi_memdev *md, unsigned long long addr)
 {
 	char tmp[20];
 	char unit[10];
@@ -344,7 +344,7 @@ static void dump_memdev(struct dmi_memdev *md, unsigned long addr)
 	if (md->header.length < 
 			offsetof(struct dmi_memdev, manufacturer)) { 
 		if (verbose > 0)
-			printf("Memory device for address %lx too short %u\n",
+			printf("Memory device for address %llx too short %u\n",
 			       addr, md->header.length);
 		return;
 	}	
@@ -536,7 +536,7 @@ dump_ranges(struct dmi_memdev_addr **ranges, struct dmi_memdev **dmi_dimms)
 			DMIGET(dmi_dimms[i],device_set));
 }
 
-struct dmi_memdev **dmi_find_addr(unsigned long addr)
+struct dmi_memdev **dmi_find_addr(unsigned long long addr)
 {
 	struct dmi_memdev **devs; 
 	int i, k;
@@ -580,7 +580,7 @@ struct dmi_memdev **dmi_find_addr(unsigned long addr)
 	return devs;
 }
 
-void dmi_decodeaddr(unsigned long addr)
+void dmi_decodeaddr(unsigned long long addr)
 {
 	struct dmi_memdev **devs = dmi_find_addr(addr);
 	if (devs[0]) { 
@@ -589,7 +589,7 @@ void dmi_decodeaddr(unsigned long addr)
 		for (i = 0; devs[i]; i++) 
 			dump_memdev(devs[i], addr);
 	} else { 
-		Wprintf("No DIMM found for %lx in SMBIOS\n", addr);
+		Wprintf("No DIMM found for %llx in SMBIOS\n", addr);
 	}
 	free(devs);
 } 
