@@ -118,7 +118,8 @@ static char* get_II_str(__u8 i)
 	return II[i];
 }
 
-static int decode_mca(u64 status, u64 misc, u64 track, int cpu, int *ismemerr, int socket)
+static int decode_mca(u64 status, u64 misc, u64 track, int cpu, int *ismemerr, int socket,
+			u8 bank)
 {
 #define TLB_LL_MASK      0x3  /*bit 0, bit 1*/
 #define TLB_LL_SHIFT     0x0
@@ -231,7 +232,7 @@ static int decode_mca(u64 status, u64 misc, u64 track, int cpu, int *ismemerr, i
 			run_iomca_trigger(socket, cpu, seg, bus, dev, fn);
 		}
 	} else if (test_prefix(7, mca)) {
-		decode_memory_controller(mca);
+		decode_memory_controller(mca, bank);
 		*ismemerr = 1;
 	} else {
 		Wprintf("Unknown Error %x\n", mca);
@@ -286,7 +287,7 @@ static const char *arstate[4] = {
 };
 
 static int decode_mci(__u64 status, __u64 misc, int cpu, unsigned mcgcap, int *ismemerr,
-		       int socket)
+		       int socket, __u8 bank)
 {
 	u64 track = 0;
 
@@ -326,7 +327,7 @@ static int decode_mci(__u64 status, __u64 misc, int cpu, unsigned mcgcap, int *i
 		decode_tracking(track);
 	}
 	Wprintf("MCA: ");
-	return decode_mca(status, misc, track, cpu, ismemerr, socket);
+	return decode_mca(status, misc, track, cpu, ismemerr, socket, bank);
 }
 
 static void decode_mcg(__u64 mcgstatus)
@@ -368,7 +369,7 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 
 	decode_mcg(log->mcgstatus);
 	if (decode_mci(log->status, log->misc, cpu, log->mcgcap, ismemerr,
-		socket))
+		socket, log->bank))
 		run_unknown_trigger(socket, cpu, log);
 
 	if (test_prefix(11, (log->status & 0xffffL))) {

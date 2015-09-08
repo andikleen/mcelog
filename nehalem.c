@@ -124,13 +124,17 @@ static char *mmm_desc[] = {
 	"Reserved 7"
 };
 
-void decode_memory_controller(u32 status)
+void decode_memory_controller(u32 status, u8 bank)
 {
 	char channel[30];
 	if ((status & 0xf) == 0xf) 
 		strcpy(channel, "unspecified"); 
-	else
-		sprintf(channel, "%u", status & 0xf);
+	else {
+		if (cputype == CPU_KNIGHTS_LANDING) /* Fix for Knights Landing MIC */
+			sprintf(channel, "%u", (status & 0xf) + 3 * (bank == 15));
+		else
+			sprintf(channel, "%u", status & 0xf);
+	}
 	Wprintf("MEMORY CONTROLLER %s_CHANNEL%s_ERR\n", 
 		mmm_mnemonic[(status >> 4) & 7],
 		channel);
