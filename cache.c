@@ -97,9 +97,14 @@ static void parse_cpumap(char *map, unsigned *buf, unsigned len)
 static void read_cpu_map(struct cache *c, char *cfn)
 {
 	char *map = read_field(cfn, "shared_cpu_map");
+	if (map[0] == 0) {
+		c->cpumap = NULL;
+		goto out;
+	}
 	c->cpumaplen = cpumap_len(map);
 	c->cpumap = xalloc(c->cpumaplen);
 	parse_cpumap(map, c->cpumap, c->cpumaplen);
+out:
 	free(map);
 }
 
