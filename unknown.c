@@ -50,6 +50,9 @@ void run_unknown_trigger(int socket, int cpu, struct mce *log)
 	char *msg;
 	char *location;
 
+	if (!unknown_trigger)
+		return;
+
 	if (socket >= 0)
 		asprintf(&location, "CPU %d on socket %d", cpu, socket);
 	else
@@ -57,9 +60,6 @@ void run_unknown_trigger(int socket, int cpu, struct mce *log)
 	asprintf(&msg, "%s received unknown error", location);
 	asprintf(&env[ei++], "LOCATION=%s", location);
 	free(location);
-
-	if (!unknown_trigger)
-		goto out;
 
 	if (socket >= 0)
 		asprintf(&env[ei++], "SOCKETID=%d", socket);
@@ -76,7 +76,6 @@ void run_unknown_trigger(int socket, int cpu, struct mce *log)
 	run_trigger(unknown_trigger, NULL, env);
 	for (i = 0; i < ei; i++)
 		free(env[i]);
-out:
 	free(msg);
 }
 

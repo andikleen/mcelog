@@ -58,6 +58,9 @@ void run_bus_trigger(int socket, int cpu, char *level, char *pp, char *rrrr,
 	char *msg;
 	char *location;
 
+	if (!bus_trigger)
+		return;
+
 	if (socket >= 0)
 		asprintf(&location, "CPU %d on socket %d", cpu, socket);
 	else
@@ -66,9 +69,6 @@ void run_bus_trigger(int socket, int cpu, char *level, char *pp, char *rrrr,
 		location, ii);
 	asprintf(&env[ei++], "LOCATION=%s", location);
 	free(location);
-
-	if (!bus_trigger)
-		goto out;
 
 	if (socket >= 0)
 		asprintf(&env[ei++], "SOCKETID=%d", socket);
@@ -85,7 +85,6 @@ void run_bus_trigger(int socket, int cpu, char *level, char *pp, char *rrrr,
 	run_trigger(bus_trigger, NULL, env);
 	for (i = 0; i < ei; i++)
 		free(env[i]);
-out:
 	free(msg);
 }
 
@@ -97,6 +96,9 @@ void run_iomca_trigger(int socket, int cpu, int seg, int bus, int dev, int fn)
 	char *msg;
 	char *location;
 
+	if (!iomca_trigger)
+		return;
+
 	if (socket >= 0)
 		asprintf(&location, "CPU %d on socket %d", cpu, socket);
 	else
@@ -105,9 +107,6 @@ void run_iomca_trigger(int socket, int cpu, int seg, int bus, int dev, int fn)
 		location, seg, bus, dev, fn);
 	asprintf(&env[ei++], "LOCATION=%s", location);
 	free(location);
-
-	if (!iomca_trigger)
-		goto out;
 
 	if (socket >= 0)
 		asprintf(&env[ei++], "SOCKETID=%d", socket);
@@ -123,7 +122,6 @@ void run_iomca_trigger(int socket, int cpu, int seg, int bus, int dev, int fn)
 	run_trigger(iomca_trigger, NULL, env);
 	for (i = 0; i < ei; i++)
 		free(env[i]);
-out:
 	free(msg);
 
 }
