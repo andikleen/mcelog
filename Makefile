@@ -30,15 +30,17 @@ TRIGGERS=cache-error-trigger dimm-error-trigger page-error-trigger \
 
 all: mcelog
 
-.PHONY: install clean depend
+.PHONY: install clean depend FORCE
 
 OBJ := p4.o k8.o mcelog.o dmi.o tsc.o core2.o bitfield.o intel.o \
        nehalem.o dunnington.o tulsa.o config.o memutil.o msg.o   \
        eventloop.o leaky-bucket.o memdb.o server.o trigger.o 	 \
        client.o cache.o sysfs.o yellow.o page.o rbtree.o 	 \
-       xeon75xx.o sandy-bridge.o ivy-bridge.o haswell.o msr.o bus.o unknown.o
+       xeon75xx.o sandy-bridge.o ivy-bridge.o haswell.o msr.o bus.o \
+       unknown.o
 DISKDB_OBJ := diskdb.o dimm.o db.o
-CLEAN := mcelog dmi tsc dbquery .depend .depend.X dbquery.o ${DISKDB_OBJ}
+CLEAN := mcelog dmi tsc dbquery .depend .depend.X dbquery.o ${DISKDB_OBJ} \
+	version.o version.c version.tmp
 DOC := mce.pdf
 
 ADD_DEFINES :=
@@ -52,7 +54,7 @@ endif
 
 SRC := $(OBJ:.o=.c)
 
-mcelog: ${OBJ}
+mcelog: ${OBJ} version.o
 
 # dbquery intentionally not installed by default
 install: mcelog mcelog.conf mcelog.conf.5 mcelog.triggers.5
@@ -88,6 +90,21 @@ depend: .depend
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(WARNINGS) $(ADD_DEFINES) -o $@ $<
+
+version.tmp: FORCE
+	( echo -n "char version[] = \"" ; 	\
+	if type -p git >/dev/null; then 	\
+	if [ -d .git ] ; then 			\
+		git describe --tags HEAD | tr -d '\n'; 	\
+	else 					\
+		echo -n "unknown" ; 		\
+	fi ;					\
+	else echo -n "unknown" ; fi ;		\
+	echo '";'				\
+	 ) > version.tmp
+
+version.c: version.tmp
+	cmp version.tmp version.c || mv version.tmp version.c
 
 .depend: ${SRC}
 	${CC} -MM -I. ${SRC} > .depend.X && mv .depend.X .depend

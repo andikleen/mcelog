@@ -1,2 +1,3 @@
-#define MCELOG_VERSION "1.0pre"
+extern char version[];
+#define MCELOG_VERSION version
 
