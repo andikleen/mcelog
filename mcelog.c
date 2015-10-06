@@ -235,7 +235,7 @@ static char *cputype_name[] = {
 	[CPU_BROADWELL] = "Broadwell",
 	[CPU_KNIGHTS_LANDING] = "Knights Landing",
 	[CPU_ATOM] = "ATOM",
-	[CPU_SKYLAKE] "Skylake",
+	[CPU_SKYLAKE] = "Skylake",
 };
 
 static struct config_choice cpu_choices[] = {
