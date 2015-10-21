@@ -82,7 +82,7 @@ clean: test-clean
 	rm -f ${CLEAN} ${OBJ} 
 
 tsc:    tsc.c
-	gcc -o tsc ${CFLAGS} -DSTANDALONE tsc.c ${LDFLAGS}
+	$(CC) -o tsc ${CFLAGS} -DSTANDALONE tsc.c ${LDFLAGS}
 
 dbquery: db.o dbquery.o memutil.o
 
@@ -128,7 +128,7 @@ src:
 	echo $(SRC)
 
 config-test: config.c
-	gcc -DTEST=1 config.c -o config-test
+	$(CC) -DTEST=1 config.c -o config-test
 
 test:
 	$(MAKE) -C tests test DEBUG=""
