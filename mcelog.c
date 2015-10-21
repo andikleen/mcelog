@@ -932,6 +932,7 @@ void usage(void)
 "Decode machine check ASCII output from kernel logs\n"
 "Options:\n"  
 "--cpu CPU           Set CPU type CPU to decode (see below for valid types)\n"
+"--intel-cpu FAMILY,MODEL  Set CPU type for an Intel CPU based on family and model from cpuid\n"
 "--cpumhz MHZ        Set CPU Mhz to decode time (output unreliable, not needed on new kernels)\n"
 "--raw		     (with --ascii) Dump in raw ASCII format for machine processing\n"
 "--daemon            Run in background waiting for events (needs newer kernel)\n"
