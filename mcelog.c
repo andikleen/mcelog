@@ -921,15 +921,20 @@ void usage(void)
 {
 	fprintf(stderr, 
 "Usage:\n"
+"\n"
 "  mcelog [options]  [mcelogdevice]\n"
 "Decode machine check error records from current kernel.\n"
+"\n"
 "  mcelog [options] --daemon\n"
 "Run mcelog in daemon mode, waiting for errors from the kernel.\n"
+"\n"
 "  mcelog [options] --client\n"
 "Query a currently running mcelog daemon for errors\n"
+"\n"
 "  mcelog [options] --ascii < log\n"
 "  mcelog [options] --ascii --file log\n"
 "Decode machine check ASCII output from kernel logs\n"
+"\n"
 "Options:\n"  
 "--version           Show the version of mcelog and exit\n"
 "--cpu CPU           Set CPU type CPU to decode (see below for valid types)\n"
@@ -962,6 +967,7 @@ void usage(void)
 "--is-cpu-supported  Exit with return code indicating whether the CPU is supported\n"
 		);
 	diskdb_usage();
+	printf("\n");
 	print_cputypes();
 	exit(1);
 }
