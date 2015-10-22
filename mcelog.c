@@ -921,23 +921,35 @@ void usage(void)
 {
 	fprintf(stderr, 
 "Usage:\n"
+"\n"
 "  mcelog [options]  [mcelogdevice]\n"
 "Decode machine check error records from current kernel.\n"
+"\n"
 "  mcelog [options] --daemon\n"
 "Run mcelog in daemon mode, waiting for errors from the kernel.\n"
+"\n"
 "  mcelog [options] --client\n"
 "Query a currently running mcelog daemon for errors\n"
+"\n"
 "  mcelog [options] --ascii < log\n"
 "  mcelog [options] --ascii --file log\n"
 "Decode machine check ASCII output from kernel logs\n"
+"\n"
 "Options:\n"  
+"--version           Show the version of mcelog and exit\n"
 "--cpu CPU           Set CPU type CPU to decode (see below for valid types)\n"
 "--intel-cpu FAMILY,MODEL  Set CPU type for an Intel CPU based on family and model from cpuid\n"
+"--k8                Set the CPU to be an AMD K8\n"
+"--p4                Set the CPU to be an Intel Pentium4\n"
+"--core2             Set the CPU to be an Intel Core2\n"
+"--generic           Set the CPU to a generic version\n"
 "--cpumhz MHZ        Set CPU Mhz to decode time (output unreliable, not needed on new kernels)\n"
 "--raw		     (with --ascii) Dump in raw ASCII format for machine processing\n"
 "--daemon            Run in background waiting for events (needs newer kernel)\n"
+"--client            Query a currently running mcelog daemon for errors\n"
 "--ignorenodev       Exit silently when the device cannot be opened\n"
 "--file filename     With --ascii read machine check log from filename instead of stdin\n"
+"--logfile filename  Log decoded machine checks in file filename\n"
 "--syslog            Log decoded machine checks in syslog (default stdout or syslog for daemon)\n"	     
 "--syslog-error	     Log decoded machine checks in syslog with error level\n"
 "--no-syslog         Never log anything to syslog\n"
@@ -955,6 +967,7 @@ void usage(void)
 "--is-cpu-supported  Exit with return code indicating whether the CPU is supported\n"
 		);
 	diskdb_usage();
+	printf("\n");
 	print_cputypes();
 	exit(1);
 }
