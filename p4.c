@@ -36,6 +36,8 @@
 #include "sandy-bridge.h"
 #include "ivy-bridge.h"
 #include "haswell.h"
+#include "broadwell_de.h"
+#include "broadwell_epex.h"
 
 /* decode mce for P4/Xeon and Core2 family */
 
@@ -415,6 +417,12 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 		break;
 	case CPU_HASWELL_EPEX:
 		hsw_decode_model(cputype, log->bank, log->status, log->misc);
+		break;
+	case CPU_BROADWELL_DE:
+		bdw_de_decode_model(cputype, log->bank, log->status, log->misc);
+		break;
+	case CPU_BROADWELL_EPEX:
+		bdw_epex_decode_model(cputype, log->bank, log->status, log->misc);
 		break;
 	}
 }
