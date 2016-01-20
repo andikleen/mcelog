@@ -54,7 +54,7 @@ static char* get_TT_str(__u8 t)
 static char* get_LL_str(__u8 ll)
 {
 	static char* LL[] = {"Level-0", "Level-1", "Level-2", "Level-3"};
-	if (ll > NELE(LL)) {
+	if (ll >= NELE(LL)) {
 		return "UNKNOWN";
 	}
 
