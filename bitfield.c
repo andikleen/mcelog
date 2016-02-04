@@ -56,7 +56,7 @@ void decode_numfield(u64 status, struct numfield *fields)
 		u64 v = (status >> f->start) & mask;
 		if (v > 0 || f->force) { 
 			char fmt[30];
-			snprintf(fmt, 30, "%%s: %s\n", f->fmt ? f->fmt : "%Lu");
+			snprintf(fmt, 30, "%%s: %s\n", f->fmt ? f->fmt : "%llu");
 			Wprintf(fmt, f->name, v);
 		}
 	}

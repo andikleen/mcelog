@@ -161,7 +161,7 @@ int main(void)
 {
 	char *buf;
 	u64 tsc = rdtscll();
-	printf("%Lx tsc\n", tsc);
+	printf("%llx tsc\n", tsc);
 	if (decode_tsc_current(&buf, 0, CPU_CORE2, 0.0, tsc) >= 0)
 		printf("%s\n", buf);
 	else

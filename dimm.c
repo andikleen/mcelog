@@ -358,7 +358,7 @@ void new_error(unsigned long long addr, unsigned long max_error, char *trigger)
 
 	devs = dmi_find_addr(addr);
 	if (devs[0] == NULL) {
-		Wprintf("No memory found for address %Lx\n", addr);
+		Wprintf("No memory found for address %llx\n", addr);
 		exit(1);
 	}
 	for (i = 0; devs[i]; i++) {
@@ -366,7 +366,7 @@ void new_error(unsigned long long addr, unsigned long max_error, char *trigger)
 		char *loc = dmi_getstring(&d->header, d->device_locator);
 		struct group *g = find_entry(dimm_db, NULL, "Locator", loc);
 		if (!g) { // shouldn't happen
-			Eprintf("No record found for %Lx\n", addr);
+			Eprintf("No record found for %llx\n", addr);
 			return;
 		}
 		unsigned long val = inc_val(g, "corrected errors");
