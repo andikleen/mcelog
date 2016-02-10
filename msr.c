@@ -20,27 +20,28 @@ static void domsr(int cpu, int msr, int bit)
 			return;
 		default:
 			SYSERRprintf("Cannot open %s to set imc_log\n", fpath);
-			exit(1);
+			return;
 		}
 	}
 	if (pread(fd, &data, sizeof data, msr) != sizeof data) {
 		SYSERRprintf("Cannot read MSR_ERROR_CONTROL from %s\n", fpath);
-		exit(1);
+		return;
 	}
 	data |= bit;
 	if (pwrite(fd, &data, sizeof data, msr) != sizeof data) {
 		SYSERRprintf("Cannot write MSR_ERROR_CONTROL to %s\n", fpath);
-		exit(1);
+		return;
 	}
 	if (pread(fd, &data, sizeof data, msr) != sizeof data) {
 		SYSERRprintf("Cannot re-read MSR_ERROR_CONTROL from %s\n", fpath);
-		exit(1);
+		return;
 	}
 	if ((data & bit) == 0)
 		Lprintf("No DIMM detection available on cpu %d (normal in virtual environments)\n", cpu);
 	close(fd);
 }
 
+/* XXX: assumes all CPUs are already onlined. */
 void set_imc_log(int cputype)
 {
 	int cpu, ncpus = sysconf(_SC_NPROCESSORS_CONF);
