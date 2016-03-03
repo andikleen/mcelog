@@ -151,14 +151,13 @@ void trigger_setup(void)
 
 void trigger_wait(void)
 {
-	int sig;
-	sigset_t mask;
-	sigemptyset(&mask);
-	sigaddset(&mask, SIGCHLD);
-	while (num_children > 0) {
-		if (sigwait(&mask, &sig) < 0)
-			SYSERRprintf("sigwait waiting for children");
-	}
+	int status;
+	int pid;
+	
+	while ((pid = waitpid((pid_t)-1, &status, 0)) > 0) 
+		finish_child(pid, status);
+	
+	return 0;	
 }
 
 int trigger_check(char *s)
