@@ -306,13 +306,15 @@ static char *form_factors[] = {
 	"?",
 	"Other", "Unknown", "SIMM", "SIP", "Chip", "DIP", "ZIP", 
 	"Proprietary Card", "DIMM", "TSOP", "Row of chips", "RIMM",
-	"SODIMM", "SRIMM"
+	"SODIMM", "SRIMM", "FB-DIMM"
 };
 static char *memory_types[] = {
 	"?",
 	"Other", "Unknown", "DRAM", "EDRAM", "VRAM", "SRAM", "RAM",
 	"ROM", "FLASH", "EEPROM", "FEPROM", "EPROM", "CDRAM", "3DRAM",
-	"SDRAM", "SGRAM", "RDRAM", "DDR", "DDR2"
+	"SDRAM", "SGRAM", "RDRAM", "DDR", "DDR2", "DDR2 FB-DIMM",
+	"Reserved 0x15", "Reserved 0x16", "Reserved 0x17", "DDR3",
+	"FBD2", "DDR4", "LPDDR", "LPDDR2", "LPDDR3", "LPDDR4"
 };
 
 #define LOOKUP(array, val, buf) \
@@ -323,7 +325,8 @@ static char *memory_types[] = {
 static char *type_details[16] = {
 	"Reserved", "Other", "Unknown", "Fast-paged", "Static Column",
 	"Pseudo static", "RAMBUS", "Synchronous", "CMOS", "EDO",
-	"Window DRAM", "Cache DRAM", "Non-volatile", "Res13", "Res14", "Res15"
+	"Window DRAM", "Cache DRAM", "Non-volatile", "Registered",
+	"Unbuffered", "LRDIMM"
 }; 
 
 static void dump_type_details(unsigned short td)
