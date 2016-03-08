@@ -1,6 +1,8 @@
 /* Copyright (C) 2006 Andi Kleen, SuSE Labs.
+   Portions Copyright (C) 2016 Sergio Gelato.
+
    Use SMBIOS/DMI to map address to DIMM description.
-   For reference see the SMBIOS specification 2.4
+   For reference see the SMBIOS specification 2.4, 3.0
 
    dmi is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public
@@ -55,9 +57,9 @@ struct anchor {
 } __attribute__((packed));
 
 static struct dmi_entry *entries;
-static int entrieslen;
+static size_t entrieslen;
 static int numentries;
-static int dmi_length;
+static size_t dmi_length;
 static struct dmi_entry **handle_to_entry;
 
 struct dmi_memdev **dmi_dimms; 
@@ -137,6 +139,59 @@ static void fill_handles(void)
 	}
 }
 
+static int append_sysfs_dmi_entry(unsigned char type, int instance)
+{
+	char filename[64];	/* 40 bytes should be enough */
+	char buf[1024];
+	int r;
+	ssize_t nr;
+	size_t l;
+	int fd;
+	r = snprintf(filename, sizeof(filename),
+		     "/sys/firmware/dmi/entries/%hhu-%d/raw",
+		     type, instance);
+	if (r < 0 || (unsigned int)r >= sizeof(filename)) {
+		Eprintf("Can't build pathname for DMI type %hhu instance %d\n",
+			type, instance);
+		return 0;
+	}
+	fd = open(filename, O_RDONLY);
+	if (fd == (-1)) {
+		if (errno != ENOENT)
+			perror(filename);
+		return 0;
+	}
+	l = dmi_length;
+	for (;;) {
+		nr = read(fd, buf, sizeof(buf));
+		if (nr < 0) {
+			if (errno == EINTR)
+				continue;
+			perror(filename);
+			close(fd);
+			return 0;
+		} else if (nr > 0) {
+			while (l + nr > entrieslen) {
+				entrieslen += 4096;
+				entries = xrealloc(entries, entrieslen);
+			}
+			memcpy((char *)entries+l, buf, nr);
+			l += nr;
+		} else {
+			numentries ++;
+			dmi_length = l;
+			close(fd);
+			return 1;
+		}
+	}
+}
+
+static void append_sysfs_dmi_entries(unsigned char type)
+{
+	int i;
+	for (i=0; append_sysfs_dmi_entry(type, i); i++) ;
+}
+
 static int get_efi_base_addr(size_t *address)
 {
 	FILE *efi_systab;
@@ -190,10 +245,12 @@ check_symbol:
 int opendmi(void)
 {
 	struct anchor *a, *abase;
+	void *ebase;
 	void *p, *q;
 	int pagesize = getpagesize();
 	int memfd; 
-	unsigned corr;
+	off_t emapbase, corr;
+	size_t emapsize;
 	int err = -1;
 	const int segsize = 0x10000;
 	size_t entry_point_addr = 0;
@@ -201,6 +258,18 @@ int opendmi(void)
 
 	if (entries)
 		return 0;
+
+	if (access("/sys/firmware/dmi/entries/0-0/raw", R_OK) == 0) {
+		numentries = 0;
+		append_sysfs_dmi_entries(DMI_MEMORY_ARRAY);
+		append_sysfs_dmi_entries(DMI_MEMORY_DEVICE);
+		append_sysfs_dmi_entries(DMI_MEMORY_ARRAY_ADDR);
+		append_sysfs_dmi_entries(DMI_MEMORY_MAPPED_ADDR);
+		fill_handles();
+		collect_dmi_dimms();
+		return 0;
+	}
+
 	memfd = open("/dev/mem", O_RDONLY);
 	if (memfd < 0) { 
 		Eprintf("Cannot open /dev/mem for DMI decoding: %s",
@@ -262,18 +331,18 @@ fill_entries:
 	if (verbose) 
 		printf("DMI tables at %x, %u bytes, %u entries\n", 
 			a->table, a->length, a->numentries);
-	corr = a->table - round_down(a->table, pagesize); 
-	entrieslen = round_up(a->table + a->length, pagesize) -
-		round_down(a->table, pagesize);
- 	entries = mmap(NULL, entrieslen, 
-		       	PROT_READ, MAP_SHARED, memfd, 
-			round_down(a->table, pagesize));
-	if (entries == (struct dmi_entry *)-1) { 
+	emapbase = round_down(a->table, pagesize);
+	corr = a->table - emapbase;
+	emapsize = round_up(a->table + a->length, pagesize) - emapbase;
+	ebase = mmap(NULL, emapsize, PROT_READ, MAP_SHARED, memfd, emapbase);
+	if (ebase == MAP_FAILED) {
 		Eprintf("Cannot mmap SMBIOS tables at %x", a->table);
-		entries = NULL;
 		goto out_mmap;
 	}
-	entries = (struct dmi_entry *)(((char *)entries) + corr);
+	entrieslen = a->length;
+	entries = xalloc_nonzero(entrieslen);
+	memcpy(entries, (char *)ebase+corr, entrieslen);
+	munmap(ebase, emapsize);
 	numentries = a->numentries;
 	dmi_length = a->length;
 	fill_handles();
@@ -627,11 +696,11 @@ void closedmi(void)
 {
 	if (!entries) 
 		return;
-	munmap(entries, entrieslen);
-	entries = NULL;
 	FREE(dmi_dimms);
 	FREE(dmi_arrays);
 	FREE(dmi_ranges);
 	FREE(dmi_array_ranges);
 	FREE(handle_to_entry);
+	FREE(entries);
+	entrieslen = 0;
 }
