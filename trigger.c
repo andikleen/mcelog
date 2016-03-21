@@ -156,8 +156,6 @@ void trigger_wait(void)
 	
 	while ((pid = waitpid((pid_t)-1, &status, 0)) > 0) 
 		finish_child(pid, status);
-	
-	return 0;	
 }
 
 int trigger_check(char *s)
