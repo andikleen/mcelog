@@ -91,7 +91,7 @@ static char *qpi[] = {
 	[0x22] = "Phy detected in-band reset (no width change)",
 	[0x23] = "Link failover clock failover",
 	[0x30] = "Rx detected CRC error - successful LLR after Phy re-init",
-	[0x31] = "Rx detected CRC error - successful LLR wihout Phy re-init",
+	[0x31] = "Rx detected CRC error - successful LLR without Phy re-init",
 };
 
 static struct field qpi_mc[] = {

@@ -89,7 +89,7 @@ static char *highbits[32] = {
 	[0] = "err cpu0",
 };
 static char *k8threshold[] = {
-	[0 ... K8_MCELOG_THRESHOLD_DRAM_ECC - 1] = "Unknow threshold counter",
+	[0 ... K8_MCELOG_THRESHOLD_DRAM_ECC - 1] = "Unknown threshold counter",
 	[K8_MCELOG_THRESHOLD_DRAM_ECC] = "MC4_MISC0 DRAM threshold",
 	[K8_MCELOG_THRESHOLD_LINK] = "MC4_MISC1 Link threshold",
 	[K8_MCELOG_THRESHOLD_L3_CACHE] = "MC4_MISC2 L3 Cache threshold",

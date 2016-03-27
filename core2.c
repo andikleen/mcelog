@@ -69,7 +69,7 @@ static struct field p6old_status[] = {
 	FIELD(31, reserved_1bit),
 	FIELD(32, reserved_3bits),
 	SBITFIELD(35, "BINIT received from external bus"),
-	SBITFIELD(37, "Received hard error reponse on split transaction (Bus BINIT)"),
+	SBITFIELD(37, "Received hard error response on split transaction (Bus BINIT)"),
 	{}
 };
 
