@@ -129,6 +129,7 @@ enum cputype {
 	CPU_KNIGHTS_LANDING,
 	CPU_ATOM,
 	CPU_SKYLAKE,
+	CPU_SKYLAKE_XEON,
 };
 
 enum option_ranges {
