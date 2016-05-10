@@ -11,7 +11,7 @@ dimm=${3:-0}
 corr_err_cnt=${4:-0}
 
 if [ ! -z "$5" ] ; then
-	ucflag=$[1 << (61-32)]
+	ucflag=$[(1 << (61-32)) | (1 << (60-32)) | (1 << (56-32))]
 else
 	ucflag=0
 fi
