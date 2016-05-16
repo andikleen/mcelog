@@ -8,3 +8,5 @@ dbquery
 .depend
 tsc
 core
+version.c
+version.tmp
