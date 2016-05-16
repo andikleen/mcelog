@@ -25,19 +25,20 @@ static void domsr(int cpu, int msr, int bit)
 	}
 	if (pread(fd, &data, sizeof data, msr) != sizeof data) {
 		SYSERRprintf("Cannot read MSR_ERROR_CONTROL from %s\n", fpath);
-		return;
+		goto out;
 	}
 	data |= bit;
 	if (pwrite(fd, &data, sizeof data, msr) != sizeof data) {
 		SYSERRprintf("Cannot write MSR_ERROR_CONTROL to %s\n", fpath);
-		return;
+		goto out;
 	}
 	if (pread(fd, &data, sizeof data, msr) != sizeof data) {
 		SYSERRprintf("Cannot re-read MSR_ERROR_CONTROL from %s\n", fpath);
-		return;
+		goto out;
 	}
 	if ((data & bit) == 0)
 		Lprintf("No DIMM detection available on cpu %d (normal in virtual environments)\n", cpu);
+out:
 	close(fd);
 }
 
