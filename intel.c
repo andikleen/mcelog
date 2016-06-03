@@ -92,17 +92,17 @@ enum cputype select_intel_cputype(int family, int model)
 		else if (model == 0x55)
 			return CPU_SKYLAKE_XEON;
 		if (model > 0x1a) {
-			Eprintf("Family 6 Model %x CPU: only decoding architectural errors\n",
+			Eprintf("Family 6 Model %u CPU: only decoding architectural errors\n",
 				model);
 			return CPU_INTEL; 
 		}
 	}
 	if (family > 6) { 
-		Eprintf("Family %u Model %x CPU: only decoding architectural errors\n",
+		Eprintf("Family %u Model %u CPU: only decoding architectural errors\n",
 				family, model);
 		return CPU_INTEL;
 	}
-	Eprintf("Unknown Intel CPU type family %x model %x\n", family, model);
+	Eprintf("Unknown Intel CPU type family %u model %u\n", family, model);
 	return family == 6 ? CPU_P6OLD : CPU_GENERIC;
 }
 

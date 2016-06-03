@@ -358,7 +358,7 @@ static enum cputype setup_cpuid(u32 cpuvendor, u32 cpuid)
 			return CPU_K8;
 		/* FALL THROUGH */
 	default:
-		Eprintf("Unknown CPU type vendor %u family %x model %x", 
+		Eprintf("Unknown CPU type vendor %u family %u model %u",
 			cpuvendor, family, model);
 		return CPU_GENERIC;
 	}
