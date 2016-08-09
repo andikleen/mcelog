@@ -5,6 +5,7 @@ After=syslog.target
 [Service] 
 ExecStart=/usr/sbin/mcelog --ignorenodev --daemon --foreground
 StandardOutput=syslog 
+SuccessExitStatus=0 15
 
 [Install]
 WantedBy=multi-user.target
