@@ -891,6 +891,7 @@ static void remove_pidfile(void)
 static void signal_exit(int sig)
 {
 	remove_pidfile();
+	client_cleanup();
 	_exit(EXIT_SUCCESS);
 }
 

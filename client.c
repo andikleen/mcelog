@@ -67,3 +67,11 @@ void ask_server(char *command)
 
 	SYSERRprintf("client read");
 }
+
+void client_cleanup(void)
+{
+	char *path = config_string("server", "socket-path");
+	if (!path)
+		path = SOCKET_PATH;
+	unlink(path);
+}
