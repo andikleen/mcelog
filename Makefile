@@ -17,11 +17,6 @@ WARNINGS := -Wall -Wextra -Wno-missing-field-initializers -Wno-unused-parameter 
 	    -Wstrict-prototypes -Wformat-security -Wmissing-declarations \
 	    -Wdeclaration-after-statement
 
-# The on disk database has still many problems (partly in this code and partly
-# due to missing support from BIOS), so it's disabled by default. You can 
-# enable it here by uncommenting the following line
-# CONFIG_DISKDB = 1
-
 TRIGGERS=cache-error-trigger dimm-error-trigger page-error-trigger \
 	 socket-memory-error-trigger \
 	 bus-error-trigger \
@@ -39,19 +34,11 @@ OBJ := p4.o k8.o mcelog.o dmi.o tsc.o core2.o bitfield.o intel.o \
        xeon75xx.o sandy-bridge.o ivy-bridge.o haswell.o		 \
        broadwell_de.o broadwell_epex.o skylake_xeon.o		 \
        msr.o bus.o unknown.o
-DISKDB_OBJ := diskdb.o dimm.o db.o
-CLEAN := mcelog dmi tsc dbquery .depend .depend.X dbquery.o ${DISKDB_OBJ} \
+CLEAN := mcelog dmi tsc dbquery .depend .depend.X dbquery.o \
 	version.o version.c version.tmp
 DOC := mce.pdf
 
 ADD_DEFINES :=
-
-ifdef CONFIG_DISKDB
-ADD_DEFINES := -DCONFIG_DISKDB=1
-OBJ += ${DISKDB_OBJ}
-
-all: dbquery
-endif
 
 SRC := $(OBJ:.o=.c)
 

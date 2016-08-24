@@ -48,7 +48,6 @@
 #include "tsc.h"
 #include "version.h"
 #include "config.h"
-#include "diskdb.h"
 #include "memutil.h"
 #include "eventloop.h"
 #include "memdb.h"
@@ -454,9 +453,6 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 	    cputype != CPU_KNIGHTS_LANDING && cputype != CPU_SKYLAKE &&
 	    cputype != CPU_SKYLAKE_XEON)
 		resolveaddr(m->addr);
-	if (!ascii_mode && ismemerr && (m->status & MCI_STATUS_ADDRV)) {
-		diskdb_resolve_addr(m->addr);
-	}
 }
 
 static void dump_mce_raw_ascii(struct mce *m, unsigned recordlen)
@@ -977,7 +973,6 @@ void usage(void)
 "--no-imc-log	     Disable extended iMC logging\n"
 "--is-cpu-supported  Exit with return code indicating whether the CPU is supported\n"
 		);
-	diskdb_usage();
 	printf("\n");
 	print_cputypes();
 	exit(1);
@@ -1046,7 +1041,6 @@ static struct option options[] = {
 	{ "debug-numerrors", 0, NULL, O_DEBUG_NUMERRORS }, /* undocumented: for testing */
 	{ "no-imc-log", 0, NULL, O_NO_IMC_LOG },
 	{ "is-cpu-supported", 0, NULL, O_IS_CPU_SUPPORTED },
-	DISKDB_OPTIONS
 	{}
 };
 
@@ -1194,8 +1188,6 @@ void no_syslog(void)
 static int combined_modifier(int opt)
 {
 	int r = modifier(opt);
-	if (r == 0)
-		r = diskdb_modifier(opt);
 	return r;
 }
 
@@ -1371,8 +1363,6 @@ int main(int ac, char **av)
 		} else if (opt == O_VERSION) { 
 			noargs(ac, av);
 			fprintf(stderr, "mcelog %s\n", MCELOG_VERSION);
-			exit(0);
-		} else if (diskdb_cmd(opt, ac, av)) {
 			exit(0);
 		} else if (opt == 0)
 			break;		    
