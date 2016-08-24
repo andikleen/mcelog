@@ -24,7 +24,6 @@
 #include "nehalem.h"
 #include "bitfield.h"
 #include "memdb.h"
-#include "xeon75xx.h"
 
 /* See IA32 SDM Vol3B Appendix E.3.2 ff */
 
@@ -170,7 +169,6 @@ void xeon75xx_decode_model(struct mce *m, unsigned msize)
 		decode_bitfield(status, internal_error_status);
 		decode_numfield(status, internal_error_numbers);
 	}
-	xeon75xx_decode_dimm(m, msize);
 }
 
 /* Nehalem-EP specific DIMM decoding */
