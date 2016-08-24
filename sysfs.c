@@ -81,10 +81,12 @@ unsigned read_field_map(char *base, char *name, struct map *map)
 		if (!strcmp(val, map->name))
 			break;
 	}
-	free(val);
-	if (map->name)
+	if (map->name) {
+		free(val);
 		return map->value;
+	}
 	Eprintf("sysfs field %s/%s has unknown string value `%s'\n", base, name, val);
+	free(val);
 	return -1;
 }
 
