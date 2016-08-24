@@ -72,7 +72,9 @@ static int timeconv(char unit, int *out)
 	case 'h': corr *= 60;
 	case 'm': corr *= 60;
 	case 0:   break;
-	default: return -1;
+	default:
+		*out = 1;
+		return -1;
 	}
 	*out = corr;
 	return 0;
