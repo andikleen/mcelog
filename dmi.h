@@ -3,7 +3,7 @@ struct dmi_entry {
 	unsigned char type;
 	unsigned char length;
 	unsigned short handle;
-};
+} __attribute__((packed));
 
 enum { 
 	DMI_MEMORY_ARRAY = 16,
