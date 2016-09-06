@@ -37,10 +37,10 @@ char *read_field(char *base, char *name)
 
 	asprintf(&fn, "%s/%s", base, name);
 	fd = open(fn, O_RDONLY);
+	free(fn);
 	if (fstat(fd, &st) < 0)
 		goto bad;		
 	buf = xalloc(st.st_size);
-	free(fn);
 	if (fd < 0) 
 		goto bad;
 	n = read(fd, buf, st.st_size);
