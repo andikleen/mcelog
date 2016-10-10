@@ -239,6 +239,7 @@ static char *cputype_name[] = {
 	[CPU_SKYLAKE] = "Skylake",
 	[CPU_SKYLAKE_XEON] = "Skylake server",
 	[CPU_KABYLAKE] = "Kabylake",
+	[CPU_DENVERTON] = "Denverton",
 };
 
 static struct config_choice cpu_choices[] = {
@@ -289,6 +290,7 @@ static struct config_choice cpu_choices[] = {
 	{ "skylake", CPU_SKYLAKE },
 	{ "skylake_server", CPU_SKYLAKE_XEON },
 	{ "kabylake", CPU_KABYLAKE },
+	{ "denverton", CPU_DENVERTON },
 	{ NULL }
 };
 
@@ -453,7 +455,8 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 	    cputype != CPU_HASWELL_EPEX && cputype != CPU_BROADWELL &&
 	    cputype != CPU_BROADWELL_DE && cputype != CPU_BROADWELL_EPEX &&
 	    cputype != CPU_KNIGHTS_LANDING && cputype != CPU_SKYLAKE &&
-	    cputype != CPU_SKYLAKE_XEON && cputype != CPU_KABYLAKE)
+	    cputype != CPU_SKYLAKE_XEON && cputype != CPU_KABYLAKE &&
+	    cputype != CPU_DENVERTON)
 		resolveaddr(m->addr);
 }
 

@@ -39,6 +39,7 @@
 #include "broadwell_de.h"
 #include "broadwell_epex.h"
 #include "skylake_xeon.h"
+#include "denverton.h"
 
 /* decode mce for P4/Xeon and Core2 family */
 
@@ -448,6 +449,9 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 		break;
 	case CPU_SKYLAKE_XEON:
 		skylake_s_decode_model(cputype, log->bank, log->status, log->misc);
+		break;
+	case CPU_DENVERTON:
+		denverton_decode_model(cputype, log->bank, log->status, log->misc);
 		break;
 	}
 }

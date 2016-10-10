@@ -27,5 +27,6 @@ extern int memory_error_support;
 	case CPU_KNIGHTS_LANDING: \
 	case CPU_SKYLAKE: \
 	case CPU_SKYLAKE_XEON: \
-	case CPU_KABYLAKE
+	case CPU_KABYLAKE: \
+	case CPU_DENVERTON
 
