@@ -1,0 +1,6 @@
+# Skylake mirror corrected with mirror failover
+CPU 0 7
+PROCESSOR 0:0x50650
+STATUS 0x8800000000000080
+MISC 8000000000000000
+

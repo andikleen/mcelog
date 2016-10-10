@@ -23,6 +23,11 @@
 #include "skylake_xeon.h"
 #include "memdb.h"
 
+/* Memory error was corrected by mirroring with channel failover */
+#define SKX_MCI_MISC_FO      (1ULL<<63)
+/* Memory error was corrected by mirroring and primary channel scrubbed successfully */
+#define SKX_MCI_MISC_MC      (1ULL<<62)
+
 /* See IA32 SDM Vol3B Table 16-27 */
 
 static char *pcu_1[] = {
@@ -207,4 +212,19 @@ void skylake_s_decode_model(int cputype, int bank, u64 status, u64 misc)
 			decode_bitfield(status, mc_bits);
 		break;
 	}
+}
+
+int skylake_s_ce_type(int bank, u64 status, u64 misc)
+{
+	if (!(bank == 7 || bank == 8))
+		return 0;
+
+	if (status & MCI_STATUS_MISCV) {
+		if (misc & SKX_MCI_MISC_FO)
+			return 1;
+		if (misc & SKX_MCI_MISC_MC)
+			return 2;
+	}
+
+	return 0;
 }

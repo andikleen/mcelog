@@ -300,6 +300,8 @@ static int check_for_mirror(__u8 bank, __u64  status, __u64 misc)
 	switch (cputype) {
 	case CPU_BROADWELL_EPEX:
 		return bdw_epex_ce_type(bank, status, misc);
+	case CPU_SKYLAKE_XEON:
+		return skylake_s_ce_type(bank, status, misc);
 	default:
 		return 0;
 	}
