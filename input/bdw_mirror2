@@ -1,0 +1,6 @@
+# Broadwell mirror corrected with successful scrub
+CPU 0 7
+PROCESSOR 0:0x406f0
+STATUS 0x8800000000000080
+MISC 40000000000
+

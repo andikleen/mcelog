@@ -289,10 +289,27 @@ static const char *arstate[4] = {
 	[3] = "SRAR"
 };
 
+static const char *ce_types[] = {
+	[0] = "ecc",
+	[1] = "mirroring with channel failover",
+	[2] = "mirroring. Primary channel scrubbed successfully"
+};
+
+static int check_for_mirror(__u8 bank, __u64  status, __u64 misc)
+{
+	switch (cputype) {
+	case CPU_BROADWELL_EPEX:
+		return bdw_epex_ce_type(bank, status, misc);
+	default:
+		return 0;
+	}
+}
+
 static int decode_mci(__u64 status, __u64 misc, int cpu, unsigned mcgcap, int *ismemerr,
 		       int socket, __u8 bank)
 {
 	u64 track = 0;
+	int i;
 
 	Wprintf("MCi status:\n");
 	if (!(status & MCI_STATUS_VAL))
@@ -303,6 +320,8 @@ static int decode_mci(__u64 status, __u64 misc, int cpu, unsigned mcgcap, int *i
 	
 	if (status & MCI_STATUS_UC) 
 		Wprintf("Uncorrected error\n");
+	else if ((i = check_for_mirror(bank, status, misc)))
+		Wprintf("Corrected error by %s\n", ce_types[i]);
 	else
 		Wprintf("Corrected error\n");
 

@@ -23,6 +23,11 @@
 #include "broadwell_epex.h"
 #include "memdb.h"
 
+/* Memory error was corrected by mirroring with channel failover */
+#define BDW_MCI_MISC_FO      (1ULL<<41)
+/* Memory error was corrected by mirroring and primary channel scrubbed successfully */
+#define BDW_MCI_MISC_MC      (1ULL<<42)
+
 /* See IA32 SDM Vol3B Table 16-20 */
 
 static char *pcu_1[] = {
@@ -146,4 +151,24 @@ void bdw_epex_decode_model(int cputype, int bank, u64 status, u64 misc)
 		decode_bitfield(status, memctrl_mc9);
 		break;
 	}
+}
+
+/*
+ * return: 0 - CE by normal ECC
+ *         1 - CE by mirroring with channel failover
+ *         2 - CE by mirroring and primary channel scrubbed successfully
+ */
+int bdw_epex_ce_type(int bank, u64 status, u64 misc)
+{
+	if (!(bank == 7 || bank == 8))
+		return 0;
+
+	if (status & MCI_STATUS_MISCV) {
+		if (misc & BDW_MCI_MISC_FO)
+			return 1;
+		if (misc & BDW_MCI_MISC_MC)
+			return 2;
+	}
+
+	return 0;
 }
