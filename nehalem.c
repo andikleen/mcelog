@@ -129,7 +129,8 @@ void decode_memory_controller(u32 status, u8 bank)
 	if ((status & 0xf) == 0xf) 
 		strcpy(channel, "unspecified"); 
 	else {
-		if (cputype == CPU_KNIGHTS_LANDING) /* Fix for Knights Landing MIC */
+        /* Fix for Knights Landing/Mill MIC */
+		if (cputype == CPU_KNIGHTS_LANDING || cputype == CPU_KNIGHTS_MILL)
 			sprintf(channel, "%u", (status & 0xf) + 3 * (bank == 15));
 		else
 			sprintf(channel, "%u", status & 0xf);

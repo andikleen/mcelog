@@ -235,6 +235,7 @@ static char *cputype_name[] = {
 	[CPU_BROADWELL_DE] = "Intel Xeon (Broadwell) D family",
 	[CPU_BROADWELL_EPEX] = "Intel Xeon v4 (Broadwell) EP/EX",
 	[CPU_KNIGHTS_LANDING] = "Knights Landing",
+	[CPU_KNIGHTS_MILL] = "Knights Mill",
 	[CPU_ATOM] = "ATOM",
 	[CPU_SKYLAKE] = "Skylake",
 	[CPU_SKYLAKE_XEON] = "Skylake server",
@@ -283,6 +284,7 @@ static struct config_choice cpu_choices[] = {
 	{ "broadwell-ep", CPU_BROADWELL_EPEX },
 	{ "broadwell-ex", CPU_BROADWELL_EPEX },
 	{ "knightslanding", CPU_KNIGHTS_LANDING },
+	{ "knightsmill", CPU_KNIGHTS_MILL },
 	{ "xeon-v2", CPU_IVY_BRIDGE_EPEX },
 	{ "xeon-v3", CPU_HASWELL_EPEX },
 	{ "xeon-v4", CPU_BROADWELL_EPEX },
@@ -454,9 +456,9 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 	if (cputype != CPU_SANDY_BRIDGE_EP && cputype != CPU_IVY_BRIDGE_EPEX &&
 	    cputype != CPU_HASWELL_EPEX && cputype != CPU_BROADWELL &&
 	    cputype != CPU_BROADWELL_DE && cputype != CPU_BROADWELL_EPEX &&
-	    cputype != CPU_KNIGHTS_LANDING && cputype != CPU_SKYLAKE &&
-	    cputype != CPU_SKYLAKE_XEON && cputype != CPU_KABYLAKE &&
-	    cputype != CPU_DENVERTON)
+	    cputype != CPU_KNIGHTS_LANDING && cputype != CPU_KNIGHTS_MILL &&
+	    cputype != CPU_SKYLAKE && cputype != CPU_SKYLAKE_XEON &&
+	    cputype != CPU_KABYLAKE && cputype != CPU_DENVERTON)
 		resolveaddr(m->addr);
 }
 

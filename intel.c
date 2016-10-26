@@ -35,7 +35,8 @@ void intel_cpu_init(enum cputype cpu)
 	    cpu == CPU_IVY_BRIDGE || cpu == CPU_IVY_BRIDGE_EPEX ||
 	    cpu == CPU_HASWELL || cpu == CPU_HASWELL_EPEX || cpu == CPU_BROADWELL ||
 	    cpu == CPU_BROADWELL_DE || cpu == CPU_BROADWELL_EPEX ||
-	    cpu == CPU_KNIGHTS_LANDING || cpu == CPU_SKYLAKE || cpu == CPU_SKYLAKE_XEON ||
+	    cpu == CPU_KNIGHTS_LANDING || cpu == CPU_KNIGHTS_MILL ||
+	    cpu == CPU_SKYLAKE || cpu == CPU_SKYLAKE_XEON ||
 	    cpu == CPU_KABYLAKE || cpu == CPU_DENVERTON)
 		memory_error_support = 1;
 }
@@ -82,6 +83,8 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_BROADWELL_DE;
 		else if (model == 0x57)
 			return CPU_KNIGHTS_LANDING;
+		else if (model == 0x85)
+			return CPU_KNIGHTS_MILL;
 		else if (model == 0x1c || model == 0x26 || model == 0x27 ||
 			 model == 0x35 || model == 0x36 || model == 0x36 ||
 			 model == 0x37 || model == 0x4a || model == 0x4c ||
