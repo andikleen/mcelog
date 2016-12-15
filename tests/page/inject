@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 PATH=$PATH:$(pwd)/../../../mce-inject
 
 P=$RANDOM
