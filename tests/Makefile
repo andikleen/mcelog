@@ -1,6 +1,6 @@
 .PHONY: test clean
 
-DEBUG =
+DEBUG=
 
 test:
 	./test cache "${DEBUG}"
