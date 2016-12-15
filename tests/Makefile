@@ -8,6 +8,8 @@ test:
 	./test memdb "${DEBUG}"
 	./test socket "${DEBUG}"
 	./test pfa "${DEBUG}"
+	./test unknown "${DEBUG}"
+	./test server "${DEBUG}"
 
 clean:
 	rm -f */*log
