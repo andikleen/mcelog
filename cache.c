@@ -54,7 +54,9 @@ static void more_cpus(int cpu)
 	int old = cachelen;
 	if (!cachelen)
 		cachelen = MIN_CPUS/2;	
-	cachelen *= 2;
+	if (cachelen < cpu)
+		cachelen = cpu + 1;
+	cachelen = cachelen * 2;
 	caches = xrealloc(caches, cachelen * sizeof(struct cache *));
 	memset(caches + old, 0, (cachelen - old) * sizeof(struct cache *));
 }
@@ -129,8 +131,9 @@ static int read_caches(void)
 				numindex = st.st_nlink - 2;
 				if (numindex < 0)
 					numindex = MIN_INDEX;
-				if (cachelen <= cpu)
+				if (cpu >= cachelen)
 					more_cpus(cpu);
+				assert(cpu < cachelen);
 				caches[cpu] = xalloc(sizeof(struct cache) * 
 						     (numindex+1));
 				for (i = 0; i < numindex; i++) {
