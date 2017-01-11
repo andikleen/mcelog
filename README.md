@@ -45,9 +45,9 @@ error predictive failure analysis) require a continuously running daemon.
 ## Documentation
 
 - The primary reference documentation are the man pages.
-- [lk10-mcelog.pdf](https://github.com/andikleen/mcelog/blob/master/lk10-mcelog.pdf)
+- [lk10-mcelog.pdf](lk10-mcelog.pdf)
   has a overview over the errors mcelog handles (originally from Linux Kongress 2010).
-- [mce.pdf](https://github.com/mjtrangoni/mcelog/blob/README.md/mce.pdf)
+- [mce.pdf](mce.pdf)
   is a very old paper describing the first releases of mcelog (some parts are obsolete).
 
 ## For distributors
