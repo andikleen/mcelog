@@ -542,7 +542,7 @@ int is_cpu_supported(void)
 				if (family == 15) {
 					cputype = CPU_K8;
 				} else if (family >= 16) {
-					SYSERRprintf("ERROR: AMD Processor family %d: mcelog does not support this processor.  Please use the edac_mce_amd module instead.\n", family);
+					Eprintf("ERROR: AMD Processor family %d: mcelog does not support this processor.  Please use the edac_mce_amd module instead.\n", family);
 					return 0;
 				}
 			} else if (!strcmp(vendor,"GenuineIntel"))
