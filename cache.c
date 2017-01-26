@@ -126,7 +126,7 @@ static int read_caches(void)
 			int i;
 			int numindex;
 
-			asprintf(&fn, "%s/%s/cache", PREFIX, de->d_name);
+			xasprintf(&fn, "%s/%s/cache", PREFIX, de->d_name);
 			if (!stat(fn, &st)) {
 				numindex = st.st_nlink - 2;
 				if (numindex < 0)
@@ -139,7 +139,7 @@ static int read_caches(void)
 				for (i = 0; i < numindex; i++) {
 					char *cfn;
 					struct cache *c = caches[cpu] + i;
-					asprintf(&cfn, "%s/index%d", fn, i);
+					xasprintf(&cfn, "%s/index%d", fn, i);
 					c->type = read_field_map(cfn, "type", type_map);
 					c->level = read_field_num(cfn, "level");
 					read_cpu_map(c, cfn);

@@ -62,23 +62,23 @@ void run_bus_trigger(int socket, int cpu, char *level, char *pp, char *rrrr,
 		return;
 
 	if (socket >= 0)
-		asprintf(&location, "CPU %d on socket %d", cpu, socket);
+		xasprintf(&location, "CPU %d on socket %d", cpu, socket);
 	else
-		asprintf(&location, "CPU %d", cpu);
-	asprintf(&msg, "%s received Bus and Interconnect Errors in %s",
+		xasprintf(&location, "CPU %d", cpu);
+	xasprintf(&msg, "%s received Bus and Interconnect Errors in %s",
 		location, ii);
-	asprintf(&env[ei++], "LOCATION=%s", location);
+	xasprintf(&env[ei++], "LOCATION=%s", location);
 	free(location);
 
 	if (socket >= 0)
-		asprintf(&env[ei++], "SOCKETID=%d", socket);
-	asprintf(&env[ei++], "MESSAGE=%s", msg);
-	asprintf(&env[ei++], "CPU=%d", cpu);
-	asprintf(&env[ei++], "LEVEL=%s", level);
-	asprintf(&env[ei++], "PARTICIPATION=%s", pp);
-	asprintf(&env[ei++], "REQUEST=%s", rrrr);
-	asprintf(&env[ei++], "ORIGIN=%s", ii);
-	asprintf(&env[ei++], "TIMEOUT=%s", timeout);
+		xasprintf(&env[ei++], "SOCKETID=%d", socket);
+	xasprintf(&env[ei++], "MESSAGE=%s", msg);
+	xasprintf(&env[ei++], "CPU=%d", cpu);
+	xasprintf(&env[ei++], "LEVEL=%s", level);
+	xasprintf(&env[ei++], "PARTICIPATION=%s", pp);
+	xasprintf(&env[ei++], "REQUEST=%s", rrrr);
+	xasprintf(&env[ei++], "ORIGIN=%s", ii);
+	xasprintf(&env[ei++], "TIMEOUT=%s", timeout);
 	env[ei] = NULL;
 	assert(ei < MAX_ENV);
 
@@ -100,22 +100,22 @@ void run_iomca_trigger(int socket, int cpu, int seg, int bus, int dev, int fn)
 		return;
 
 	if (socket >= 0)
-		asprintf(&location, "CPU %d on socket %d", cpu, socket);
+		xasprintf(&location, "CPU %d on socket %d", cpu, socket);
 	else
-		asprintf(&location, "CPU %d", cpu);
-	asprintf(&msg, "%s received IO MCA Errors from %x:%02x:%02x.%x",
+		xasprintf(&location, "CPU %d", cpu);
+	xasprintf(&msg, "%s received IO MCA Errors from %x:%02x:%02x.%x",
 		location, seg, bus, dev, fn);
-	asprintf(&env[ei++], "LOCATION=%s", location);
+	xasprintf(&env[ei++], "LOCATION=%s", location);
 	free(location);
 
 	if (socket >= 0)
-		asprintf(&env[ei++], "SOCKETID=%d", socket);
-	asprintf(&env[ei++], "MESSAGE=%s", msg);
-	asprintf(&env[ei++], "CPU=%d", cpu);
-	asprintf(&env[ei++], "SEG=%x", seg);
-	asprintf(&env[ei++], "BUS=%02x", bus);
-	asprintf(&env[ei++], "DEVICE=%02x", dev);
-	asprintf(&env[ei++], "FUNCTION=%x", fn);
+		xasprintf(&env[ei++], "SOCKETID=%d", socket);
+	xasprintf(&env[ei++], "MESSAGE=%s", msg);
+	xasprintf(&env[ei++], "CPU=%d", cpu);
+	xasprintf(&env[ei++], "SEG=%x", seg);
+	xasprintf(&env[ei++], "BUS=%02x", bus);
+	xasprintf(&env[ei++], "DEVICE=%02x", dev);
+	xasprintf(&env[ei++], "FUNCTION=%x", fn);
 	env[ei] = NULL;
 	assert(ei < MAX_ENV);
 

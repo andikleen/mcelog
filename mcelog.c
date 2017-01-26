@@ -907,9 +907,9 @@ static void setup_pidfile(char *s)
 		c = getcwd(cwd, PATH_MAX);
 		if (!c)
 			return;
-		asprintf(&pidfile, "%s/%s", cwd, s);
+		xasprintf(&pidfile, "%s/%s", cwd, s);
 	} else {
-		asprintf(&pidfile, "%s", s);
+		xasprintf(&pidfile, "%s", s);
 	}
 
 	return;

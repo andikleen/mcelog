@@ -62,15 +62,21 @@ char *xstrdup(char *str)
 	return str;
 }
 
-/* Override weak glibc version */
-int asprintf(char **strp, const char *fmt, ...)
+int xvasprintf(char **strp, const char *fmt, va_list ap)
+{
+	int n;
+	n = vasprintf(strp, fmt, ap);
+	if (n < 0)
+		Enomem();
+	return n;
+}
+
+int xasprintf(char **strp, const char *fmt, ...)
 {
 	int n;
 	va_list ap;
 	va_start(ap, fmt);
-	n = vasprintf(strp, fmt, ap);
+	n = xvasprintf(strp, fmt, ap);
 	va_end(ap);
-	if (n < 0) 
-		Enomem();
 	return n;
 }

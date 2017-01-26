@@ -54,22 +54,22 @@ void run_unknown_trigger(int socket, int cpu, struct mce *log)
 		return;
 
 	if (socket >= 0)
-		asprintf(&location, "CPU %d on socket %d", cpu, socket);
+		xasprintf(&location, "CPU %d on socket %d", cpu, socket);
 	else
-		asprintf(&location, "CPU %d", cpu);
-	asprintf(&msg, "%s received unknown error", location);
-	asprintf(&env[ei++], "LOCATION=%s", location);
+		xasprintf(&location, "CPU %d", cpu);
+	xasprintf(&msg, "%s received unknown error", location);
+	xasprintf(&env[ei++], "LOCATION=%s", location);
 	free(location);
 
 	if (socket >= 0)
-		asprintf(&env[ei++], "SOCKETID=%d", socket);
-	asprintf(&env[ei++], "MESSAGE=%s", msg);
-	asprintf(&env[ei++], "CPU=%d", cpu);
-	asprintf(&env[ei++], "STATUS=%llx", log->status);
-	asprintf(&env[ei++], "MISC=%llx", log->misc);
-	asprintf(&env[ei++], "ADDR=%llx", log->addr);
-	asprintf(&env[ei++], "MCGSTATUS=%llx", log->mcgstatus);
-	asprintf(&env[ei++], "MCGCAP=%llx", log->mcgcap);
+		xasprintf(&env[ei++], "SOCKETID=%d", socket);
+	xasprintf(&env[ei++], "MESSAGE=%s", msg);
+	xasprintf(&env[ei++], "CPU=%d", cpu);
+	xasprintf(&env[ei++], "STATUS=%llx", log->status);
+	xasprintf(&env[ei++], "MISC=%llx", log->misc);
+	xasprintf(&env[ei++], "ADDR=%llx", log->addr);
+	xasprintf(&env[ei++], "MCGSTATUS=%llx", log->mcgstatus);
+	xasprintf(&env[ei++], "MCGCAP=%llx", log->mcgcap);
 	env[ei] = NULL;
 	assert(ei < MAX_ENV);
 

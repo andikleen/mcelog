@@ -104,9 +104,9 @@ static void unparseable(char *desc, const char *header, const char *name)
 	char *field;
 
 	if (!strcmp(header, "global")) { 
-		asprintf(&field, "%s", name);
+		xasprintf(&field, "%s", name);
 	} else { 
-		asprintf(&field, "[%s] %s", header, name);
+		xasprintf(&field, "[%s] %s", header, name);
 	}
 	Eprintf("%s config option `%s' unparseable\n", desc, field);
 	free(field);
@@ -293,7 +293,7 @@ int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
 	char *name;
 	int n;
 
-	asprintf(&name, "%s-threshold", base);
+	xasprintf(&name, "%s-threshold", base);
 	s = config_string(header, name);
 	if (s) {
 		if (bucket_conf_init(bc, s) < 0) {
@@ -303,7 +303,7 @@ int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
 	}
 	free(name);
 
-	asprintf(&name, "%s-trigger", base);
+	xasprintf(&name, "%s-trigger", base);
 	s = config_string(header, name);
 	if (s) { 
 		/* no $PATH */
@@ -316,7 +316,7 @@ int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
 	free(name);
 
 	bc->log = 0;
-	asprintf(&name, "%s-log", base);
+	xasprintf(&name, "%s-log", base);
 	n = config_bool(header, name);
 	if (n >= 0)
 		bc->log = n;
@@ -330,7 +330,7 @@ void config_cred(char *header, char *base, struct config_cred *cred)
 	char *s;
 	char *name;
 
-	asprintf(&name, "%s-user", base);
+	xasprintf(&name, "%s-user", base);
 	if ((s = config_string(header, name)) != NULL) { 
 		struct passwd *pw;
 		if (!strcmp(s, "*"))
@@ -342,7 +342,7 @@ void config_cred(char *header, char *base, struct config_cred *cred)
 		        cred->uid = pw->pw_uid;
 	}
 	free(name);
-	asprintf(&name, "%s-group", base);	
+	xasprintf(&name, "%s-group", base);	
 	if ((s = config_string(header, name)) != NULL) { 
 		struct group *gr;
 		if (!strcmp(s, "*"))
