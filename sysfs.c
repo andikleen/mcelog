@@ -100,7 +100,7 @@ int sysfs_write(const char *name, const char *fmt, ...)
 	if (fd < 0)
 		return -1;
 	va_start(ap, fmt);
-	n = vasprintf(&buf, fmt, ap);
+	n = xvasprintf(&buf, fmt, ap);
 	va_end(ap);
 	n = write(fd, buf, n);
 	e = errno;
