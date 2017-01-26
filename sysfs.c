@@ -35,7 +35,7 @@ char *read_field(char *base, char *name)
 	char *s;
 	char *buf = NULL;
 
-	asprintf(&fn, "%s/%s", base, name);
+	xasprintf(&fn, "%s/%s", base, name);
 	fd = open(fn, O_RDONLY);
 	free(fn);
 	if (fstat(fd, &st) < 0)

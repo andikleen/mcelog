@@ -18,6 +18,7 @@
 #define _GNU_SOURCE 1
 #include <stdio.h>
 #include <ctype.h>
+#include "memutil.h"
 #include "leaky-bucket.h"
 
 time_t __attribute__((weak)) bucket_time(void)
@@ -85,12 +86,12 @@ char *bucket_output(const struct bucket_conf *c, struct leaky_bucket *b)
 {
 	char *buf;
 	if (c->capacity == 0) {
-		asprintf(&buf, "not enabled");
+		xasprintf(&buf, "not enabled");
 	} else { 
 		int unit = 0;
 		//bucket_age(c, b, bucket_time());
 		timeconv(c->tunit, &unit);
-		asprintf(&buf, "%u in %u%c", b->count + b->excess, 
+		xasprintf(&buf, "%u in %u%c", b->count + b->excess,
 			c->agetime/unit, c->tunit);
 	}
 	return buf;

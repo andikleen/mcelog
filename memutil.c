@@ -71,7 +71,7 @@ int xvasprintf(char **strp, const char *fmt, va_list ap)
 	return n;
 }
 
-int asprintf(char **strp, const char *fmt, ...)
+int xasprintf(char **strp, const char *fmt, ...)
 {
 	int n;
 	va_list ap;

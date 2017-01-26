@@ -69,10 +69,10 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls, int soc
 	char *location;
 
 	if (socket >= 0) 
-		asprintf(&location, "CPU %d on socket %d", cpu, socket);
+		xasprintf(&location, "CPU %d on socket %d", cpu, socket);
 	else
-		asprintf(&location, "CPU %d", cpu);
-	asprintf(&msg, "%s has large number of corrected cache errors in %s %s", 
+		xasprintf(&location, "CPU %d", cpu);
+	xasprintf(&msg, "%s has large number of corrected cache errors in %s %s",
 		location, ls, ts);
 	free(location);
 	if (yellow_log) {
@@ -83,15 +83,15 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls, int soc
 		goto out;
 
 	if (socket >= 0)
-		asprintf(&env[ei++], "SOCKETID=%d", socket);
-	asprintf(&env[ei++], "MESSAGE=%s", msg);
-	asprintf(&env[ei++], "CPU=%d", cpu);
-	asprintf(&env[ei++], "LEVEL=%d", lnum);
-	asprintf(&env[ei++], "TYPE=%s", ts);
+		xasprintf(&env[ei++], "SOCKETID=%d", socket);
+	xasprintf(&env[ei++], "MESSAGE=%s", msg);
+	xasprintf(&env[ei++], "CPU=%d", cpu);
+	xasprintf(&env[ei++], "LEVEL=%d", lnum);
+	xasprintf(&env[ei++], "TYPE=%s", ts);
 	if (cache_to_cpus(cpu, lnum, tnum, &cpumasklen, &cpumask) >= 0)
 		env[ei++] = cpulist("AFFECTED_CPUS=", cpumask, cpumasklen); 
 	else
-		asprintf(&env[ei++], "AFFECTED_CPUS=unknown");
+		xasprintf(&env[ei++], "AFFECTED_CPUS=unknown");
 	env[ei] = NULL;	
 	assert(ei < MAX_ENV);
 

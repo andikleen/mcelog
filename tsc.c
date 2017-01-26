@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include "memutil.h"
 #include "mcelog.h"
 #include "tsc.h"
 #include "intel.h"
@@ -41,7 +42,7 @@ static int fmt_tsc(char **buf, u64 tsc, double mhz)
 	hours = scale(&tsc, 3600, mhz);
 	mins = scale(&tsc, 60, mhz);
 	secs = scale(&tsc, 1, mhz);
-	asprintf(buf, "[at %.0f Mhz %u days %u:%u:%u uptime (unreliable)]", 
+	xasprintf(buf, "[at %.0f Mhz %u days %u:%u:%u uptime (unreliable)]",
 		mhz, days, hours, mins, secs);
 	return 0;
 }
@@ -51,7 +52,7 @@ static double cpufreq_mhz(int cpu, double infomhz)
 	double mhz;
 	FILE *f;
 	char *fn;
-	asprintf(&fn, "/sys/devices/system/cpu/cpu%d/cpufreq/cpuinfo_max_freq", cpu);
+	xasprintf(&fn, "/sys/devices/system/cpu/cpu%d/cpufreq/cpuinfo_max_freq", cpu);
 	f = fopen(fn, "r");
 	free(fn);
 	if (!f) {
@@ -83,13 +84,13 @@ static int deep_sleep_states(int cpu)
 	size_t linelen = 0;
 
 	/* When cpuidle is active assume there are deep sleep states */
-	asprintf(&fn, "/sys/devices/system/cpu/cpu%d/cpuidle", cpu);
+	xasprintf(&fn, "/sys/devices/system/cpu/cpu%d/cpuidle", cpu);
 	ret = access(fn, X_OK);
 	free(fn);
 	if (ret == 0)
 		return 1;
 
-	asprintf(&fn, "/proc/acpi/processor/CPU%d/power", cpu);
+	xasprintf(&fn, "/proc/acpi/processor/CPU%d/power", cpu);
 	f = fopen(fn, "r");
 	free(fn);
 	if (!f)

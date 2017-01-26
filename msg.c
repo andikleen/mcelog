@@ -97,7 +97,7 @@ void SYSERRprintf(char *fmt, ...)
 		char *fmt2;
 		va_start(ap, fmt);
 		opensyslog();
-		asprintf(&fmt2, "%s: %s\n", fmt, err);
+		xasprintf(&fmt2, "%s: %s\n", fmt, err);
 		vsyslog(LOG_ERR, fmt2, ap);
 		free(fmt2);
 		va_end(ap);

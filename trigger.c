@@ -164,7 +164,7 @@ int trigger_check(char *s)
 	int rc;
 
 	if (trigger_dir)
-		asprintf(&name, "%s/%s", trigger_dir, s);
+		xasprintf(&name, "%s/%s", trigger_dir, s);
 	else
 		name = s;
 

@@ -120,7 +120,7 @@ static char *format_location(struct memdimm *md)
 	char numbuf[NUMLEN], numbuf2[NUMLEN];
 	char *location;
 
-	asprintf(&location, "SOCKET:%d CHANNEL:%s DIMM:%s [%s%s%s]",
+	xasprintf(&location, "SOCKET:%d CHANNEL:%s DIMM:%s [%s%s%s]",
 		md->socketid, 
 		md->channel == -1 ? "?" : number(numbuf, md->channel),
 		md->dimm == -1 ? "?" : number(numbuf2, md->dimm),
@@ -142,34 +142,34 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 	char *thresh = bucket_output(bc, bucket);
 	char *out;
 
-	asprintf(&out, "%s: %s", msg, thresh);
+	xasprintf(&out, "%s: %s", msg, thresh);
 	if (bc->log) { 
 		Gprintf("%s\n", out); 
 		Gprintf("Location %s\n", location);
 	}
 	if (bc->trigger == NULL)
 		goto out;
-	asprintf(&env[ei++], "PATH=%s", getenv("PATH") ?: "/sbin:/usr/sbin:/bin:/usr/bin");
-	asprintf(&env[ei++], "THRESHOLD=%s", thresh);
-	asprintf(&env[ei++], "TOTALCOUNT=%lu", et->count);
-	asprintf(&env[ei++], "LOCATION=%s", location);
+	xasprintf(&env[ei++], "PATH=%s", getenv("PATH") ?: "/sbin:/usr/sbin:/bin:/usr/bin");
+	xasprintf(&env[ei++], "THRESHOLD=%s", thresh);
+	xasprintf(&env[ei++], "TOTALCOUNT=%lu", et->count);
+	xasprintf(&env[ei++], "LOCATION=%s", location);
 	if (md->location)
-		asprintf(&env[ei++], "DMI_LOCATION=%s", md->location);
+		xasprintf(&env[ei++], "DMI_LOCATION=%s", md->location);
 	if (md->name)
-		asprintf(&env[ei++], "DMI_NAME=%s", md->name);
+		xasprintf(&env[ei++], "DMI_NAME=%s", md->name);
 	if (md->dimm != -1)
-		asprintf(&env[ei++], "DIMM=%d", md->dimm);
+		xasprintf(&env[ei++], "DIMM=%d", md->dimm);
 	if (md->channel != -1)
-		asprintf(&env[ei++], "CHANNEL=%d", md->channel);
-	asprintf(&env[ei++], "SOCKETID=%d", md->socketid);
-	asprintf(&env[ei++], "CECOUNT=%lu", md->ce.count);
-	asprintf(&env[ei++], "UCCOUNT=%lu", md->uc.count);
+		xasprintf(&env[ei++], "CHANNEL=%d", md->channel);
+	xasprintf(&env[ei++], "SOCKETID=%d", md->socketid);
+	xasprintf(&env[ei++], "CECOUNT=%lu", md->ce.count);
+	xasprintf(&env[ei++], "UCCOUNT=%lu", md->uc.count);
 	if (t)
-		asprintf(&env[ei++], "LASTEVENT=%lu", t);
-	asprintf(&env[ei++], "AGETIME=%u", bc->agetime);
+		xasprintf(&env[ei++], "LASTEVENT=%lu", t);
+	xasprintf(&env[ei++], "AGETIME=%u", bc->agetime);
 	// XXX human readable version of agetime
-	asprintf(&env[ei++], "MESSAGE=%s", out);
-	asprintf(&env[ei++], "THRESHOLD_COUNT=%d", bucket->count);
+	xasprintf(&env[ei++], "MESSAGE=%s", out);
+	xasprintf(&env[ei++], "THRESHOLD_COUNT=%d", bucket->count);
 	env[ei] = NULL;	
 	assert(ei < MAX_ENV);
 	run_trigger(bc->trigger, NULL, env);
@@ -192,7 +192,7 @@ account_over(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigned
 		md->ce.count += corr_err_cnt;
 		if (__bucket_account(&t->ce_bucket_conf, &md->ce.bucket, corr_err_cnt, m->time)) { 
 			char *msg;
-			asprintf(&msg, "Fallback %s memory error count %d exceeded threshold", 
+			xasprintf(&msg, "Fallback %s memory error count %d exceeded threshold",
 				 t->type, corr_err_cnt);
 			memdb_trigger(msg, md, 0, &md->ce, &t->ce_bucket_conf);
 			free(msg);
@@ -205,7 +205,7 @@ account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m)
 {
 	char *msg;
 
-	asprintf(&msg, "%scorrected %s memory error count exceeded threshold", 
+	xasprintf(&msg, "%scorrected %s memory error count exceeded threshold",
 		(m->status & MCI_STATUS_UC) ? "Un" : "", t->type);
 
 	if (m->status & MCI_STATUS_UC) { 
