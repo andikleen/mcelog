@@ -82,7 +82,7 @@ depend: .depend
 
 version.tmp: FORCE
 	( echo -n "char version[] = \"" ; 	\
-	if type -p git >/dev/null; then 	\
+	if command -v git >/dev/null; then 	\
 	if [ -d .git ] ; then 			\
 		git describe --tags HEAD | tr -d '\n'; 	\
 	else 					\
