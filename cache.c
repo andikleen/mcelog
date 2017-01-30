@@ -49,7 +49,7 @@ static struct map type_map[] = {
 	{ },
 };
 
-static void more_cpus(int cpu)
+static void more_cpus(unsigned cpu)
 {
 	int old = cachelen;
 	if (!cachelen)
