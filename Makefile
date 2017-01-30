@@ -11,7 +11,7 @@ MANDIR := ${prefix}/share/man
 # Warning flags added implicitely to CFLAGS in the default rule
 # this is done so that even when CFLAGS are overriden we still get
 # the additional warnings
-# Some warnings require the global optimizer and are only output with 
+# Some warnings require the global optimizer and are only output with
 # -O2/-Os, so that should be tested occasionally
 WARNINGS := -Wall -Wextra -Wno-missing-field-initializers -Wno-unused-parameter \
 	    -Wstrict-prototypes -Wformat-security -Wmissing-declarations \
@@ -57,8 +57,8 @@ install: mcelog mcelog.conf mcelog.conf.5 mcelog.triggers.5
 		install -m 755 -p -b triggers/$$i $(DESTDIR)${etcprefix}/etc/mcelog ; 	\
 	done
 ifdef DOCDIR
-	install -d 755 $(DESTDIR)${DOCDIR} 
-	install -m 644 -p ${DOC} $(DESTDIR)${DOCDIR} 
+	install -d 755 $(DESTDIR)${DOCDIR}
+	install -m 644 -p ${DOC} $(DESTDIR)${DOCDIR}
 else
 	echo
 	echo "Consider defining DOCDIR to install additional documentation"
@@ -68,7 +68,7 @@ mcelog.conf.5: mcelog.conf config-intro.man
 	./genconfig.py mcelog.conf config-intro.man > mcelog.conf.5
 
 clean: test-clean
-	rm -f ${CLEAN} ${OBJ} 
+	rm -f ${CLEAN} ${OBJ}
 
 tsc:    tsc.c
 	$(CC) -o tsc ${CFLAGS} -DSTANDALONE tsc.c ${LDFLAGS}
@@ -108,7 +108,7 @@ Makefile: .depend
 DISABLED_DIAGS := -diag-disable 188,271,869,2259,981,12072,181,12331,1572
 
 iccverify:
-	icc -Wall -diag-enable sv3 $(DISABLED_DIAGS) $(ADD_DEFINES) $(SRC)	
+	icc -Wall -diag-enable sv3 $(DISABLED_DIAGS) $(ADD_DEFINES) $(SRC)
 
 clangverify:
 	clang --analyze $(ADD_DEFINES) $(SRC)
