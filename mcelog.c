@@ -445,6 +445,9 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 	if (n > 0)
 		Wprintf("\n");
 
+	if (recordlen >= offsetof(struct mce, ppin) && m->ppin)
+		n += Wprintf("PPIN %llx\n", m->ppin);
+
 	if (recordlen >= offsetof(struct mce, cpuid) && m->cpuid) {
 		u32 fam, mod;
 		parse_cpuid(m->cpuid, &fam, &mod);
