@@ -81,15 +81,15 @@ depend: .depend
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(WARNINGS) $(ADD_DEFINES) -o $@ $<
 
 version.tmp: FORCE
-	( echo -n "char version[] = \"" ; 	\
+	( printf "char version[] = \"" ; 	\
 	if command -v git >/dev/null; then 	\
 	if [ -d .git ] ; then 			\
 		git describe --tags HEAD | tr -d '\n'; 	\
 	else 					\
-		echo -n "unknown" ; 		\
+		printf "unknown" ; 		\
 	fi ;					\
-	else echo -n "unknown" ; fi ;		\
-	echo '";'				\
+	else printf "unknown" ; fi ;		\
+	printf '";\n'				\
 	 ) > version.tmp
 
 version.c: version.tmp
