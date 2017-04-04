@@ -322,7 +322,7 @@ legacy:
 
 	if (p >= q) {
 		Eprintf("Cannot find SMBIOS DMI tables");
-		goto out;
+		goto out_mmap;
 	}
 
 	a = p;

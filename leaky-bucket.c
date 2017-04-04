@@ -69,9 +69,9 @@ static int timeconv(char unit, int *out)
 {
 	unsigned corr = 1;
 	switch (unit) { 
-	case 'd': corr *= 24;
-	case 'h': corr *= 60;
-	case 'm': corr *= 60;
+	case 'd': corr *= 24; /* FALL THROUGH */
+	case 'h': corr *= 60; /* FALL THROUGH */
+	case 'm': corr *= 60; /* FALL THROUGH */
 	case 0:   break;
 	default:
 		*out = 1;
@@ -124,9 +124,9 @@ static int parse_rate(const char *rate, struct bucket_conf *c)
 	if (t == 0 || cap == 0)
 		return -1;
 	switch (tolower(cunit[0])) { 
-	case 'g': cap *= 1000;
-	case 'm': cap *= 1000;
-	case 'k': cap *= 1000;
+	case 'g': cap *= 1000; /* FALL THROUGH */
+	case 'm': cap *= 1000; /* FALL THROUGH */
+	case 'k': cap *= 1000; /* FALL THROUGH */
 	case 0:   break;
 	default:  return -1;
 	}

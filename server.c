@@ -76,7 +76,7 @@ static void free_cc(struct clientcon *cc)
 
 static void sendstring(int fd, char *str)
 {
-	send(fd, str, strlen(str), MSG_DONTWAIT|MSG_NOSIGNAL);
+	(void)send(fd, str, strlen(str), MSG_DONTWAIT|MSG_NOSIGNAL);
 }
 
 static void dispatch_dump(FILE *fh, char *s)

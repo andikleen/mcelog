@@ -37,8 +37,10 @@ void ask_server(char *command)
 		path = SOCKET_PATH;
 
 	fd = socket(PF_UNIX, SOCK_STREAM, 0);
-	if (fd < 0) 
+	if (fd < 0) {
 		SYSERRprintf("client socket");
+		return;
+	}
 
 	sun.sun_family = AF_UNIX;
 	sun.sun_path[sizeof(sun.sun_path)-1] = 0;

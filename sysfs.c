@@ -38,23 +38,27 @@ char *read_field(char *base, char *name)
 	xasprintf(&fn, "%s/%s", base, name);
 	fd = open(fn, O_RDONLY);
 	free(fn);
-	if (fstat(fd, &st) < 0)
-		goto bad;		
-	buf = xalloc(st.st_size);
-	if (fd < 0) 
+	if (fd < 0)
 		goto bad;
+	if (fstat(fd, &st) < 0) {
+		close(fd);
+		goto bad;		
+	}
+	buf = xalloc(st.st_size);
 	n = read(fd, buf, st.st_size);
 	close(fd);
 	if (n < 0)
-		goto  bad;
-	val = xalloc(n);
+		goto  bad_buf;
+	val = xalloc(n + 1);
 	memcpy(val, buf, n);
 	free(buf);
-	s = strchr(val, '\n');
+	s = memchr(val, '\n', n);
 	if (s)
 		*s = 0;
 	return  val;
 
+bad_buf:
+	free(buf);
 bad:
 	SYSERRprintf("Cannot read sysfs field %s/%s", base, name);
 	return xstrdup("");

@@ -129,7 +129,7 @@ static int tsc_reliable(int cputype, int cpunum)
 	   need special rules here too. */
 	if (!is_intel_cpu(cputype))
 		return 0;
-	if (deep_sleep_states(cpunum) && cputype != CPU_NEHALEM)
+	if (deep_sleep_states(cpunum) && cputype < CPU_NEHALEM)
 		return 0;
 	return 1;
 }

@@ -116,7 +116,7 @@ struct rb_root
 };
 
 
-#define rb_parent(r)   ((struct rb_node *)((r)->rb_parent_color & ~3))
+#define rb_parent(r)   ((struct rb_node *)((r)->rb_parent_color & ~3L))
 #define rb_color(r)   ((r)->rb_parent_color & 1)
 #define rb_is_red(r)   (!rb_color(r))
 #define rb_is_black(r) rb_color(r)
