@@ -45,11 +45,12 @@ enum { PAGE_ONLINE = 0, PAGE_OFFLINE = 1, PAGE_OFFLINE_FAILED = 2 };
 
 struct mempage { 
 	struct rb_node nd;
-	u64 addr;
-	struct err_type ce;
+	/* one char used by rb_node */
 	char offlined;
 	char triggered;
-	// 2(32bit)-6(64bit) bytes of padding to play with here
+	// 1(32bit)-5(64bit) bytes of padding to play with here
+	u64 addr;
+	struct err_type ce;
 };
 
 static struct rb_root mempage_root;
@@ -237,7 +238,7 @@ void dump_page_errors(FILE *f)
 		if (k++ == 0)
 			fprintf(f, "Per page corrected memory statistics:\n");
 		msg = bucket_output(&page_trigger_conf, &p->ce.bucket);
-		fprintf(f, "%llx: total %lu seen \"%s\" %s%s\n",
+		fprintf(f, "%llx: total %u seen \"%s\" %s%s\n",
 			p->addr,
 			p->ce.count,
 			msg,

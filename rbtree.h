@@ -103,13 +103,12 @@ static inline struct page * rb_insert_page_cache(struct inode * inode,
 
 struct rb_node
 {
-	unsigned long  rb_parent_color;
 #define	RB_RED		0
 #define	RB_BLACK	1
 	struct rb_node *rb_right;
 	struct rb_node *rb_left;
-} __attribute__((aligned(sizeof(long))));
-    /* The alignment might seem pointless, but allegedly CRIS needs it */
+	unsigned char   rb_parent_color;
+} __attribute__((packed));
 
 struct rb_root
 {

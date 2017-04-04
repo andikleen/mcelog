@@ -3,7 +3,7 @@
 
 struct err_type {
 	struct leaky_bucket bucket;
-	unsigned long count;
+	unsigned count;
 };
 
 enum printflags {
