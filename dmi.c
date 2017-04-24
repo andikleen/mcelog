@@ -314,7 +314,7 @@ legacy:
 		goto out;
 	}   
 
-	for (p = abase, q = p + segsize; p < q; p += 0x10) { 
+	for (p = abase, q = p + segsize - 1; p < q; p += 0x10) {
 		if (!memcmp(p, "_SM_", 4) && 
 		    (checksum(p, ((struct anchor *)p)->entry_length) == 0)) 
 			break;
@@ -569,6 +569,8 @@ int dmi_sanity_check(void)
 		for (i = 0; i < k; i++) {
 			char *b = dmi_getstring(&dmi_dimms[i]->header,
 						dmi_dimms[i]->device_locator);
+			if (!b)
+				continue;
 			if (!strcmp(b, loc)) {
 				if (verbose > 0)
 					printf("Ambiguous locators `%s'<->`%s'."
