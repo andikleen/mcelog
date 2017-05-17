@@ -81,9 +81,10 @@ void run_trigger(char *trigger, char *argv[], char **env)
 		return;
 	}
 	if (child == 0) { 
-		if (trigger_dir)
-			chdir(trigger_dir);
-		execve(trigger, argv, env);	
+		if (trigger_dir && chdir(trigger_dir) == -1)
+			SYSERRprintf("Cannot chdir(%s) for trigger", trigger_dir);
+		else
+			execve(trigger, argv, env);
 		_exit(127);	
 	}
 }
