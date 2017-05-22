@@ -55,6 +55,10 @@ error predictive failure analysis) require a continuously running daemon.
 You can run mcelog from systemd or similar daemons. An example systemd unit
 file is in `mcelog.service`.
 
+By default mcelog reports its version as the git tag. This can be overridden
+by setting up a .os_release file in the source directory. A build system
+could write the OS version to this file to mark the binary.
+
 ### For older distributions using init scripts
 
 Please install an init script by default that runs mcelog in daemon mode.
