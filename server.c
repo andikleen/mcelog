@@ -322,6 +322,7 @@ void server_setup(void)
 {
 	int fd;
 	struct sockaddr_un adr; 
+	int on;
 
 	server_config();
 
@@ -360,6 +361,11 @@ void server_setup(void)
 
 
 	listen(fd, 10);
+	/* Set SO_PASSCRED to avoid race with client connecting too fast */
+	/* Ignore error for old kernels */
+	on = 1;
+	setsockopt(fd, SOL_SOCKET, SO_PASSCRED, &on, sizeof(on));
+
 	register_pollcb(fd, POLLIN, client_accept, NULL);
 	return;
 
