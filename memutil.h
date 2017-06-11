@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdarg.h>
 
 int xasprintf(char **strp, const char *fmt, ...);
 int xvasprintf(char **ret, const char *format, va_list ap);
