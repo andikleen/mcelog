@@ -79,7 +79,7 @@ static struct field pcu_mc4[] = {
 
 /* See IA32 SDM Vol3B Table 16-28 */
 
-static char *qpi[] = {
+static char *upi[] = {
 	[0x00] = "UC Phy Initialization Failure",
 	[0x01] = "UC Phy detected drift buffer alarm",
 	[0x02] = "UC Phy detected latency buffer rollover",
@@ -98,13 +98,13 @@ static char *qpi[] = {
 	[0x31] = "COR LL Rx detected CRC error - successful LLR with Phy Reinit",
 };
 
-static struct field qpi_mc[] = {
-	FIELD(16, qpi),
+static struct field upi_mc[] = {
+	FIELD(16, upi),
 	{}
 };
 
 /* These apply to MSCOD 0x12 "UC LL or Phy control error" */
-static struct field qpi_0x12[] = {
+static struct field upi_0x12[] = {
 	SBITFIELD(22, "Phy Control Error"),
 	SBITFIELD(23, "Unexpected Retry.Ack flit"),
 	SBITFIELD(24, "Unexpected Retry.Req flit"),
@@ -194,10 +194,10 @@ void skylake_s_decode_model(int cputype, int bank, u64 status, u64 misc)
 	case 5:
 	case 12:
 	case 19:
-		Wprintf("QPI: ");
-		decode_bitfield(status, qpi_mc);
+		Wprintf("UPI: ");
+		decode_bitfield(status, upi_mc);
 		if (EXTRACT(status, 16, 21) == 0x12)
-			decode_bitfield(status, qpi_0x12);
+			decode_bitfield(status, upi_0x12);
 		break;
 	case 7: case 8:
 		Wprintf("M2M: ");
