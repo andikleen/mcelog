@@ -5,7 +5,6 @@ ConditionPathExists=!/sys/module/edac_mce_amd/initstate
 
 [Service]
 ExecStart=/usr/sbin/mcelog --ignorenodev --daemon --foreground
-StandardOutput=syslog
 SuccessExitStatus=0 15
 
 [Install]
