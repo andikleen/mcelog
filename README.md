@@ -10,7 +10,7 @@ It primarily handles machine checks and thermal events, which are reported
 for errors detected by the CPU.
 
 For more details on what mcelog can do and the underlying theory
-see [mcelog.org](http://www.mcelog.org).
+see [mcelog.org](https://www.mcelog.org).
 
 It is recommended that mcelog runs on all x86 machines, both 64bit
 (since early 2.6) and 32bit (since 2.6.32).
