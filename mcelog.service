@@ -2,9 +2,10 @@
 Description=Machine Check Exception Logging Daemon
 After=syslog.target
 ConditionPathExists=!/sys/module/edac_mce_amd/initstate
+ConditionPathExists=/dev/mcelog
 
 [Service]
-ExecStart=/usr/sbin/mcelog --ignorenodev --daemon --foreground
+ExecStart=/usr/sbin/mcelog --daemon --foreground
 SuccessExitStatus=0 15
 
 [Install]
