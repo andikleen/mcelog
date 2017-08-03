@@ -96,7 +96,7 @@ static void noreturn parse_error(int line, char *msg)
 static void nothing(char *s, int line)
 {
 	if ((!empty(s)) != 0)
-		parse_error(line, "left over characters at end of line");
+		parse_error(line, "leftover characters at end of line");
 }
 
 static void unparseable(char *desc, const char *header, const char *name)
