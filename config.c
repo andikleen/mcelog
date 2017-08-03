@@ -12,10 +12,10 @@
    General Public License for more details.
 
    You should find a copy of v2 of the GNU General Public License somewhere
-   on your Linux system; if not, write to the Free Software Foundation, 
-   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+   on your Linux system; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-   Author: Andi Kleen 
+   Author: Andi Kleen
 */
 #define _GNU_SOURCE 1
 #include <stdio.h>
@@ -38,19 +38,19 @@
 #define xalloc(x) calloc(x,1)
 #endif
 
-/* ISSUES: 
+/* ISSUES:
    doesn't detect misspelled options (this would require a major revamp!)
    doesn't merge/detect duplicated headers */
 
 #define SHASH 11
 
-struct opt { 
+struct opt {
 	struct opt *next;
 	char *name;
 	char *val;
 };
 
-struct header { 
+struct header {
 	struct header *next;
 	char *name;
 	struct opt *opts[SHASH];
@@ -64,7 +64,7 @@ static unsigned hash(const char *str)
 {
 	const unsigned char *s;
         unsigned hash = 5381;
-	for (s = (const unsigned char *)str; *s; s++) 
+	for (s = (const unsigned char *)str; *s; s++)
 		hash = (hash * 32) + hash + *s;
         return hash % SHASH;
 }
@@ -73,9 +73,9 @@ static struct header *new_header(struct header *prevh, char *name)
 {
 	struct header *h = xalloc(sizeof(struct header));
 	h->name = xstrdup(name);
-	if (prevh) 
+	if (prevh)
 		prevh->next = h;
-	else 
+	else
 		hlist = h;
 	return h;
 }
@@ -103,9 +103,9 @@ static void unparseable(char *desc, const char *header, const char *name)
 {
 	char *field;
 
-	if (!strcmp(header, "global")) { 
+	if (!strcmp(header, "global")) {
 		xasprintf(&field, "%s", name);
-	} else { 
+	} else {
 		xasprintf(&field, "[%s] %s", header, name);
 	}
 	Eprintf("%s config option `%s' unparseable\n", desc, field);
@@ -147,17 +147,17 @@ int parse_config_file(const char *fn)
 	hdr = NULL;
 	while (getline(&line, &linelen, f) > 0) {
 		char *s = strchr(line, '#');
-		if (s) 
+		if (s)
 			*s = 0;
 		s = strstrip(line);
 		if (*s == '[') {
-			char *p = strchr(s, ']'); 
+			char *p = strchr(s, ']');
 			if (p == NULL)
 				parse_error(lineno, "Header without ending ]");
 			nothing(p + 1, lineno);
 			*p = 0;
 			hdr = new_header(hdr, s + 1);
-		} else if ((val = strchr(line, '=')) != NULL) { 
+		} else if ((val = strchr(line, '=')) != NULL) {
 			*val++ = 0;
 			name = strstrip(s);
 			val = strstrip(val);
@@ -165,10 +165,10 @@ int parse_config_file(const char *fn)
 			opt->name = xstrdup(name);
 			opt->val = xstrdup(val);
 			h = hash(name);
-			if (!hdr) 
+			if (!hdr)
 				hdr = new_header(hdr, "global");
 			//printf("[%s] \"%s\" = \"%s\"\n", hdr->name, name, val);
-			if (hdr->optslast[h] == NULL) 
+			if (hdr->optslast[h] == NULL)
 				hdr->opts[h] = opt;
 			else
 				hdr->optslast[h]->next = opt;
@@ -185,12 +185,12 @@ int parse_config_file(const char *fn)
 
 char *config_string(const char *header, const char *name)
 {
-	struct header *hdr;	
+	struct header *hdr;
 	unsigned h = hash(name);
 	for (hdr = hlist; hdr; hdr = hdr->next) {
-		if (!strcmp(hdr->name, header)) { 
-			struct opt *o;	
-			for (o = hdr->opts[h]; o; o = o->next) { 
+		if (!strcmp(hdr->name, header)) {
+			struct opt *o;
+			for (o = hdr->opts[h]; o; o = o->next) {
 				if (!strcmp(o->name, name))
 					return o->val;
 			}
@@ -206,7 +206,7 @@ int config_number(const char *header, const char *name, char *fmt, void *val)
 	char *str = config_string(header, name);
 	if (str == NULL)
 		return -1;
-	if (sscanf(str, fmt, val) != 1) { 
+	if (sscanf(str, fmt, val) != 1) {
 		unparseable("numerical", header, name);
 		return -1;
 	}
@@ -232,7 +232,7 @@ int config_bool(const char *header, const char *name)
 		{ "yes", 1 }, { "true", 1 }, { "1", 1 }, { "on", 1 },
 		{ "no", 0 }, { "false", 0 }, { "0", 0 }, { "off", 0 },
 		{}
-	};	
+	};
 	return config_choice(header, name, bool_choices);
 }
 
@@ -242,7 +242,7 @@ static char *match_arg(char **av, char *arg)
 	if (!strncmp(*av, arg, len)) {
 		if ((*av)[len] == '=') {
 			return len + 1 + *av;
-		} else { 
+		} else {
 			if (av[1] == NULL)
 				usage();
 			return av[1];
@@ -251,13 +251,13 @@ static char *match_arg(char **av, char *arg)
 	return NULL;
 }
 
-/* Look for the config file argument before parsing the other 
-   options because we want to read the config file first so 
+/* Look for the config file argument before parsing the other
+   options because we want to read the config file first so
    that command line options can conveniently override it. */
 const char *config_file(char **av, const char *deffn)
 {
 	char *arg;
-	while (*++av) { 
+	while (*++av) {
 		if (!strcmp(*av, "--"))
 			break;
 		if ((arg = match_arg(av, "--conf")) != NULL)
@@ -274,7 +274,7 @@ void config_options(struct option *opts, int (*func)(int))
 			if (config_bool("global", opts->name) != 1)
 				continue;
 			if (opts->flag) {
-				*(opts->flag) = opts->val;	
+				*(opts->flag) = opts->val;
 				continue;
 			}
 		} else {
@@ -305,7 +305,7 @@ int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
 
 	xasprintf(&name, "%s-trigger", base);
 	s = config_string(header, name);
-	if (s) { 
+	if (s) {
 		/* no $PATH */
 		if (trigger_check(s) != 0) {
 			SYSERRprintf("Trigger `%s' not executable\n", s);
@@ -331,24 +331,24 @@ void config_cred(char *header, char *base, struct config_cred *cred)
 	char *name;
 
 	xasprintf(&name, "%s-user", base);
-	if ((s = config_string(header, name)) != NULL) { 
+	if ((s = config_string(header, name)) != NULL) {
 		struct passwd *pw;
 		if (!strcmp(s, "*"))
 			cred->uid = -1U;
 		else if ((pw = getpwnam(s)) == NULL)
-			Eprintf("Unknown user `%s' in %s:%s config entry\n", 
+			Eprintf("Unknown user `%s' in %s:%s config entry\n",
 				s, header, name);
 		else
 		        cred->uid = pw->pw_uid;
 	}
 	free(name);
-	xasprintf(&name, "%s-group", base);	
-	if ((s = config_string(header, name)) != NULL) { 
+	xasprintf(&name, "%s-group", base);
+	if ((s = config_string(header, name)) != NULL) {
 		struct group *gr;
 		if (!strcmp(s, "*"))
 			cred->gid = -1U;
 		else if ((gr = getgrnam(s)) == NULL)
-			Eprintf("Unknown group `%s' in %s:%s config entry\n", 
+			Eprintf("Unknown group `%s' in %s:%s config entry\n",
 				header, name, s);
 		else
 			cred->gid = gr->gr_gid;
@@ -359,7 +359,7 @@ void config_cred(char *header, char *base, struct config_cred *cred)
 #ifdef TEST
 int main(int ac, char **av)
 {
-	if (!av[1]) 
+	if (!av[1])
 		printf("need config file\n"), exit(1);
 	if (parse_config_file(av[1]) < 0)
 		printf("cannot parse config file\n"), exit(1);
@@ -367,8 +367,8 @@ int main(int ac, char **av)
 	char *header;
 	char *name;
 	int n;
-	while (scanf("%as %as %as", &type, &header, &name) == 3) { 
-		switch (type[0]) { 
+	while (scanf("%as %as %as", &type, &header, &name) == 3) {
+		switch (type[0]) {
 		case 'n':
 			if (config_number(header, name, "%d", &n) < 0)
 				printf("Cannot parse number %s %s\n", header, name);
@@ -388,7 +388,7 @@ int main(int ac, char **av)
 		free(type);
 		free(header);
 		free(name);
-	} 
+	}
 	return 0;
 }
 #endif
