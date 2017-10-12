@@ -982,10 +982,10 @@ void usage(void)
 "--pidfile file	     Write pid of daemon into file\n"
 "--no-imc-log	     Disable extended iMC logging\n"
 "--is-cpu-supported  Exit with return code indicating whether the CPU is supported\n"
+"--help	             Display this message.\n"
 		);
 	printf("\n");
 	print_cputypes();
-	exit(1);
 }
 
 enum options { 
@@ -1017,6 +1017,7 @@ enum options {
 	O_DEBUG_NUMERRORS,
 	O_NO_IMC_LOG,
 	O_IS_CPU_SUPPORTED,
+	O_HELP,
 };
 
 static struct option options[] = {
@@ -1050,6 +1051,7 @@ static struct option options[] = {
 	{ "pidfile", 1, NULL, O_PIDFILE },
 	{ "debug-numerrors", 0, NULL, O_DEBUG_NUMERRORS }, /* undocumented: for testing */
 	{ "no-imc-log", 0, NULL, O_NO_IMC_LOG },
+	{ "help", 0, NULL, O_HELP },
 	{ "is-cpu-supported", 0, NULL, O_IS_CPU_SUPPORTED },
 	{}
 };
@@ -1080,12 +1082,15 @@ static int modifier(int opt)
 		break;
 	case O_INTEL_CPU: { 
 		unsigned fam, mod;
-		if (sscanf(optarg, "%i,%i", &fam, &mod) != 2)
+		if (sscanf(optarg, "%i,%i", &fam, &mod) != 2) {
 			usage();
+			exit(1);
+		}
 		cputype = select_intel_cputype(fam, mod);
 		if (cputype == CPU_GENERIC) {
 			fprintf(stderr, "Unknown Intel CPU\n");
 			usage();
+			exit(1);
 		}
 		cpu_forced = 1;
 		break;
@@ -1104,8 +1109,10 @@ static int modifier(int opt)
 		do_dmi = 0;
 		break;
 	case O_DMI_VERBOSE:
-		if (sscanf(optarg, "%i", &v) != 1)
+		if (sscanf(optarg, "%i", &v) != 1) {
 			usage();
+			exit(1);
+		}
 		dmi_set_verbosity(v);
 		break;
 	case O_SYSLOG:
@@ -1117,8 +1124,10 @@ static int modifier(int opt)
 		break;
 	case O_CPUMHZ:
 		cpumhz_forced = 1;
-		if (sscanf(optarg, "%lf", &cpumhz) != 1)
+		if (sscanf(optarg, "%lf", &cpumhz) != 1) {
 			usage();
+			exit(1);
+		}
 		break;
 	case O_SYSLOG_ERROR:
 		syslog_level = LOG_ERR;
@@ -1155,6 +1164,10 @@ static int modifier(int opt)
 	case O_IS_CPU_SUPPORTED:
 		check_only = 1;
 		break;
+	case O_HELP:
+		usage();
+		exit(0);
+		break;
 	case 0:
 		break;
 	default:
@@ -1184,8 +1197,10 @@ void argsleft(int ac, char **av)
 	int opt;
 		
 	while ((opt = getopt_long(ac, av, "", options, NULL)) != -1) { 
-		if (modifier(opt) != 1)
+		if (modifier(opt) != 1) {
 			usage();
+			exit(1);
+		}
 	}
 }
 
@@ -1284,16 +1299,20 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 
 static void noargs(int ac, char **av)
 {
-	if (getopt_long(ac, av, "", options, NULL) != -1)
+	if (getopt_long(ac, av, "", options, NULL) != -1) {
 		usage();
+		exit(1);
+	}
 }
 
 static void parse_config(char **av)
 {
 	static const char config_fn[] = CONFIG_FILENAME;
 	const char *fn = config_file(av, config_fn);
-	if (!fn)
+	if (!fn) {
 		usage();
+		exit(1);
+	}
 	if (parse_config_file(fn) < 0) { 
 		/* If it's the default file don't complain if it isn't there */
 		if (fn != config_fn) {
@@ -1362,6 +1381,7 @@ int main(int ac, char **av)
 	while ((opt = getopt_long(ac, av, "", options, NULL)) != -1) { 
 		if (opt == '?') {
 			usage(); 
+			exit(1);
 		} else if (combined_modifier(opt) > 0) {
 			continue;
 		} else if (opt == O_ASCII) { 
@@ -1404,8 +1424,10 @@ int main(int ac, char **av)
 	modifier_finish();
 	if (av[optind])
 		logfn = av[optind++];
-	if (av[optind])
+	if (av[optind]) {
 		usage();
+		exit(1);
+	}
 	checkdmi();
 	general_setup();
 		
