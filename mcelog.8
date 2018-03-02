@@ -36,10 +36,10 @@ may kill processes or panic the machine. A small number of corrected
 errors is usually not a cause for worry, but a large number can indicate
 future failure.
 
-When a corrected or recovered error happens the x86 kernel writes a record describing
+When a corrected or recovered error happens, the x86 kernel writes a record describing
 the MCE into a internal ring buffer available through the
 .I /dev/mcelog
-device
+device.
 .I mcelog 
 retrieves errors from 
 .I /dev/mcelog, 
