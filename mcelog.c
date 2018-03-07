@@ -436,19 +436,19 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 	/* decode all status bits here */
 	Wprintf("STATUS %llx MCGSTATUS %llx\n", m->status, m->mcgstatus);
 	n = 0;
-	if (recordlen >= offsetof(struct mce, cpuid) && m->mcgcap)
+	if (recordlen > offsetof(struct mce, cpuid) && m->mcgcap)
 		n += Wprintf("MCGCAP %llx ", m->mcgcap);
-	if (recordlen >= offsetof(struct mce, apicid))
+	if (recordlen > offsetof(struct mce, apicid))
 		n += Wprintf("APICID %x ", m->apicid);
-	if (recordlen >= offsetof(struct mce, socketid))
+	if (recordlen > offsetof(struct mce, socketid))
 		n += Wprintf("SOCKETID %x ", m->socketid);
 	if (n > 0)
 		Wprintf("\n");
 
-	if (recordlen >= offsetof(struct mce, ppin) && m->ppin)
+	if (recordlen > offsetof(struct mce, ppin) && m->ppin)
 		n += Wprintf("PPIN %llx\n", m->ppin);
 
-	if (recordlen >= offsetof(struct mce, cpuid) && m->cpuid) {
+	if (recordlen > offsetof(struct mce, cpuid) && m->cpuid) {
 		u32 fam, mod;
 		parse_cpuid(m->cpuid, &fam, &mod);
 		Wprintf("CPUID Vendor %s Family %u Model %u\n",
@@ -478,10 +478,10 @@ static void dump_mce_raw_ascii(struct mce *m, unsigned recordlen)
 	Wprintf("ADDR %#llx\n", m->addr);
 	Wprintf("STATUS %#llx\n", m->status);
 	Wprintf("MCGSTATUS %#llx\n", m->mcgstatus);
-	if (recordlen >= offsetof(struct mce, cpuid))
+	if (recordlen > offsetof(struct mce, cpuid))
 		Wprintf("PROCESSOR %u:%#x\n", m->cpuvendor, m->cpuid);
 #define CPRINT(str, field) 				\
-	if (recordlen >= offsetof(struct mce, field))	\
+	if (recordlen > offsetof(struct mce, field))	\
 		Wprintf(str "\n", m->field)
 	CPRINT("TIME %llu", time);
 	CPRINT("SOCKETID %u", socketid);
