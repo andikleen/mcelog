@@ -107,7 +107,7 @@ struct rb_node
 #define	RB_BLACK	1
 	struct rb_node *rb_right;
 	struct rb_node *rb_left;
-	unsigned char   rb_parent_color;
+	unsigned long   rb_parent_color;
 } __attribute__((packed));
 
 struct rb_root
