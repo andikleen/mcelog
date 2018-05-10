@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <string.h>
 #include <sys/wait.h>
 #include "trigger.h"
@@ -40,6 +41,8 @@ static int num_children;
 static int children_max = 4;
 static char *trigger_dir;
 
+static void finish_child(pid_t child, int status);
+
 pid_t mcelog_fork(const char *name)
 {
 	pid_t child;
@@ -58,9 +61,11 @@ pid_t mcelog_fork(const char *name)
 }
 
 // note: trigger must be allocated, e.g. from config
-void run_trigger(char *trigger, char *argv[], char **env)
+void run_trigger(char *trigger, char *argv[], char **env, bool sync)
 {
 	pid_t child;
+	int status;
+
 	char *fallback_argv[] = {
 		trigger,
 		NULL,

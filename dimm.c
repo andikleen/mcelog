@@ -374,7 +374,7 @@ void new_error(unsigned long long addr, unsigned long max_error, char *trigger)
 			Lprintf("Large number of corrected errors in memory at %s", loc);
 			Lprintf("Consider replacing it");
 			if (trigger && trigger[0])
-				run_trigger(trigger, loc, val, max_error);
+				run_trigger(trigger, loc, val, max_error, false);
 		}
 	}
 	free(devs);

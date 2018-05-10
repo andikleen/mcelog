@@ -211,11 +211,11 @@ account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m)
 	if (m->status & MCI_STATUS_UC) { 
 		md->uc.count++;
 		if (__bucket_account(&t->uc_bucket_conf, &md->uc.bucket, 1, m->time))
-			memdb_trigger(msg, md, m->time, &md->uc, &t->uc_bucket_conf);
+			memdb_trigger(msg, md, m->time, &md->uc, &t->uc_bucket_conf, false);
 	} else {
 		md->ce.count++;
 		if (__bucket_account(&t->ce_bucket_conf, &md->ce.bucket, 1, m->time))
-			memdb_trigger(msg, md, m->time, &md->ce, &t->ce_bucket_conf);
+			memdb_trigger(msg, md, m->time, &md->ce, &t->ce_bucket_conf, false);
 	}
 	free(msg);
 }
