@@ -21,7 +21,9 @@ TRIGGERS=cache-error-trigger dimm-error-trigger page-error-trigger \
 	 socket-memory-error-trigger \
 	 bus-error-trigger \
 	 iomca-error-trigger \
-	 unknown-error-trigger
+	 unknown-error-trigger \
+	 page-error-pre-sync-soft-trigger \
+	 page-error-post-sync-soft-trigger
 
 all: mcelog
 

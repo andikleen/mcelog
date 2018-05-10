@@ -1,0 +1,39 @@
+#!/bin/sh
+#  This shell script can be executed by mcelog in daemon mode when a page
+#  in memory exceeds a pre-configured corrected error threshold.
+#  mcelog internally also supports offlining the page through the kernel.
+#
+# environment:
+# THRESHOLD     human readable threshold status
+# MESSAGE	Human readable consolidated error message
+# TOTALCOUNT    total count of errors for current DIMM of CE/UC depending on
+#		what triggered the event
+# LOCATION	Consolidated location as a single string
+# DMI_LOCATION  DIMM location from DMI/SMBIOS if available
+# DMI_NAME	DIMM identifier from DMI/SMBIOS if available
+# DIMM		DIMM number reported by hardware
+# CHANNEL	Channel number reported by hardware
+# SOCKETID	Socket ID of CPU that includes the memory controller with the DIMM
+# CECOUNT	Total corrected error count for DIMM
+# UCCOUNT	Total uncorrected error count for DIMM
+# LASTEVENT	Time stamp of event that triggered threshold (in time_t format, seconds)
+# THRESHOLD_COUNT Total umber of events in current threshold time period of specific type
+#
+# note: will run as mcelog configured user
+# this can be changed in mcelog.conf
+
+logger -s -p daemon.err -t mcelog "$MESSAGE"
+logger -s -p daemon.err -t mcelog "Location: $LOCATION"
+
+[ -x ./page-error-pre-soft-trigger.local ] && . ./page-error-pre-soft-trigger.local
+
+if [ -d page-error-pre-sync-soft-trigger.extern ]
+then
+    ls page-error-pre-sync-soft-trigger.extern |
+    while read item
+    do
+        [ -x ./page-error-pre-sync-soft-trigger.extern/$item ] && . ./page-error-pre-sync-soft-trigger.extern/$item
+    done
+fi
+
+exit 0

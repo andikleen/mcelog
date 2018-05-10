@@ -1,5 +1,5 @@
 
-." Auto generated mcelog.conf manpage. Do not edit.
+.\" Auto generated mcelog.conf manpage. Do not edit.
 .TH "mcelog.conf" 5 "mcelog"
 
 .SH NAME
@@ -8,11 +8,10 @@ mcelog.conf \- mcelog.conf reference
 .B /etc/mcelog.conf
 .SH DESCRIPTION
 
-/etc/mcelog.conf is the main configuration file for 
+/etc/mcelog.conf is the main configuration file for
 .B mcelog(8).
-This is configuration file separated into sections including 
+This is configuration file separated into sections including
 a default section.
-
 
 General format
 .PP
@@ -266,6 +265,18 @@ soft-then-hard   First try to soft offline, then try hard offlining
 .B memory-ce-action = soft
 .PP
 .PP
+Trigger script before doing soft memory offline
+this trigger will scan and run all the scipts in the page-error-pre-soft-trigger.extern
+.PP
+.B memory-pre-sync-soft-ce-trigger = page-error-pre-sync-soft-trigger
+.PP
+.PP
+Trigger script after completing soft memory offline
+this trigger will scan and run all the scipts in the page-error-post-soft-trigger.extern
+.PP
+.B memory-post-sync-soft-ce-trigger = page-error-post-sync-soft-trigger
+.PP
+.PP
 .SS "The trigger config section"
 Maximum number of running triggers
 .PP
@@ -277,7 +288,7 @@ Execute triggers in this directory
 .PP
 
 .SH SEE ALSO
-.BR mcelog (8)
-,
+.BR mcelog (8),
+.BR mcelog.triggers (5)
 .B http://www.mcelog.org
 
