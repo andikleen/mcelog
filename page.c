@@ -220,26 +220,40 @@ void account_page_error(struct mce *m, int channel, int dimm)
 		xasprintf(&msg, "Corrected memory errors on page %llx exceed threshold %s",
 			addr, thresh);
 		free(thresh);
-		memdb_trigger(msg, md, t, &mp->ce, &page_trigger_conf, false);
+		memdb_trigger(msg, md, t, &mp->ce, &page_trigger_conf, NULL, false);
 		free(msg);
 		mp->triggered = 1;
 
 		if (offline == OFFLINE_SOFT || offline == OFFLINE_SOFT_THEN_HARD) {
 			struct bucket_conf page_soft_trigger_conf;
+			char *argv[] = {
+				NULL,
+				NULL,	
+				NULL,
+			};
+			char *args;
+
+			asprintf(&args, "%lld", addr);
+			argv[0]=args;
 
 			memcpy(&page_soft_trigger_conf, &page_trigger_conf, sizeof(struct bucket_conf));
 			page_soft_trigger_conf.trigger = page_error_pre_soft_trigger;
-			asprintf(&msg, "pre soft trigger run for page %llx", addr);
-			memdb_trigger(msg, md, t, &mp->ce, &page_soft_trigger_conf, true);
+			argv[0]=page_error_pre_soft_trigger;
+			argv[1]=args;
+			asprintf(&msg, "pre soft trigger run for page %lld", addr);
+			memdb_trigger(msg, md, t, &mp->ce, &page_soft_trigger_conf, argv, true);
 			free(msg);
 
 			offline_action(mp, addr);
 
 			memcpy(&page_soft_trigger_conf, &page_trigger_conf, sizeof(struct bucket_conf));
 			page_soft_trigger_conf.trigger = page_error_post_soft_trigger;
-			asprintf(&msg, "post soft trigger run for page %llx", addr);
-			memdb_trigger(msg, md, t, &mp->ce, &page_soft_trigger_conf, true);
+			argv[0]=page_error_post_soft_trigger;
+			argv[1]=args;
+			asprintf(&msg, "post soft trigger run for page %lld", addr);
+			memdb_trigger(msg, md, t, &mp->ce, &page_soft_trigger_conf, argv, true);
 			free(msg);
+			free(args);
 
 		} else
 			offline_action(mp, addr);
