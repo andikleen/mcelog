@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <string.h>
 #include "memutil.h"
+#include "trigger.h"
 #include "mcelog.h"
 #include "rbtree.h"
 #include "leaky-bucket.h"
@@ -55,6 +56,7 @@ struct mempage {
 
 static struct rb_root mempage_root;
 static struct bucket_conf page_trigger_conf;
+static char *page_error_pre_soft_trigger, *page_error_post_soft_trigger;
 
 static const char *page_state[] = {
 	[PAGE_ONLINE] = "online",
@@ -221,7 +223,26 @@ void account_page_error(struct mce *m, int channel, int dimm)
 		memdb_trigger(msg, md, t, &mp->ce, &page_trigger_conf);
 		free(msg);
 		mp->triggered = 1;
-		offline_action(mp, addr);
+
+		if (offline == OFFLINE_SOFT || offline == OFFLINE_SOFT_THEN_HARD) {
+			struct bucket_conf page_soft_trigger_conf;
+
+			memcpy(&page_soft_trigger_conf, &page_trigger_conf, sizeof(struct bucket_conf));
+			page_soft_trigger_conf.trigger = page_error_pre_soft_trigger;
+			asprintf(&msg, "pre soft trigger run for page %llx", addr);
+			memdb_trigger(msg, md, t, &mp->ce, &page_soft_trigger_conf, true);
+			free(msg);
+
+			offline_action(mp, addr);
+
+			memcpy(&page_soft_trigger_conf, &page_trigger_conf, sizeof(struct bucket_conf));
+			page_soft_trigger_conf.trigger = page_error_post_soft_trigger;
+			asprintf(&msg, "post soft trigger run for page %llx", addr);
+			memdb_trigger(msg, md, t, &mp->ce, &page_soft_trigger_conf, true);
+			free(msg);
+
+		} else
+			offline_action(mp, addr);
 	}
 }
 
@@ -261,5 +282,20 @@ void page_setup(void)
 	    !sysfs_available(kernel_offline[offline], W_OK)) {
 		Lprintf("Kernel does not support page offline interface\n");
 		offline = OFFLINE_ACCOUNT;
+	}
+
+	page_error_pre_soft_trigger = config_string("page", "memory-pre-sync-soft-ce-trigger");
+
+	if (page_error_pre_soft_trigger && trigger_check(page_error_pre_soft_trigger) < 0) {
+		SYSERRprintf("Cannot access page soft pre trigger `%s'",
+				page_error_pre_soft_trigger);
+		exit(1);
+	}
+
+	page_error_post_soft_trigger= config_string("page", "memory-post-sync-soft-ce-trigger");
+	if (page_error_post_soft_trigger && trigger_check(page_error_post_soft_trigger) < 0) {
+		SYSERRprintf("Cannot access page soft post trigger `%s'",
+				page_error_post_soft_trigger);
+		exit(1);
 	}
 }

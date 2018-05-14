@@ -73,7 +73,7 @@ void run_unknown_trigger(int socket, int cpu, struct mce *log)
 	env[ei] = NULL;
 	assert(ei < MAX_ENV);
 
-	run_trigger(unknown_trigger, NULL, env);
+	run_trigger(unknown_trigger, NULL, env, false);
 	for (i = 0; i < ei; i++)
 		free(env[i]);
 	free(msg);

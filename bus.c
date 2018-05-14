@@ -82,7 +82,7 @@ void run_bus_trigger(int socket, int cpu, char *level, char *pp, char *rrrr,
 	env[ei] = NULL;
 	assert(ei < MAX_ENV);
 
-	run_trigger(bus_trigger, NULL, env);
+	run_trigger(bus_trigger, NULL, env, false);
 	for (i = 0; i < ei; i++)
 		free(env[i]);
 	free(msg);
@@ -119,7 +119,7 @@ void run_iomca_trigger(int socket, int cpu, int seg, int bus, int dev, int fn)
 	env[ei] = NULL;
 	assert(ei < MAX_ENV);
 
-	run_trigger(iomca_trigger, NULL, env);
+	run_trigger(iomca_trigger, NULL, env, false);
 	for (i = 0; i < ei; i++)
 		free(env[i]);
 	free(msg);

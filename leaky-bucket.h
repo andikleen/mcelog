@@ -2,6 +2,7 @@
 #define LEAKY_BUCKET_H 1
 
 #include <time.h>
+#include <stdbool.h>
 
 /* Leaky bucket algorithm for triggers */
 
