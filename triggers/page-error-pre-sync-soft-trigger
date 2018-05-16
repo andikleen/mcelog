@@ -18,6 +18,7 @@
 # UCCOUNT	Total uncorrected error count for DIMM
 # LASTEVENT	Time stamp of event that triggered threshold (in time_t format, seconds)
 # THRESHOLD_COUNT Total umber of events in current threshold time period of specific type
+# ARGUMENTS:$1  the page address of soft offline
 #
 # note: will run as mcelog configured user
 # this can be changed in mcelog.conf
@@ -25,14 +26,14 @@
 logger -s -p daemon.err -t mcelog "$MESSAGE"
 logger -s -p daemon.err -t mcelog "Location: $LOCATION"
 
-[ -x ./page-error-pre-soft-trigger.local ] && . ./page-error-pre-soft-trigger.local
+[ -x ./page-error-pre-soft-trigger.local ] && . ./page-error-pre-soft-trigger.local $1
 
 if [ -d page-error-pre-sync-soft-trigger.extern ]
 then
     ls page-error-pre-sync-soft-trigger.extern |
     while read item
     do
-        [ -x ./page-error-pre-sync-soft-trigger.extern/$item ] && . ./page-error-pre-sync-soft-trigger.extern/$item
+        [ -x ./page-error-pre-sync-soft-trigger.extern/$item ] && . ./page-error-pre-sync-soft-trigger.extern/$item $1
     done
 fi
 
