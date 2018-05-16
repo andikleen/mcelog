@@ -220,7 +220,7 @@ void account_page_error(struct mce *m, int channel, int dimm)
 		xasprintf(&msg, "Corrected memory errors on page %llx exceed threshold %s",
 			addr, thresh);
 		free(thresh);
-		memdb_trigger(msg, md, t, &mp->ce, &page_trigger_conf);
+		memdb_trigger(msg, md, t, &mp->ce, &page_trigger_conf, false);
 		free(msg);
 		mp->triggered = 1;
 

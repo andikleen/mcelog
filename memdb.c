@@ -132,7 +132,7 @@ static char *format_location(struct memdimm *md)
 
 /* Run a user defined trigger when a error threshold is crossed. */
 void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
-		struct err_type *et, struct bucket_conf *bc)
+		struct err_type *et, struct bucket_conf *bc, bool sync)
 {
 	struct leaky_bucket *bucket = &et->bucket;
 	char *env[MAX_ENV]; 
@@ -172,7 +172,7 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 	xasprintf(&env[ei++], "THRESHOLD_COUNT=%d", bucket->count);
 	env[ei] = NULL;	
 	assert(ei < MAX_ENV);
-	run_trigger(bc->trigger, NULL, env);
+	run_trigger(bc->trigger, NULL, env, sync);
 	for (i = 0; i < ei; i++)
 		free(env[i]);
 out:
@@ -194,7 +194,7 @@ account_over(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigned
 			char *msg;
 			xasprintf(&msg, "Fallback %s memory error count %d exceeded threshold",
 				 t->type, corr_err_cnt);
-			memdb_trigger(msg, md, 0, &md->ce, &t->ce_bucket_conf);
+			memdb_trigger(msg, md, 0, &md->ce, &t->ce_bucket_conf, false);
 			free(msg);
 		}
 	}
