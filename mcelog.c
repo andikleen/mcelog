@@ -719,7 +719,7 @@ restart:
 		if (!strncmp(s, "CPU ", 4)) { 
 			unsigned cpu = 0, bank = 0;
 			n = sscanf(s,
-	       "CPU %u: Machine Check Exception: %16Lx Bank %d: %016Lx%n",
+	       "CPU %u: Machine Check%*[ :Ec-x]%16Lx Bank %d: %016Lx%n",
 				   &cpu,
 				   &m.mcgstatus,
 				   &bank,
