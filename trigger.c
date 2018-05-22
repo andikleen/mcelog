@@ -64,7 +64,6 @@ pid_t mcelog_fork(const char *name)
 void run_trigger(char *trigger, char *argv[], char **env, bool sync)
 {
 	pid_t child;
-	int status;
 
 	char *fallback_argv[] = {
 		trigger,
