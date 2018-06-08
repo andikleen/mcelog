@@ -10,6 +10,7 @@ test:
 	./test pfa "${DEBUG}"
 	./test unknown "${DEBUG}"
 	./test server "${DEBUG}"
+	./mcaerr_test -a
 
 clean:
 	rm -f */*log

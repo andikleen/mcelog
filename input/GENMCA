@@ -1,0 +1,161 @@
+#!/bin/bash
+# ./GENMCA status [processor]
+SIMPLE=(
+        [0]="No Error"
+        [1]="Unclassified"
+        [2]="Microcode ROM parity error"
+        [3]="External error"
+        [4]="FRC error"
+        [5]="Internal parity error"
+        [6]="SMM Handler Code Access Violation"
+     )
+LL=( "Level-0" "Level-1" "Level-2" "Level-3" )
+TT=( "Instruction" "Data" "Generic" "Unknown" )
+mmm_mnemonic=( "GEN" "RD" "WR" "AC" "MS" "RES5" "RES6" "RES7" )
+RRRR=(
+        [0]="Generic"
+        [1]="Read"
+        [2]="Write"
+        [3]="Data-Read"
+        [4]="Data-Write"
+        [5]="Instruction-Fetch"
+        [6]="Prefetch"
+        [7]="Eviction"
+        [8]="Snoop"
+     )
+PP=(
+	[0]="Local-CPU-originated-request"
+	[1]="Responed-to-request"
+	[2]="Observed-error-as-third-party"
+	[3]="Generic"
+   )
+T=( "Request-did-not-timeout" "Request-timed-out" )
+
+II=( "Memory-access" "Reserved" "IO" "Other-transaction" )
+
+# generate the input files for 'mcelog --ascii'
+creat_file()
+{
+	echo "$1" > $mca_fname
+	echo "$2" >> $mca_fname
+	echo "$3" >> $mca_fname
+}
+
+simple_error()
+{
+	if [[ "$ecode" -le 6 ]]; then
+		echo "${SIMPLE[$ecode]}" > $mca_fexpect
+	elif [[ "$ecode" -eq 0x0400 ]]; then
+		echo "Internal Timer error" > $mca_fexpect
+	elif [[ "$ecode" -gt 0x0400 ]]; then
+		printf "Internal unclassified error: %x" $ecode > $mca_fexpect
+	fi
+}
+
+generic_cache_hierarchy()
+{
+	local levelnum=$(($ecode & 3))
+
+	echo "${LL[$levelnum]} Generic cache hierarchy error" > $mca_fexpect
+}
+
+tlb_errors()
+{
+	local levelnum=$(($ecode & 3))
+	local typenum=$(($ecode >> 2 & 3))
+
+	echo "${TT[$typenum]} TLB ${LL[$levelnum]} Error" > $mca_fexpect
+}
+
+memory_controller_errors()
+{
+	local chan=$(($ecode & 0xf))
+	local mmm_num=$(($ecode >> 4 & 7))
+
+	if [[ "$chan" -eq 0xf ]]; then
+		chan="unspecified"
+	else
+		chan=$(printf "%u" $chan)
+	fi
+	echo "MEMORY CONTROLLER ${mmm_mnemonic[mmm_num]}_CHANNEL${chan}_ERR" > $mca_fexpect
+}
+
+cache_hierarchy_errors()
+{
+	local levelnum=$(($ecode & 3))
+	local typenum=$(($ecode >> 2 & 3))
+	local rrrr_num=$(($ecode >> 4 & 0xf))
+	local rrrr_str
+
+	if [[ "$rrrr_num" -gt 8 ]]; then
+		rrrr_str="UNKNOWN"
+	else
+		rrrr_str="${RRRR[$rrrr_num]}"
+	fi
+	echo "${TT[$typenum]} CACHE ${LL[$levelnum]} ${rrrr_str} Error" > $mca_fexpect
+}
+
+bus_and_interconnect_errors()
+{
+	local levelnum=$(($ecode & 3))
+	local ii_num=$(($ecode >> 2 & 3))
+	local rrrr_num=$(($ecode >> 4 & 0xf))
+	local rrrr_str
+	local t_num=$(($ecode >> 8 & 1))
+	local pp_num=$(($ecode >> 9 & 3))
+
+	if [[ "$rrrr_num" -gt 8 ]]; then
+		rrrr_str="UNKNOWN"
+	else
+		rrrr_str="${RRRR[$rrrr_num]}"
+	fi
+	echo "${LL[$levelnum]} ${PP[$pp_num]} ${rrrr_str} ${II[ii_num]} ${T[t_num]}" > $mca_fexpect
+}
+
+usage()
+{
+echo "Usage: ${0##*/} status [processor]"
+echo -e "\tstatus   	--- the 64-bit IA32_MCi_Status value, i.e., 0x8000000000000002."
+echo -e "\tprocessor 	--- the format of 'processor' is 'vendor:CPUID', vendor: 0 - Intel,"
+echo -e "\t         	    i.e., 0:0x50650 ."
+	exit 1
+}
+
+complain()
+{
+	echo "Unknown MCA error code"
+	exit 2
+}
+
+if [ "x$1" = "x" ]; then
+	usage
+fi
+
+cpu_clause="CPU 0 1"
+status_clause=$(printf "STATUS 0x%lx" $1)
+proc_str=${2:-"0:0x50650"}
+proc_clause="PROCESSOR ${proc_str}"
+ecode=$(($1 & 0xffff))
+# input file for 'mcelog --ascii'
+mca_fname=$(printf "mca-%x" $ecode)
+# file for saving the expected string parsed from
+# raw MCA error codes.
+mca_fexpect=${mca_fname}-expect
+
+# mask F bit in MCA error code
+if [[ "$ecode" -ge 0x1000 ]]; then
+	ecode=$(($ecode & ~0x1000))
+fi
+if [[ "$ecode" -ge 0x0000 && "$ecode" -lt 0x0007 ]]; then simple_error
+elif [[ "$ecode" -ge 0x0007 && "$ecode" -lt 0x000c ]]; then complain
+elif [[ "$ecode" -ge 0x000c && "$ecode" -lt 0x0010 ]]; then generic_cache_hierarchy
+elif [[ "$ecode" -ge 0x0010 && "$ecode" -lt 0x0020 ]]; then tlb_errors
+elif [[ "$ecode" -ge 0x0020 && "$ecode" -lt 0x0080 ]]; then complain
+elif [[ "$ecode" -ge 0x0080 && "$ecode" -lt 0x0100 ]]; then memory_controller_errors
+elif [[ "$ecode" -ge 0x0100 && "$ecode" -lt 0x0200 ]]; then cache_hierarchy_errors
+elif [[ "$ecode" -ge 0x0200 && "$ecode" -lt 0x0400 ]]; then complain
+elif [[ "$ecode" -ge 0x0400 && "$ecode" -lt 0x0800 ]]; then simple_error
+elif [[ "$ecode" -ge 0x0800 && "$ecode" -lt 0x1000 ]]; then bus_and_interconnect_errors
+fi
+
+creat_file "$cpu_clause" "$proc_clause" "$status_clause"

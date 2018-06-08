@@ -1,0 +1,177 @@
+#!/bin/bash
+# MCA error codes validation
+# ./mcaerr_test -a [-b status] [-p processor]
+# ./mcaerr_test -s status [-p processor]
+
+g_testall=0
+g_processor=""
+g_hstat=0x8000000000000000
+g_status=""
+g_tests_dir="$(cd "$(dirname "$0")" && pwd)"
+g_input_dir=$g_tests_dir/../input
+g_tmp_dir=/tmp/mcaerr-tmp
+# save failed MCA error codes during testing
+g_fail_code_log=$g_tests_dir/fail_mcacode_log
+# save undefined MCA error codes during testing
+g_unknown_code_log=$g_tests_dir/unknown_mcacode_log
+# input file for 'mcelog --ascii'
+g_fname=""
+# the expected string parsed from raw MCA error codes.
+g_expect=""
+
+logfile_prepare()
+{
+	if [ -f $g_fail_code_log ]; then
+		: > $g_fail_code_log
+	else
+		touch $g_fail_code_log
+	fi
+
+	if [ -f $g_unknown_code_log ]; then
+		: > $g_unknown_code_log
+	else
+		touch $g_unknown_code_log
+	fi
+}
+
+validate_mca()
+{
+	local mca_prefix="MCA:"
+	local m_ecode=$1
+	local buserr_expect
+
+	# masked F bit in MCA error code
+	if [[ "$1" -ge 0x1000 ]]; then
+		m_ecode=$(($1 & ~0x1000))
+	fi
+
+	g_fname=$(printf "mca-%0x" $1)
+	g_expect=$(cat ./${g_fname}-expect)
+	if [[ "$m_ecode" -ge 0x0800 && "$m_ecode" -lt 0x1000 ]]; then
+		mca_prefix="MCA: BUS error:"
+		buserr_expect="BUS error: $g_expect"
+		echo "expect: $buserr_expect"
+	else
+		echo "expect: $g_expect"
+	fi
+	if mcelog --no-dmi --ascii --file $g_fname | grep "$mca_prefix" | grep -q "$g_expect" ; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+test_all()
+{
+	local m_status
+	local rc
+	local fail_cnt=0
+	local pass_cnt=0
+	local ignore_cnt=0
+
+	if [ ! -d $g_tmp_dir ]; then
+		mkdir $g_tmp_dir
+	fi
+	pushd ./ > /dev/null
+	cd $g_tmp_dir
+	echo "++++++++++Start validating all MCA error codes...++++++++++"
+	for ecode in `seq 0x0000 0x0fff`
+	do
+		m_status=$(($g_hstat | $ecode))
+		printf "m_status=0x%lx\n" $m_status
+		$g_input_dir/GENMCA $m_status "$g_processor"
+		case $? in
+		0)
+			validate_mca $ecode
+			rc=$?
+			if [ $rc -eq 0 ]; then
+				printf "code 0x%x: [PASS]\n" $ecode
+				let "pass_cnt += 1"
+			else
+				printf "code 0x%x: [FAIL]\n" $ecode | tee -a $g_fail_code_log
+				let "fail_cnt += 1"
+			fi
+			;;
+		2)
+			printf "code 0x%x: [IGNORE]\n" $ecode | tee -a $g_unknown_code_log
+			let "ignore_cnt += 1"
+			;;
+		*)
+			echo "It won't go here!"
+			exit 1
+			;;
+		esac
+
+	done
+	echo "++++++++++End validating all MCA error codes++++++++++"
+	printf "PASS: %d, FAIL: %d, IGNORE: %d\n" $pass_cnt $fail_cnt $ignore_cnt
+	popd > /dev/null
+	rm -rf $g_tmp_dir
+}
+
+test_one()
+{
+	local m_ecode
+	local rc
+
+	[ -z "$g_status" ] && usage
+	m_ecode=$(($g_status & 0xffff))
+	$g_input_dir/GENMCA $g_status "$g_processor"
+	case $? in
+	0)
+		validate_mca $m_ecode
+		rc=$?
+		if [ $rc -eq 0 ]; then
+			printf "code 0x%x: [PASS]\n" $m_ecode
+		else
+			printf "code 0x%x: [FAIL]\n" $m_ecode
+		fi
+		echo "Content of the generated input_file lists below:"
+		cat $g_fname
+		rm -rf $g_fname
+		rm -rf ${g_fname}-expect
+		;;
+	2)
+		printf "code %x: [IGNORE]\n" $m_ecode
+		;;
+	*)
+		echo "It won't go here!"
+		exit 1
+		;;
+	esac
+}
+
+usage()
+{
+echo "Usage:"
+echo -e "\t${0##*/} -a [-b status] [-p processor]"
+echo -e "\t${0##*/} -s status [-p processor]"
+echo -e "\t\t-a --- do all MCA error codes validation"
+echo -e "\t\t-b --- 'status' is same as the '-s' option, but the lowest 16 bits are masked."
+echo -e "\t\t-s --- only run MCA error codes test related to 'status' value,"
+echo -e "\t\t       'status' is the 64-bit IA32_MCi_Status value, i.e., 0x8000000000000002."
+echo -e "\t\t-p --- modify 'PROCESSOR' part of the tested input file with 'processor' value,"
+echo -e "\t\t       'processor' must be formated as 'vendor:CPUID', vendor:0 - Intel,"
+echo -e "\t\t       i.e., 0:0x50650, the default value."
+	exit 1
+}
+
+[ "x$1" == "x" ] && usage
+while getopts ":ab:hp:s:" opt
+do
+	case $opt in
+		a) g_testall=1;;
+		b) g_hstat=$(($OPTARG & ~0xffff));;
+		h) usage;;
+		p) g_processor="$OPTARG";;
+		s) g_status=$OPTARG;;
+		*) usage;;
+	esac
+done
+
+if [ "$g_testall" == "1" ]; then
+	logfile_prepare
+	test_all
+else
+	test_one
+fi
