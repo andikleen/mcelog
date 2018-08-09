@@ -107,6 +107,9 @@ static char *extended_bankname(unsigned bank)
 
 		/* add more extended banks here */
 
+	case MCE_APEI_BANK:
+		return "ACPI/APEI reported error";
+
 	default:
 		sprintf(buf, "Undecoded extended event %x", bank);
 		return buf;
