@@ -25,6 +25,7 @@
 #include "sandy-bridge.h"
 #include "ivy-bridge.h"
 #include "haswell.h"
+#include "skylake_xeon.h"
 
 int memory_error_support;
 
@@ -139,6 +140,13 @@ static int intel_memory_error(struct mce *m, unsigned recordlen)
 			break;
 		case CPU_IVY_BRIDGE_EPEX:
 			ivy_bridge_ep_memerr_misc(m, channel, dimm);
+			break;
+		case CPU_HASWELL_EPEX:
+		case CPU_BROADWELL_EPEX:
+			haswell_memerr_misc(m, channel, dimm);
+			break;
+		case CPU_SKYLAKE_XEON:
+			skylake_memerr_misc(m, channel, dimm);
 			break;
 		default:
 			break;

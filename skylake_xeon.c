@@ -228,3 +228,45 @@ int skylake_s_ce_type(int bank, u64 status, u64 misc)
 
 	return 0;
 }
+
+/*
+ * There isn't enough information to identify the DIMM. But
+ * we can derive the channel from the bank number.
+ * There can be two memory controllers. We number the channels
+ * on the second controller: 3, 4, 5
+ */
+void skylake_memerr_misc(struct mce *m, int *channel, int *dimm)
+{
+	u64 status = m->status;
+	unsigned	chan;
+
+	/* Check this is a memory error */
+	if (!test_prefix(7, status & 0xefff))
+		return;
+
+	chan = EXTRACT(status, 0, 3);
+	if (chan == 0xf)
+		return;
+
+	switch (m->bank) {
+	case 7:
+		/* Home agent 0 */
+		break;
+	case 8:
+		/* Home agent 1 */
+		chan += 3;
+		break;
+	case 13: case 14: case 15:
+		/* Memory controller 0 */
+		chan = m->bank - 13;
+		break;
+	case 16: case 17: case 18:
+		/* Memory controller 1 */
+		chan = (m->bank - 16) + 3;
+		break;
+	default:
+		return;
+	}
+
+	channel[0] = chan;
+}

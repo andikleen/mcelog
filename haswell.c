@@ -148,3 +148,45 @@ void hsw_decode_model(int cputype, int bank, u64 status, u64 misc)
 		break;
 	}
 }
+
+/*
+ * There isn't enough information to identify the DIMM. But
+ * we can derive the channel from the bank number.
+ * There can be two memory controllers. We number the channels
+ * on the second controller: 4, 5, 6, 7
+ */
+void haswell_memerr_misc(struct mce *m, int *channel, int *dimm)
+{
+	u64 status = m->status;
+	unsigned	chan;
+
+	/* Check this is a memory error */
+	if (!test_prefix(7, status & 0xefff))
+		return;
+
+	chan = EXTRACT(status, 0, 3);
+	if (chan == 0xf)
+		return;
+
+	switch (m->bank) {
+	case 7:
+		/* Home agent 0 */
+		break;
+	case 8:
+		/* Home agent 1 */
+		chan += 4;
+		break;
+	case 9: case 10: case 11: case 12:
+		/* Memory controller 0 */
+		chan = m->bank - 9;
+		break;
+	case 13: case 14: case 15: case 16:
+		/* Memory controller 1 */
+		chan = (m->bank - 13) + 4;
+		break;
+	default:
+		return;
+	}
+
+	channel[0] = chan;
+}
