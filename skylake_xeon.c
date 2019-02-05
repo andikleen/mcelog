@@ -256,13 +256,23 @@ void skylake_memerr_misc(struct mce *m, int *channel, int *dimm)
 		/* Home agent 1 */
 		chan += 3;
 		break;
-	case 13: case 14: case 15:
-		/* Memory controller 0 */
-		chan = m->bank - 13;
+	case 13: /* Memory controller 0, channel 0 */
+		chan = 0;
 		break;
-	case 16: case 17: case 18:
-		/* Memory controller 1 */
-		chan = (m->bank - 16) + 3;
+	case 14: /* Memory controller 0, channel 1 */
+		chan = 1;
+		break;
+	case 15: /* Memory controller 1, channel 0 */
+		chan = 3;
+		break;
+	case 16: /* Memory controller 1, channel 1 */
+		chan = 4;
+		break;
+	case 17: /* Memory controller 0, channel 2 */
+		chan = 2;
+		break;
+	case 18: /* Memory controller 1, channel 2 */
+		chan = 5;
 		break;
 	default:
 		return;
