@@ -199,6 +199,9 @@ static int decode_mca(u64 status, u64 misc, u64 track, int cpu, int *ismemerr, i
 					      CACHE_RRRR_SHIFT));
 		if (track == 2)
 			run_yellow_trigger(cpu, typenum, levelnum, type, level,socket);
+	} else if (test_prefix(9, mca) && EXTRACT(mca, 7, 8) == 1) {
+		Wprintf("Memory as cache: ");
+		decode_memory_controller(mca, bank);
 	} else if (test_prefix(10, mca)) {
 		if (mca == 0x400)
 			Wprintf("Internal Timer error\n");
