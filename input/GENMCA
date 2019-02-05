@@ -71,13 +71,18 @@ memory_controller_errors()
 {
 	local chan=$(($ecode & 0xf))
 	local mmm_num=$(($ecode >> 4 & 7))
+	local mem_as_cache_bit=$(($ecode >> 9 & 1))
 
 	if [[ "$chan" -eq 0xf ]]; then
 		chan="unspecified"
 	else
 		chan=$(printf "%u" $chan)
 	fi
-	echo "MEMORY CONTROLLER ${mmm_mnemonic[mmm_num]}_CHANNEL${chan}_ERR" > $mca_fexpect
+	if [[ "$mem_as_cache_bit" -ne 0x1 ]]; then
+		echo "MEMORY CONTROLLER ${mmm_mnemonic[mmm_num]}_CHANNEL${chan}_ERR" > $mca_fexpect
+	else
+		echo "Memory as cache: MEMORY CONTROLLER ${mmm_mnemonic[mmm_num]}_CHANNEL${chan}_ERR" > $mca_fexpect
+	fi
 }
 
 cache_hierarchy_errors()
@@ -153,7 +158,9 @@ elif [[ "$ecode" -ge 0x0010 && "$ecode" -lt 0x0020 ]]; then tlb_errors
 elif [[ "$ecode" -ge 0x0020 && "$ecode" -lt 0x0080 ]]; then complain
 elif [[ "$ecode" -ge 0x0080 && "$ecode" -lt 0x0100 ]]; then memory_controller_errors
 elif [[ "$ecode" -ge 0x0100 && "$ecode" -lt 0x0200 ]]; then cache_hierarchy_errors
-elif [[ "$ecode" -ge 0x0200 && "$ecode" -lt 0x0400 ]]; then complain
+elif [[ "$ecode" -ge 0x0200 && "$ecode" -lt 0x0280 ]]; then complain
+elif [[ "$ecode" -ge 0x0280 && "$ecode" -lt 0x0300 ]]; then memory_controller_errors
+elif [[ "$ecode" -ge 0x0300 && "$ecode" -lt 0x0400 ]]; then complain
 elif [[ "$ecode" -ge 0x0400 && "$ecode" -lt 0x0800 ]]; then simple_error
 elif [[ "$ecode" -ge 0x0800 && "$ecode" -lt 0x1000 ]]; then bus_and_interconnect_errors
 fi
