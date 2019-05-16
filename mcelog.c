@@ -554,6 +554,9 @@ int is_cpu_supported(void)
 					Eprintf("ERROR: AMD Processor family %d: mcelog does not support this processor.  Please use the edac_mce_amd module instead.\n", family);
 					return 0;
 				}
+			} else if (!strcmp(vendor,"HygonGenuine")) {
+				Eprintf("ERROR: Hygon Processor family %d: mcelog does not support this processor.  Please use the edac_mce_amd module instead.\n", family);
+				return 0;
 			} else if (!strcmp(vendor,"GenuineIntel"))
 				cputype = select_intel_cputype(family, model);
 			/* Add checks for other CPUs here */	
