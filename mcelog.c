@@ -244,6 +244,7 @@ static char *cputype_name[] = {
 	[CPU_SKYLAKE_XEON] = "Skylake server",
 	[CPU_KABYLAKE] = "Kabylake",
 	[CPU_DENVERTON] = "Denverton",
+	[CPU_ICELAKE] = "Icelake",
 };
 
 static struct config_choice cpu_choices[] = {

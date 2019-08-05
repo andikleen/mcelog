@@ -38,7 +38,7 @@ void intel_cpu_init(enum cputype cpu)
 	    cpu == CPU_BROADWELL_DE || cpu == CPU_BROADWELL_EPEX ||
 	    cpu == CPU_KNIGHTS_LANDING || cpu == CPU_KNIGHTS_MILL ||
 	    cpu == CPU_SKYLAKE || cpu == CPU_SKYLAKE_XEON ||
-	    cpu == CPU_KABYLAKE || cpu == CPU_DENVERTON)
+	    cpu == CPU_KABYLAKE || cpu == CPU_DENVERTON || cpu == CPU_ICELAKE)
 		memory_error_support = 1;
 }
 
@@ -99,6 +99,8 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_KABYLAKE;
 		else if (model == 0x5f)
 			return CPU_DENVERTON;
+		else if (model == 0x7D || model == 0x7E || model == 0x9D)
+			return CPU_ICELAKE;
 		if (model > 0x1a) {
 			Eprintf("Family 6 Model %u CPU: only decoding architectural errors\n",
 				model);

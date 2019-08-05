@@ -139,6 +139,7 @@ enum cputype {
 	CPU_SKYLAKE_XEON,
 	CPU_KABYLAKE,
 	CPU_DENVERTON,
+	CPU_ICELAKE,
 };
 
 enum option_ranges {
