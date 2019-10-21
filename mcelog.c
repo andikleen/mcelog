@@ -295,6 +295,7 @@ static struct config_choice cpu_choices[] = {
 	{ "atom", CPU_ATOM },
 	{ "skylake", CPU_SKYLAKE },
 	{ "skylake_server", CPU_SKYLAKE_XEON },
+	{ "cascadelake_server", CPU_SKYLAKE_XEON },
 	{ "kabylake", CPU_KABYLAKE },
 	{ "denverton", CPU_DENVERTON },
 	{ NULL }
