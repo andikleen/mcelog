@@ -26,6 +26,7 @@
 #include "ivy-bridge.h"
 #include "haswell.h"
 #include "skylake_xeon.h"
+#include "i10nm.h"
 
 int memory_error_support;
 
@@ -38,7 +39,9 @@ void intel_cpu_init(enum cputype cpu)
 	    cpu == CPU_BROADWELL_DE || cpu == CPU_BROADWELL_EPEX ||
 	    cpu == CPU_KNIGHTS_LANDING || cpu == CPU_KNIGHTS_MILL ||
 	    cpu == CPU_SKYLAKE || cpu == CPU_SKYLAKE_XEON ||
-	    cpu == CPU_KABYLAKE || cpu == CPU_DENVERTON || cpu == CPU_ICELAKE)
+	    cpu == CPU_KABYLAKE || cpu == CPU_DENVERTON || cpu == CPU_ICELAKE ||
+	    cpu == CPU_ICELAKE_XEON || cpu == CPU_ICELAKE_DE ||
+	    cpu == CPU_TREMONT_D)
 		memory_error_support = 1;
 }
 
@@ -101,6 +104,12 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_DENVERTON;
 		else if (model == 0x7D || model == 0x7E || model == 0x9D)
 			return CPU_ICELAKE;
+		else if (model == 0x6A)
+			return CPU_ICELAKE_XEON;
+		else if (model == 0x6C)
+			return CPU_ICELAKE_DE;
+		else if (model == 0x86)
+			return CPU_TREMONT_D;
 		if (model > 0x1a) {
 			Eprintf("Family 6 Model %u CPU: only decoding architectural errors\n",
 				model);
@@ -149,6 +158,11 @@ static int intel_memory_error(struct mce *m, unsigned recordlen)
 			break;
 		case CPU_SKYLAKE_XEON:
 			skylake_memerr_misc(m, channel, dimm);
+			break;
+		case CPU_ICELAKE_XEON:
+		case CPU_ICELAKE_DE:
+		case CPU_TREMONT_D:
+			i10nm_memerr_misc(m, channel, dimm);
 			break;
 		default:
 			break;
