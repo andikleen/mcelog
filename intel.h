@@ -32,5 +32,6 @@ extern int memory_error_support;
 	case CPU_DENVERTON: \
 	case CPU_ICELAKE_XEON: \
 	case CPU_ICELAKE_DE: \
-	case CPU_TREMONT_D
+	case CPU_TREMONT_D: \
+	case CPU_COMETLAKE
 
