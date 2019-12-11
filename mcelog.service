@@ -1,6 +1,7 @@
 [Unit]
 Description=Machine Check Exception Logging Daemon
 After=syslog.target
+ConditionVirtualization=!vm
 
 [Service] 
 ExecStart=/usr/sbin/mcelog --ignorenodev --daemon --foreground
