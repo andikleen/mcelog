@@ -1,6 +1,7 @@
 [Unit]
 Description=Machine Check Exception Logging Daemon
 After=syslog.target
+ConditionPathExists=!/sys/module/edac_mce_amd/initstate
 
 [Service] 
 ExecStart=/usr/sbin/mcelog --ignorenodev --daemon --foreground
