@@ -182,7 +182,7 @@ struct cpuid1 {
 	unsigned res2 : 4;
 };
 
-static void parse_cpuid(u32 cpuid, u32 *family, u32 *model)
+static void parse_cpuid(u32 cpuid, u32 *family, u32 *model, u32 *stepping)
 {
 	union { 
 		struct cpuid1 c;
@@ -197,6 +197,7 @@ static void parse_cpuid(u32 cpuid, u32 *family, u32 *model)
 	*model = c.c.model;
 	if (*family == 6 || *family == 0xf) 
 		*model += c.c.ext_model << 4;
+	*stepping = c.c.stepping;
 }
 
 static u32 unparse_cpuid(unsigned family, unsigned model)
@@ -364,9 +365,9 @@ static char *cpuvendor_name(u32 cpuvendor)
 
 static enum cputype setup_cpuid(u32 cpuvendor, u32 cpuid)
 {
-	u32 family, model;
+	u32 family, model, stepping;
 
-	parse_cpuid(cpuid, &family, &model);
+	parse_cpuid(cpuid, &family, &model, &stepping);
 
 	switch (cpuvendor) { 
 	case X86_VENDOR_INTEL:
@@ -465,12 +466,13 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 		n += Wprintf("MICROCODE %x\n", m->microcode);
 
 	if (recordlen > offsetof(struct mce, cpuid) && m->cpuid) {
-		u32 fam, mod;
-		parse_cpuid(m->cpuid, &fam, &mod);
-		Wprintf("CPUID Vendor %s Family %u Model %u\n",
+		u32 fam, mod, step;
+		parse_cpuid(m->cpuid, &fam, &mod, &step);
+		Wprintf("CPUID Vendor %s Family %u Model %u Step %u\n",
 			cpuvendor_name(m->cpuvendor), 
 			fam,
-			mod);
+			mod,
+			step);
 	}
 	if (cputype != CPU_SANDY_BRIDGE_EP && cputype != CPU_IVY_BRIDGE_EPEX &&
 	    cputype != CPU_HASWELL_EPEX && cputype != CPU_BROADWELL &&
