@@ -35,6 +35,7 @@ struct mce {
 	__u64 ipid;	/* MCA_IPID MSR: only valid on SMCA systems */
 	__u64 ppin;	/* Protected Processor Inventory Number */
 	__u32 microcode;/* Microcode revision */
+	__u64 kflags;	/* Internal kernel use */
 };
 
 #define X86_VENDOR_INTEL	0
