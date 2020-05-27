@@ -95,7 +95,7 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls, int soc
 	env[ei] = NULL;	
 	assert(ei < MAX_ENV);
 
-	run_trigger(yellow_trigger, NULL, env, false);
+	run_trigger(yellow_trigger, NULL, env, false, "yellow");
 	for (i = 0; i < ei; i++)
 		free(env[i]);
 out:

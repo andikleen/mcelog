@@ -220,7 +220,7 @@ void account_page_error(struct mce *m, int channel, int dimm)
 		xasprintf(&msg, "Corrected memory errors on page %llx exceed threshold %s",
 			addr, thresh);
 		free(thresh);
-		memdb_trigger(msg, md, t, &mp->ce, &page_trigger_conf, NULL, false);
+		memdb_trigger(msg, md, t, &mp->ce, &page_trigger_conf, NULL, false, "page");
 		free(msg);
 		mp->triggered = 1;
 
@@ -241,7 +241,7 @@ void account_page_error(struct mce *m, int channel, int dimm)
 			argv[0]=page_error_pre_soft_trigger;
 			argv[1]=args;
 			asprintf(&msg, "pre soft trigger run for page %lld", addr);
-			memdb_trigger(msg, md, t, &mp->ce, &page_soft_trigger_conf, argv, true);
+			memdb_trigger(msg, md, t, &mp->ce, &page_soft_trigger_conf, argv, true, "page_pre_soft");
 			free(msg);
 
 			offline_action(mp, addr);
@@ -251,7 +251,7 @@ void account_page_error(struct mce *m, int channel, int dimm)
 			argv[0]=page_error_post_soft_trigger;
 			argv[1]=args;
 			asprintf(&msg, "post soft trigger run for page %lld", addr);
-			memdb_trigger(msg, md, t, &mp->ce, &page_soft_trigger_conf, argv, true);
+			memdb_trigger(msg, md, t, &mp->ce, &page_soft_trigger_conf, argv, true, "page_post_soft");
 			free(msg);
 			free(args);
 
