@@ -61,7 +61,7 @@ pid_t mcelog_fork(const char *name)
 }
 
 // note: trigger must be allocated, e.g. from config
-void run_trigger(char *trigger, char *argv[], char **env, bool sync)
+void run_trigger(char *trigger, char *argv[], char **env, bool sync, const char* reporter)
 {
 	pid_t child;
 
@@ -73,7 +73,7 @@ void run_trigger(char *trigger, char *argv[], char **env, bool sync)
 	if (!argv) 
 		argv = fallback_argv;
 
-	Lprintf("Running trigger `%s'\n", trigger);	
+	Lprintf("Running trigger `%s' (reporter: %s)\n", trigger, reporter);
 	if (children_max > 0 && num_children >= children_max) { 
 		Eprintf("Too many trigger children running already\n");
 		return;

@@ -132,7 +132,8 @@ static char *format_location(struct memdimm *md)
 
 /* Run a user defined trigger when a error threshold is crossed. */
 void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
-		struct err_type *et, struct bucket_conf *bc, char *args[], bool sync)
+		struct err_type *et, struct bucket_conf *bc, char *args[], bool sync,
+		const char* reporter)
 {
 	struct leaky_bucket *bucket = &et->bucket;
 	char *env[MAX_ENV]; 
@@ -172,7 +173,7 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 	xasprintf(&env[ei++], "THRESHOLD_COUNT=%d", bucket->count);
 	env[ei] = NULL;	
 	assert(ei < MAX_ENV);
-	run_trigger(bc->trigger, args, env, sync);
+	run_trigger(bc->trigger, args, env, sync, reporter);
 	for (i = 0; i < ei; i++)
 		free(env[i]);
 out:
@@ -186,7 +187,7 @@ out:
  * we have no clues where they are.
  */
 static void
-account_over(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigned corr_err_cnt)
+account_over(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigned corr_err_cnt, const char* reporter)
 {
 	if (corr_err_cnt && --corr_err_cnt > 0) {
 		md->ce.count += corr_err_cnt;
@@ -194,14 +195,14 @@ account_over(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigned
 			char *msg;
 			xasprintf(&msg, "Fallback %s memory error count %d exceeded threshold",
 				 t->type, corr_err_cnt);
-			memdb_trigger(msg, md, 0, &md->ce, &t->ce_bucket_conf, NULL, false);
+			memdb_trigger(msg, md, 0, &md->ce, &t->ce_bucket_conf, NULL, false, reporter);
 			free(msg);
 		}
 	}
 }
 
 static void 
-account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m)
+account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m, const char* reporter)
 {
 	char *msg;
 
@@ -211,11 +212,11 @@ account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m)
 	if (m->status & MCI_STATUS_UC) { 
 		md->uc.count++;
 		if (__bucket_account(&t->uc_bucket_conf, &md->uc.bucket, 1, m->time))
-			memdb_trigger(msg, md, m->time, &md->uc, &t->uc_bucket_conf, NULL, false);
+			memdb_trigger(msg, md, m->time, &md->uc, &t->uc_bucket_conf, NULL, false, reporter);
 	} else {
 		md->ce.count++;
 		if (__bucket_account(&t->ce_bucket_conf, &md->ce.bucket, 1, m->time))
-			memdb_trigger(msg, md, m->time, &md->ce, &t->ce_bucket_conf, NULL, false);
+			memdb_trigger(msg, md, m->time, &md->ce, &t->ce_bucket_conf, NULL, false, reporter);
 	}
 	free(msg);
 }
@@ -241,13 +242,13 @@ void memory_error(struct mce *m, int ch, int dimm, unsigned corr_err_cnt,
 
 	if (memdb_enabled && (ch != -1 || dimm != -1)) {
 		md = get_memdimm(m->socketid, ch, dimm, 1);
-		account_memdb(&dimms, md, m);
+		account_memdb(&dimms, md, m, "memdb");
 	}
 
 	if (sockdb_enabled) {
 		md = get_memdimm(m->socketid, -1, -1, 1);
-		account_over(&sockets, md, m, corr_err_cnt);
-		account_memdb(&sockets, md, m);
+		account_over(&sockets, md, m, corr_err_cnt, "sockdb_fallback");
+		account_memdb(&sockets, md, m, "sockdb_memdb");
 	}
 }
 
