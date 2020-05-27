@@ -61,7 +61,7 @@ do
 
 	if [ "$NUMT" != "" ] ; then
 		if [ "$NUMC" != "$NUMT" ] ; then
-			echo "$conf: triggers did not trigger as expected: $NUMT != $NUMC" >> results
+			echo "$conf: triggers did not trigger as expected: expected $NUMT, got $NUMC" >> results
 		else
 			echo "$conf: triggers trigger as expected" >> results
 		fi
