@@ -277,6 +277,35 @@ static struct field imc8[] = {
 	{}
 };
 
+static void i10nm_imc_misc(u64 status, u64 misc)
+{
+	u32 column = EXTRACT(misc, 9, 18) << 2;
+	u32 row = EXTRACT(misc, 19, 39);
+	u32 bank = EXTRACT(misc, 42, 43);
+	u32 bankgroup = EXTRACT(misc, 40, 41) | (EXTRACT(misc, 44, 44) << 2);
+	u32 fdevice = EXTRACT(misc, 46, 51);
+	u32 subrank = EXTRACT(misc, 52, 55);
+	u32 rank = EXTRACT(misc, 56, 58);
+	u32 eccmode = EXTRACT(misc, 59, 62);
+	u32 transient = EXTRACT(misc, 63, 63);
+
+	Wprintf("bank: 0x%x bankgroup: 0x%x row: 0x%x column: 0x%x\n", bank, bankgroup, row, column);
+	if (!transient && !EXTRACT(status, 61, 61))
+		Wprintf("failed device: 0x%x\n", fdevice);
+	Wprintf("rank: 0x%x subrank: 0x%x\n", rank, subrank);
+	Wprintf("ecc mode: ");
+	switch (eccmode) {
+	case 0: Wprintf("SDDC memory mode\n"); break;
+	case 1: Wprintf("SDDC\n"); break;
+	case 4: Wprintf("ADDDC memory mode\n"); break;
+	case 5: Wprintf("ADDDC\n"); break;
+	case 8: Wprintf("DDRT read\n"); break;
+	default: Wprintf("unknown\n"); break;
+	}
+	if (transient)
+		Wprintf("transient\n");
+}
+
 void i10nm_decode_model(int cputype, int bank, u64 status, u64 misc)
 {
 	u64 f;
@@ -339,6 +368,7 @@ void i10nm_decode_model(int cputype, int bank, u64 status, u64 misc)
 		case 4: decode_bitfield(f, imc4); break;
 		case 8: decode_bitfield(f, imc8); break;
 		}
+		i10nm_imc_misc(status, misc);
 		break;
 	}
 }
