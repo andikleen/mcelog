@@ -33,5 +33,9 @@ extern int memory_error_support;
 	case CPU_ICELAKE_XEON: \
 	case CPU_ICELAKE_DE: \
 	case CPU_TREMONT_D: \
-	case CPU_COMETLAKE
+	case CPU_COMETLAKE: \
+	case CPU_TIGERLAKE: \
+	case CPU_ROCKETLAKE: \
+	case CPU_ALDERLAKE: \
+	case CPU_LAKEFIELD
 
