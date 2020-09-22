@@ -100,6 +100,7 @@ mempage_insert_lookup(u64 addr, struct rb_node * node)
 			return mp;
 	}
 	rb_link_node(node, parent, p);
+	rb_insert_color(node, &mempage_root);
 	return NULL;
 }
 
@@ -107,8 +108,6 @@ static struct mempage *mempage_insert(u64 addr, struct mempage *mp)
 {
 	mp->addr = addr;
 	mp = mempage_insert_lookup(addr, &mp->nd);
-	if (mp != NULL)
-		rb_insert_color(&mp->nd, &mempage_root);
 	return mp;
 }
 
