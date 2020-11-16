@@ -23,7 +23,8 @@ TRIGGERS=cache-error-trigger dimm-error-trigger page-error-trigger \
 	 iomca-error-trigger \
 	 unknown-error-trigger \
 	 page-error-pre-sync-soft-trigger \
-	 page-error-post-sync-soft-trigger
+	 page-error-post-sync-soft-trigger \
+	 page-error-counter-replacement-trigger
 
 all: mcelog
 

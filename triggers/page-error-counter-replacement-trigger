@@ -1,0 +1,28 @@
+#!/bin/sh
+# There are limited counters for counting page correctable errors.
+# When the counters run out, replace an old counter for counting
+# correctable errors for a new page.
+
+# This shell script can be executed by mcelog in daemon mode when the
+# counter replacements exceed a pre-configured threshold.
+#
+# environment:
+# MESSAGE	Human readable consolidated warning message
+# THRESHOLD     human readable threshold status
+# TOTALCOUNT    total count of page error counter replacements
+# LASTEVENT	Time stamp of event that triggered threshold (in time_t format, seconds)
+# THRESHOLD_COUNT Total number of events in current threshold time period of specific type
+#
+# note: will run as mcelog configured user
+# this can be changed in mcelog.conf
+
+logger -s -p daemon.err -t mcelog "$MESSAGE"
+logger -s -p daemon.err -t mcelog "THRESHOLD: $THRESHOLD"
+logger -s -p daemon.err -t mcelog "TOTALCOUNT: $TOTALCOUNT"
+logger -s -p daemon.err -t mcelog "LASTEVENT: $LASTEVENT"
+logger -s -p daemon.err -t mcelog "THRESHOLD_COUNT: $THRESHOLD_COUNT"
+logger -s -p daemon.err -t mcelog "AGETIME: $AGETIME"
+
+[ -x ./page-error-counter-replacement-trigger.local ] && . ./page-error-counter-replacement-trigger.local
+
+exit 0

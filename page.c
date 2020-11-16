@@ -66,11 +66,22 @@ struct mempage_cluster {
 	int mp_used;
 };
 
+struct mempage_replacement {
+	struct leaky_bucket bucket;
+	unsigned count;
+};
+
+enum {
+	MAX_ENV = 20,
+};
+
 static int corr_err_counters;
 static struct mempage_cluster *mp_cluster;
+static struct mempage_replacement mp_repalcement;
 static struct rb_root mempage_root;
 static LIST_HEAD(mempage_cluster_lru_list);
 static struct bucket_conf page_trigger_conf;
+static struct bucket_conf mp_replacement_trigger_conf;
 static char *page_error_pre_soft_trigger, *page_error_post_soft_trigger;
 
 static const char *page_state[] = {
@@ -225,10 +236,47 @@ static void offline_action(struct mempage *mp, u64 addr)
 		mp->offlined = PAGE_OFFLINE;
 }
 
+/* Run a user defined trigger when the replacement threshold of page error counter crossed. */
+static void counter_trigger(char *msg, time_t t, struct mempage_replacement *mr,
+			    struct bucket_conf *bc, bool sync)
+{
+	struct leaky_bucket *bk = &mr->bucket;
+	char *env[MAX_ENV], *out, *thresh;
+	int i, ei = 0;
+
+	thresh = bucket_output(bc, bk);
+	xasprintf(&out, "%s: %s", msg, thresh);
+
+	if (bc->log)
+		Gprintf("%s\n", out);
+
+	if (!bc->trigger)
+		goto out;
+
+	xasprintf(&env[ei++], "THRESHOLD=%s", thresh);
+	xasprintf(&env[ei++], "TOTALCOUNT=%lu", mr->count);
+	if (t)
+		xasprintf(&env[ei++], "LASTEVENT=%lu", t);
+	xasprintf(&env[ei++], "AGETIME=%u", bc->agetime);
+	xasprintf(&env[ei++], "MESSAGE=%s", out);
+	xasprintf(&env[ei++], "THRESHOLD_COUNT=%d", bk->count);
+	env[ei] = NULL;
+	assert(ei < MAX_ENV);
+
+	run_trigger(bc->trigger, NULL, env, sync, "page-error-counter");
+
+	for (i = 0; i < ei; i++)
+		free(env[i]);
+out:
+	free(out);
+	free(thresh);
+}
+
 void account_page_error(struct mce *m, int channel, int dimm)
 {
 	u64 addr = m->addr;
 	struct mempage *mp;
+	char *msg, *thresh;
 	time_t t;
 	unsigned cpu = m->extcpu ? m->extcpu : m->cpu;
 
@@ -268,14 +316,23 @@ void account_page_error(struct mce *m, int channel, int dimm)
 		bucket_init(&mp->ce.bucket);
 		mempage_rb_tree_update(addr, mp);
 		mempage_cluster_lru_list_update(to_cluster(mp));
+
+		/* Report how often the replacement of counter 'mp' happened */
+		++mp_repalcement.count;
+		if (__bucket_account(&mp_replacement_trigger_conf, &mp_repalcement.bucket, 1, t)) {
+			thresh = bucket_output(&mp_replacement_trigger_conf, &mp_repalcement.bucket);
+			xasprintf(&msg, "Replacements of page correctable error counter exceed threshold %s", thresh);
+			free(thresh);
+
+			counter_trigger(msg, t, &mp_repalcement, &mp_replacement_trigger_conf, false);
+			free(msg);
+		}
 	} else {
 		mempage_cluster_lru_list_update(to_cluster(mp));
 	}
 	++mp->ce.count;
 	if (__bucket_account(&page_trigger_conf, &mp->ce.bucket, 1, t)) { 
 		struct memdimm *md;
-		char *msg;
-		char *thresh;
 
 		if (mp->offlined != PAGE_ONLINE)
 			return;
@@ -354,6 +411,7 @@ void page_setup(void)
 	int n;
 	
 	config_trigger("page", "memory-ce", &page_trigger_conf);
+	config_trigger("page", "memory-ce-counter-replacement", &mp_replacement_trigger_conf);
 	n = config_choice("page", "memory-ce-action", offline_choice);
 	if (n >= 0)
 		offline = n;
@@ -382,4 +440,6 @@ void page_setup(void)
 	max_corr_err_counters = roundup(max_corr_err_counters, N);
 	if (n != max_corr_err_counters)
 		Lprintf("Round up max-corr-err-counters from %d to %d\n", n, max_corr_err_counters);
+
+	bucket_init(&mp_repalcement.bucket);
 }
