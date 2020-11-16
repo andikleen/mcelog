@@ -8,3 +8,20 @@ P=$RANDOM
 ../../input/GENPAGE | mce-inject
 ../../input/GENPAGE | mce-inject
 ../../input/GENPAGE | mce-inject
+
+conf=$1
+
+NUM_ERRORS="$(awk '/^num-errors = / { print $3 }' $conf)"
+
+if [ "$NUM_ERRORS" == "" ]; then
+	exit
+fi
+
+NUM_ERRORS=`expr $NUM_ERRORS - 6`
+
+# Make sure mcelog is ready to consume the mce records (avoid mce records overflow).
+sleep 2
+
+for ((i = 1; i <= $NUM_ERRORS; i++)); do
+       ../../input/GENPAGE | mce-inject
+done
