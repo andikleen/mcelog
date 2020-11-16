@@ -111,6 +111,17 @@ static inline int list_is_last(const struct list_head *list,
 }
 
 /**
+ * list_is_first - tests whether @list is the first entry in list @head
+ * @list: the entry to test
+ * @head: the head of the list
+ */
+static inline int list_is_first(const struct list_head *list,
+				const struct list_head *head)
+{
+	return list == head->next;
+}
+
+/**
  * list_empty - tests whether a list is empty
  * @head: the list to test.
  */
@@ -139,6 +150,17 @@ static inline int list_empty(const struct list_head *head)
  */
 #define list_first_entry(ptr, type, member) \
 	list_entry((ptr)->next, type, member)
+
+/**
+ * list_last_entry - get the last element from a list
+ * @ptr:        the list head to take the element from.
+ * @type:       the type of the struct this is embedded in.
+ * @member:     the name of the list_head within the struct.
+ *
+ * Note, that list is expected to be not empty.
+ */
+#define list_last_entry(ptr, type, member) \
+	list_entry((ptr)->prev, type, member)
 
 /**
  * list_for_each	-	iterate over a list

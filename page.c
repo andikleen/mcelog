@@ -29,10 +29,13 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <assert.h>
 #include "memutil.h"
 #include "trigger.h"
 #include "mcelog.h"
 #include "rbtree.h"
+#include "list.h"
 #include "leaky-bucket.h"
 #include "page.h"
 #include "config.h"
@@ -54,7 +57,19 @@ struct mempage {
 	struct err_type ce;
 };
 
+#define N ((PAGE_SIZE - sizeof(struct list_head)) / sizeof(struct mempage))
+#define to_cluster(mp)	(struct mempage_cluster *)((long)(mp) & ~((long)(PAGE_SIZE - 1)))
+
+struct mempage_cluster {
+	struct list_head lru;
+	struct mempage mp[N];
+	int mp_used;
+};
+
+static int corr_err_counters;
+static struct mempage_cluster *mp_cluster;
 static struct rb_root mempage_root;
+static LIST_HEAD(mempage_cluster_lru_list);
 static struct bucket_conf page_trigger_conf;
 static char *page_error_pre_soft_trigger, *page_error_post_soft_trigger;
 
@@ -63,6 +78,28 @@ static const char *page_state[] = {
 	[PAGE_OFFLINE] = "offline",
 	[PAGE_OFFLINE_FAILED] = "offline-failed",
 };
+
+static struct mempage *mempage_alloc(void)
+{
+	if (!mp_cluster || mp_cluster->mp_used == N) {
+		mp_cluster = mmap(0, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+		if (mp_cluster == MAP_FAILED)
+			Enomem();
+	}
+
+	return &mp_cluster->mp[mp_cluster->mp_used++];
+}
+
+static struct mempage *mempage_replace(void)
+{
+	/* If no free mp_cluster, reuse the last mp_cluster of the LRU list  */
+	if (mp_cluster->mp_used == N) {
+		mp_cluster = list_last_entry(&mempage_cluster_lru_list, struct mempage_cluster, lru);
+		mp_cluster->mp_used = 0;
+	}
+
+	return &mp_cluster->mp[mp_cluster->mp_used++];
+}
 
 static struct mempage *mempage_lookup(u64 addr)
 {
@@ -109,6 +146,26 @@ static struct mempage *mempage_insert(u64 addr, struct mempage *mp)
 	mp->addr = addr;
 	mp = mempage_insert_lookup(addr, &mp->nd);
 	return mp;
+}
+
+static void mempage_rb_tree_update(u64 addr, struct mempage *mp)
+{
+	rb_erase(&mp->nd, &mempage_root);
+	mempage_insert(addr, mp);
+}
+
+static void mempage_cluster_lru_list_insert(struct mempage_cluster *mp_cluster)
+{
+	list_add(&mp_cluster->lru, &mempage_cluster_lru_list);
+}
+
+static void mempage_cluster_lru_list_update(struct mempage_cluster *mp_cluster)
+{
+	if (list_is_first(&mp_cluster->lru, &mempage_cluster_lru_list))
+		return;
+
+	list_del(&mp_cluster->lru);
+	list_add(&mp_cluster->lru, &mempage_cluster_lru_list);
 }
 
 /* Following arrays need to be all kept in sync with the enum */
@@ -200,10 +257,19 @@ void account_page_error(struct mce *m, int channel, int dimm)
 	t = m->time;
 	addr &= ~((u64)PAGE_SIZE - 1);
 	mp = mempage_lookup(addr);
-	if (!mp) {
-		mp = xalloc(sizeof(struct mempage));
+	if (!mp && corr_err_counters < max_corr_err_counters) {
+		mp = mempage_alloc();
 		bucket_init(&mp->ce.bucket);
 	        mempage_insert(addr, mp);
+		mempage_cluster_lru_list_insert(to_cluster(mp));
+		corr_err_counters++;
+	} else if (!mp) {
+		mp = mempage_replace();
+		bucket_init(&mp->ce.bucket);
+		mempage_rb_tree_update(addr, mp);
+		mempage_cluster_lru_list_update(to_cluster(mp));
+	} else {
+		mempage_cluster_lru_list_update(to_cluster(mp));
 	}
 	++mp->ce.count;
 	if (__bucket_account(&page_trigger_conf, &mp->ce.bucket, 1, t)) { 
@@ -311,4 +377,9 @@ void page_setup(void)
 				page_error_post_soft_trigger);
 		exit(1);
 	}
+
+	n = max_corr_err_counters;
+	max_corr_err_counters = roundup(max_corr_err_counters, N);
+	if (n != max_corr_err_counters)
+		Lprintf("Round up max-corr-err-counters from %d to %d\n", n, max_corr_err_counters);
 }

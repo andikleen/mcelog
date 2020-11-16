@@ -91,6 +91,7 @@ struct mce {
 #define endof_field(t, f) (sizeof(((t *)0)->f) + offsetof(t, f))
 
 #define round_up(x,y) (((x) + (y) - 1) & ~((y)-1))
+#define roundup(x,y) (((x) + (y) - 1) / (y) * (y))
 #define round_down(x,y) ((x) & ~((y)-1))
 
 #define BITS_PER_INT (sizeof(unsigned) * 8)
@@ -175,4 +176,5 @@ extern int syslog_level;
 extern enum cputype cputype;
 extern int filter_memory_errors;
 extern int imc_log;
+extern int max_corr_err_counters;
 extern void set_imc_log(int cputype);

@@ -85,6 +85,7 @@ static char *logfile;
 static int debug_numerrors;
 int imc_log = -1;
 static int check_only = 0;
+int max_corr_err_counters = 4158;
 
 static int is_cpu_supported(void);
 
@@ -1018,6 +1019,7 @@ void usage(void)
 "--pidfile file	     Write pid of daemon into file\n"
 "--no-imc-log	     Disable extended iMC logging\n"
 "--is-cpu-supported  Exit with return code indicating whether the CPU is supported\n"
+"--max-corr-err-counters Max page correctable error counters\n"
 "--help	             Display this message.\n"
 		);
 	printf("\n");
@@ -1053,6 +1055,7 @@ enum options {
 	O_DEBUG_NUMERRORS,
 	O_NO_IMC_LOG,
 	O_IS_CPU_SUPPORTED,
+	O_MAX_CORR_ERR_COUNTERS,
 	O_HELP,
 };
 
@@ -1087,6 +1090,7 @@ static struct option options[] = {
 	{ "pidfile", 1, NULL, O_PIDFILE },
 	{ "debug-numerrors", 0, NULL, O_DEBUG_NUMERRORS }, /* undocumented: for testing */
 	{ "no-imc-log", 0, NULL, O_NO_IMC_LOG },
+	{ "max-corr-err-counters", 1, NULL, O_MAX_CORR_ERR_COUNTERS },
 	{ "help", 0, NULL, O_HELP },
 	{ "is-cpu-supported", 0, NULL, O_IS_CPU_SUPPORTED },
 	{}
@@ -1196,6 +1200,9 @@ static int modifier(int opt)
 		break;
 	case O_NO_IMC_LOG:
 		imc_log = 0;
+		break;
+	case O_MAX_CORR_ERR_COUNTERS:
+		max_corr_err_counters = atoi(optarg);
 		break;
 	case O_IS_CPU_SUPPORTED:
 		check_only = 1;
