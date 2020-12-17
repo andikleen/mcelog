@@ -306,12 +306,66 @@ static void i10nm_imc_misc(u64 status, u64 misc)
 		Wprintf("transient\n");
 }
 
+enum banktype {
+	BT_UNKNOWN,
+	BT_PCU,
+	BT_UPI,
+	BT_M2M,
+	BT_IMC,
+};
+
+static enum banktype icelake[32] = {
+	[4]		= BT_PCU,
+	[5]		= BT_UPI,
+	[7 ... 8]	= BT_UPI,
+	[12]		= BT_M2M,
+	[16]		= BT_M2M,
+	[20]		= BT_M2M,
+	[24]		= BT_M2M,
+	[13 ... 15]	= BT_IMC,
+	[17 ... 19]	= BT_IMC,
+	[21 ... 23]	= BT_IMC,
+	[25 ... 27]	= BT_IMC,
+};
+
+static enum banktype icelake_de[32] = {
+	[4]		= BT_PCU,
+	[12]		= BT_M2M,
+	[16]		= BT_M2M,
+	[13 ... 15]	= BT_IMC,
+	[17 ... 19]	= BT_IMC,
+};
+
+static enum banktype tremont[32] = {
+	[4]		= BT_PCU,
+	[12]		= BT_M2M,
+	[13 ... 15]	= BT_IMC,
+};
+
 void i10nm_decode_model(int cputype, int bank, u64 status, u64 misc)
 {
+	enum banktype banktype;
 	u64 f;
 
-	switch (bank) {
-	case 4:
+	switch (cputype) {
+	case CPU_ICELAKE_XEON:
+		banktype = icelake[bank];
+		break;
+	case CPU_ICELAKE_DE:
+		banktype = icelake_de[bank];
+		break;
+	case CPU_TREMONT_D:
+		banktype = tremont[bank];
+		break;
+	default:
+		return;
+	}
+
+	switch (banktype) {
+	case BT_UNKNOWN:
+		break;
+
+	case BT_PCU:
 		Wprintf("PCU: ");
 		f = EXTRACT(status, 24, 31);
 		if (f)
@@ -324,9 +378,7 @@ void i10nm_decode_model(int cputype, int bank, u64 status, u64 misc)
 			decode_bitfield(f, pcu3);
 		break;
 
-	case 5:
-	case 7:
-	case 8:
+	case BT_UPI:
 		Wprintf("UPI: ");
 		f = EXTRACT(status, 22, 31);
 		if (f)
@@ -335,10 +387,7 @@ void i10nm_decode_model(int cputype, int bank, u64 status, u64 misc)
 		decode_bitfield(f, upi2);
 		break;
 
-	case 12:
-	case 16:
-	case 20:
-	case 24:
+	case BT_M2M:
 		Wprintf("M2M: ");
 		f = EXTRACT(status, 24, 25);
 		Wprintf("MscodDDRType=0x%llx\n", f);
@@ -347,18 +396,7 @@ void i10nm_decode_model(int cputype, int bank, u64 status, u64 misc)
 		decode_bitfield(status, m2m);
 		break;
 
-	case 13:
-	case 14:
-	case 15:
-	case 17:
-	case 18:
-	case 19:
-	case 21:
-	case 22:
-	case 23:
-	case 25:
-	case 26:
-	case 27:
+	case BT_IMC:
 		Wprintf("MemCtrl: ");
 		f = EXTRACT(status, 16, 23);
 		switch (EXTRACT(status, 24, 31)) {
