@@ -308,6 +308,7 @@ static int check_for_mirror(__u8 bank, __u64  status, __u64 misc)
 	case CPU_SKYLAKE_XEON:
 		return skylake_s_ce_type(bank, status, misc);
 	case CPU_ICELAKE_XEON:
+	case CPU_SAPPHIRERAPIDS:
 		return i10nm_ce_type(bank, status, misc);
 	default:
 		return 0;
@@ -459,6 +460,7 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 	case CPU_ICELAKE_XEON:
 	case CPU_ICELAKE_DE:
 	case CPU_TREMONT_D:
+	case CPU_SAPPHIRERAPIDS:
 		i10nm_decode_model(cputype, log->bank, log->status, log->misc);
 		break;
 	case CPU_DENVERTON:

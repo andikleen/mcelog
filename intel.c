@@ -43,7 +43,8 @@ void intel_cpu_init(enum cputype cpu)
 	    cpu == CPU_ICELAKE_XEON || cpu == CPU_ICELAKE_DE ||
 	    cpu == CPU_TREMONT_D || cpu == CPU_COMETLAKE ||
 	    cpu == CPU_TIGERLAKE || cpu == CPU_ROCKETLAKE ||
-	    cpu == CPU_ALDERLAKE || cpu == CPU_LAKEFIELD)
+	    cpu == CPU_ALDERLAKE || cpu == CPU_LAKEFIELD ||
+	    cpu == CPU_SAPPHIRERAPIDS)
 		memory_error_support = 1;
 }
 
@@ -122,6 +123,8 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_ALDERLAKE;
 		else if (model == 0x8A)
 			return CPU_LAKEFIELD;
+		else if (model == 0x8F)
+			return CPU_SAPPHIRERAPIDS;
 		if (model > 0x1a) {
 			Eprintf("Family 6 Model %u CPU: only decoding architectural errors\n",
 				model);
@@ -174,6 +177,7 @@ static int intel_memory_error(struct mce *m, unsigned recordlen)
 		case CPU_ICELAKE_XEON:
 		case CPU_ICELAKE_DE:
 		case CPU_TREMONT_D:
+		case CPU_SAPPHIRERAPIDS:
 			i10nm_memerr_misc(m, channel, dimm);
 			break;
 		default:

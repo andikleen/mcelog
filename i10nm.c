@@ -170,8 +170,6 @@ static char *imc_0[] = {
 	[0x02] = "Data parity error",
 	[0x03] = "Data ECC error",
 	[0x04] = "Data byte enable parity error",
-	[0x05] = "Received uncorrectable data",
-	[0x06] = "Received uncorrectable metadata",
 	[0x07] = "Transaction ID parity error",
 	[0x08] = "Corrected patrol scrub error",
 	[0x10] = "Uncorrected patrol scrub error",
@@ -185,8 +183,6 @@ static char *imc_0[] = {
 static char *imc_1[] = {
 	[0x00] = "WDB read parity error",
 	[0x03] = "RPA parity error",
-	[0x04] = "RPA parity error",
-	[0x05] = "WPA parity error",
 	[0x06] = "DDR_T_DPPP data BE error",
 	[0x07] = "DDR_T_DPPP data error",
 	[0x08] = "DDR link failure",
@@ -202,11 +198,6 @@ static char *imc_2[] = {
 
 static char *imc_4[] = {
 	[0x00] = "RPQ parity (primary) error",
-	[0x01] = "RPQ parity (buddy) error",
-	[0x04] = "WPQ parity (primary) error",
-	[0x05] = "WPQ parity (buddy) error",
-	[0x08] = "RPB parity (primary) error",
-	[0x09] = "RPB parity (buddy) error",
 };
 
 static char *imc_8[] = {
@@ -250,6 +241,21 @@ static char *imc_8[] = {
 	[0x25] = "TME_CMI_UFL_ERR",
 	[0x26] = "TME_TEM_SECURE_ERR",
 	[0x27] = "TME_UFILL_PAR_ERR",
+	[0x29] = "INTERNAL_ERR",
+	[0x2A] = "TME_INTEGRITY_ERR",
+	[0x2B] = "TME_TDX_ERR",
+	[0x2C] = "TME_UFILL_TEM_SECURE_ERR",
+	[0x2D] = "TME_KEY_POISON_ERR",
+	[0x2E] = "TME_SECURITY_ENGINE_ERR",
+};
+
+static char *imc_10[] = {
+	[0x08] = "CORR_PATSCRUB_MIRR2ND_ERR",
+	[0x10] = "UC_PATSCRUB_MIRR2ND_ERR",
+	[0x20] = "COR_SPARE_MIRR2ND_ERR",
+	[0x40] = "UC_SPARE_MIRR2ND_ERR",
+	[0x80] = "HA_RD_MIRR2ND_ERR",
+	[0xA0] = "HA_UNCORR_RD_MIRR2ND_ERR",
 };
 
 static struct field imc0[] = {
@@ -274,6 +280,11 @@ static struct field imc4[] = {
 
 static struct field imc8[] = {
 	FIELD(0, imc_8),
+	{}
+};
+
+static struct field imc10[] = {
+	FIELD(0, imc_10),
 	{}
 };
 
@@ -342,6 +353,13 @@ static enum banktype tremont[32] = {
 	[13 ... 15]	= BT_IMC,
 };
 
+static enum banktype sapphire[32] = {
+	[4]		= BT_PCU,
+	[5]		= BT_UPI,
+	[12]		= BT_M2M,
+	[13 ... 20]	= BT_IMC,
+};
+
 void i10nm_decode_model(int cputype, int bank, u64 status, u64 misc)
 {
 	enum banktype banktype;
@@ -356,6 +374,9 @@ void i10nm_decode_model(int cputype, int bank, u64 status, u64 misc)
 		break;
 	case CPU_TREMONT_D:
 		banktype = tremont[bank];
+		break;
+	case CPU_SAPPHIRERAPIDS:
+		banktype = sapphire[bank];
 		break;
 	default:
 		return;
@@ -405,6 +426,7 @@ void i10nm_decode_model(int cputype, int bank, u64 status, u64 misc)
 		case 2: decode_bitfield(f, imc2); break;
 		case 4: decode_bitfield(f, imc4); break;
 		case 8: decode_bitfield(f, imc8); break;
+		case 0x10: decode_bitfield(f, imc10); break;
 		}
 		i10nm_imc_misc(status, misc);
 		break;

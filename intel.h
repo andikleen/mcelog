@@ -37,5 +37,6 @@ extern int memory_error_support;
 	case CPU_TIGERLAKE: \
 	case CPU_ROCKETLAKE: \
 	case CPU_ALDERLAKE: \
-	case CPU_LAKEFIELD
+	case CPU_LAKEFIELD: \
+	case CPU_SAPPHIRERAPIDS
 
