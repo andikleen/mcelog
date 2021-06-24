@@ -167,7 +167,7 @@ int cache_to_cpus(int cpu, unsigned level, unsigned type,
 	}
 	for (c = caches[cpu]; c && c->cpumap; c++) { 
 		//printf("%d level %d type %d\n", cpu, c->level, c->type);
-		if (c->level == level && c->type == type) { 
+		if (c->level == level && (c->type == type || c->type == UNIFIED)) {
 			*cpumap = c->cpumap;
 			*cpulen = c->cpumaplen;
 			return 0;
