@@ -191,8 +191,8 @@ static int decode_mca(u64 status, u64 misc, u64 track, int cpu, int *ismemerr, i
 		if (track == 2)
 			run_yellow_trigger(cpu, typenum, levelnum, type, level, socket);
 	} else if (test_prefix(8, mca)) {
-		unsigned typenum = ((mca & CACHE_TT_MASK) >> CACHE_TT_SHIFT) + 1;
-		unsigned levelnum = (mca & CACHE_LL_MASK) >> CACHE_LL_SHIFT;
+		unsigned typenum = (mca & CACHE_TT_MASK) >> CACHE_TT_SHIFT;
+		unsigned levelnum = ((mca & CACHE_LL_MASK) >> CACHE_LL_SHIFT) + 1;
 		char *type = get_TT_str(typenum);
 		char *level = get_LL_str(levelnum);
 		Wprintf("%s CACHE %s %s Error\n", type, level,
