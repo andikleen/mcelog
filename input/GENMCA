@@ -9,7 +9,7 @@ SIMPLE=(
         [5]="Internal parity error"
         [6]="SMM Handler Code Access Violation"
      )
-LL=( "Level-0" "Level-1" "Level-2" "Level-3" )
+LL=( "Level-0" "Level-1" "Level-2" "Level-3" "UNKNOWN" )
 TT=( "Instruction" "Data" "Generic" "Unknown" )
 mmm_mnemonic=( "GEN" "RD" "WR" "AC" "MS" "RES5" "RES6" "RES7" )
 RRRR=(
@@ -87,7 +87,7 @@ memory_controller_errors()
 
 cache_hierarchy_errors()
 {
-	local levelnum=$(($ecode & 3))
+	local levelnum=$[$(($ecode & 3))+1]
 	local typenum=$(($ecode >> 2 & 3))
 	local rrrr_num=$(($ecode >> 4 & 0xf))
 	local rrrr_str
