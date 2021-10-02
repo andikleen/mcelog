@@ -1,4 +1,7 @@
 #include "mcelog.h"
+#include "sysfs.h"
+#include <stdbool.h>
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -42,6 +45,20 @@ out:
 	close(fd);
 }
 
+static bool in_lockdown(void)
+{
+	bool ret = false;
+	char *lockdown = read_field("/sys/kernel/security", "lockdown");
+
+	if (!lockdown)
+		return false;
+
+	if (!strstr(lockdown, "[none]"))
+		ret = true;
+	free(lockdown);
+	return ret;
+}
+
 /* XXX: assumes all CPUs are already onlined. */
 void set_imc_log(int cputype)
 {
@@ -56,6 +73,11 @@ void set_imc_log(int cputype)
 		bit = 0x2;	/* MemError Log Enable */
 		break;
 	default:
+		return;
+	}
+
+	if (in_lockdown()) {
+		Lprintf("Kernel in lockdown. Cannot enable DIMM error location reporting");
 		return;
 	}
 
