@@ -33,29 +33,25 @@ char *read_field(char *base, char *name)
 	int n, fd;
 	struct stat st;
 	char *s;
-	char *buf = NULL;
+	char *buf = xalloc(4096);
 
 	xasprintf(&fn, "%s/%s", base, name);
 	fd = open(fn, O_RDONLY);
 	free(fn);
 	if (fd < 0)
 		goto bad;
-	if (fstat(fd, &st) < 0) {
-		close(fd);
-		goto bad;		
-	}
-	buf = xalloc(st.st_size);
-	n = read(fd, buf, st.st_size);
+	n = read(fd, buf, 4096);
 	close(fd);
 	if (n < 0)
 		goto  bad_buf;
 	val = xalloc(n + 1);
 	memcpy(val, buf, n);
+	val[n] = 0;
 	free(buf);
 	s = memchr(val, '\n', n);
 	if (s)
 		*s = 0;
-	return  val;
+	return val;
 
 bad_buf:
 	free(buf);
