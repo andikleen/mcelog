@@ -39,7 +39,7 @@ char *read_field(char *base, char *name)
 	fd = open(fn, O_RDONLY);
 	free(fn);
 	if (fd < 0)
-		goto bad;
+		goto bad_buf;
 	n = read(fd, buf, 4096);
 	close(fd);
 	if (n < 0)
