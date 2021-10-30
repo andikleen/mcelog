@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # generate man config documentation from mcelog.conf example
 # genconfig.py mcelog.conf intro.html
+from __future__ import print_function
 import sys
 import re
 import argparse
