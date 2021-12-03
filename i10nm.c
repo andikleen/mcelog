@@ -191,7 +191,7 @@ static char *imc_1[] = {
 };
 
 static char *imc_2[] = {
-	[0x00] = "DDR4 command / address parity error",
+	[0x00] = "DDR command / address parity error",
 	[0x20] = "HBM command / address parity error",
 	[0x21] = "HBM data parity error",
 };
@@ -204,7 +204,7 @@ static char *imc_8[] = {
 	[0x00] = "DDR-T bad request",
 	[0x01] = "DDR Data response to an invalid entry",
 	[0x02] = "DDR data response to an entry not expecting data",
-	[0x03] = "DDR4 completion to an invalid entry",
+	[0x03] = "DDR completion to an invalid entry",
 	[0x04] = "DDR-T completion to an invalid entry",
 	[0x05] = "DDR data/completion FIFO overflow",
 	[0x06] = "DDR-T ERID correctable parity error",
