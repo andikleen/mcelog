@@ -31,7 +31,6 @@ char *read_field(char *base, char *name)
 {
 	char *fn, *val;
 	int n, fd;
-	struct stat st;
 	char *s;
 	char *buf = xalloc(4096);
 
@@ -55,7 +54,6 @@ char *read_field(char *base, char *name)
 
 bad_buf:
 	free(buf);
-bad:
 	SYSERRprintf("Cannot read sysfs field %s/%s", base, name);
 	return xstrdup("");
 }
