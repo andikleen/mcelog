@@ -151,6 +151,7 @@ enum cputype {
 	CPU_ALDERLAKE,
 	CPU_LAKEFIELD,
 	CPU_SAPPHIRERAPIDS,
+	CPU_RAPTORLAKE,
 };
 
 enum option_ranges {

@@ -44,7 +44,7 @@ void intel_cpu_init(enum cputype cpu)
 	    cpu == CPU_TREMONT_D || cpu == CPU_COMETLAKE ||
 	    cpu == CPU_TIGERLAKE || cpu == CPU_ROCKETLAKE ||
 	    cpu == CPU_ALDERLAKE || cpu == CPU_LAKEFIELD ||
-	    cpu == CPU_SAPPHIRERAPIDS)
+	    cpu == CPU_SAPPHIRERAPIDS || cpu == CPU_RAPTORLAKE)
 		memory_error_support = 1;
 }
 
@@ -125,6 +125,8 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_LAKEFIELD;
 		else if (model == 0x8F)
 			return CPU_SAPPHIRERAPIDS;
+		else if (model == 0xb7)
+			return CPU_RAPTORLAKE;
 		if (model > 0x1a) {
 			Eprintf("Family 6 Model %u CPU: only decoding architectural errors\n",
 				model);
