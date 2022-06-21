@@ -119,7 +119,7 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_TIGERLAKE;
 		else if (model == 0xA7)
 			return CPU_ROCKETLAKE;
-		else if (model == 0x97)
+		else if (model == 0x97 || model == 0x9A || model == 0xBE)
 			return CPU_ALDERLAKE;
 		else if (model == 0x8A)
 			return CPU_LAKEFIELD;
