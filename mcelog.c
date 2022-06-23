@@ -219,69 +219,7 @@ static u32 unparse_cpuid(unsigned family, unsigned model)
 	return c.v;
 }
 
-static struct config_choice cpu_choices[] = {
-	{ "generic", CPU_GENERIC },
-	{ "p6old", CPU_P6OLD },
-	{ "core2", CPU_CORE2 },
-	{ "k8", CPU_K8 },
-	{ "p4", CPU_P4 },
-	{ "dunnington", CPU_DUNNINGTON },
-	{ "xeon74xx", CPU_DUNNINGTON },
-	{ "xeon7400", CPU_DUNNINGTON },
-	{ "xeon5500", CPU_NEHALEM },
-	{ "xeon5200", CPU_CORE2 },
-	{ "xeon5000", CPU_P4 },
-	{ "xeon5100", CPU_CORE2 },
-	{ "xeon3100", CPU_CORE2 },
-	{ "xeon3200", CPU_CORE2 },
-	{ "core_i7", CPU_NEHALEM },
-	{ "core_i5", CPU_NEHALEM },
-	{ "core_i3", CPU_NEHALEM },
-	{ "nehalem", CPU_NEHALEM },
-	{ "westmere", CPU_NEHALEM },
-	{ "xeon71xx", CPU_TULSA },
-	{ "xeon7100", CPU_TULSA },
-	{ "tulsa", CPU_TULSA },
-	{ "intel", CPU_INTEL },
-	{ "xeon75xx", CPU_XEON75XX },
-	{ "xeon7500", CPU_XEON75XX },
-	{ "xeon7200", CPU_CORE2 },
-	{ "xeon7100", CPU_P4 },
-	{ "sandybridge", CPU_SANDY_BRIDGE }, /* Fill in better name */
-	{ "sandybridge-ep", CPU_SANDY_BRIDGE_EP }, /* Fill in better name */
-	{ "ivybridge", CPU_IVY_BRIDGE }, /* Fill in better name */
-	{ "ivybridge-ep", CPU_IVY_BRIDGE_EPEX },
-	{ "ivybridge-ex", CPU_IVY_BRIDGE_EPEX },
-	{ "haswell", CPU_HASWELL }, /* Fill in better name */
-	{ "haswell-ep", CPU_HASWELL_EPEX },
-	{ "haswell-ex", CPU_HASWELL_EPEX },
-	{ "broadwell", CPU_BROADWELL },
-	{ "broadwell-d", CPU_BROADWELL_DE },
-	{ "broadwell-ep", CPU_BROADWELL_EPEX },
-	{ "broadwell-ex", CPU_BROADWELL_EPEX },
-	{ "knightslanding", CPU_KNIGHTS_LANDING },
-	{ "knightsmill", CPU_KNIGHTS_MILL },
-	{ "xeon-v2", CPU_IVY_BRIDGE_EPEX },
-	{ "xeon-v3", CPU_HASWELL_EPEX },
-	{ "xeon-v4", CPU_BROADWELL_EPEX },
-	{ "atom", CPU_ATOM },
-	{ "skylake", CPU_SKYLAKE },
-	{ "skylake_server", CPU_SKYLAKE_XEON },
-	{ "cascadelake_server", CPU_SKYLAKE_XEON },
-	{ "kabylake", CPU_KABYLAKE },
-	{ "denverton", CPU_DENVERTON },
-	{ "icelake_server", CPU_ICELAKE_XEON },
-	{ "icelake-d", CPU_ICELAKE_DE },
-	{ "snowridge", CPU_TREMONT_D },
-	{ "cometlake", CPU_COMETLAKE },
-	{ "tigerlake", CPU_TIGERLAKE },
-	{ "rocketlake", CPU_ROCKETLAKE },
-	{ "alderlake", CPU_ALDERLAKE },
-	{ "lakefield", CPU_LAKEFIELD },
-	{ "sapphirerapids_server", CPU_SAPPHIRERAPIDS },
-	{ "raptorlake", CPU_RAPTORLAKE },
-	{ NULL }
-};
+extern struct config_choice cpu_choices[];
 
 static void print_cputypes(void)
 {

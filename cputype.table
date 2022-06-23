@@ -1,32 +1,32 @@
-CPU_ALDERLAKE|0x97,0x9A,0xBE|Alderlake
-CPU_ATOM|0x1c,0x26,0x27,0x35,0x36,0x37,0x4a,0x4c,0x4d,0x5a,0x5d|ATOM
-CPU_BROADWELL|0x3d|Broadwell
-CPU_BROADWELL_DE|0x56|Intel Xeon (Broadwell) D family
-CPU_BROADWELL_EPEX|0x4f|Intel Xeon v4 (Broadwell) EP/EX
-CPU_COMETLAKE|0xa5,0xa6|Cometlake
-CPU_CORE2|0xf,0x17|Intel Core
-CPU_DENVERTON|0x5f|Denverton
-CPU_DUNNINGTON|0x1d|Intel Xeon 7400 series
-CPU_HASWELL|0x3c,0x45,0x46|Intel Xeon v3 (Haswell) EP/EX
-CPU_HASWELL_EPEX|0x3f|Haswell
-CPU_ICELAKE|0x7D,0x7E,0x9D|Icelake server D Family
-CPU_ICELAKE_DE|0x6C|Icelake
-CPU_ICELAKE_XEON|0x6A|Icelake server
-CPU_IVY_BRIDGE|0x3a|Intel Xeon v2 (Ivy Bridge) EP/EX
-CPU_IVY_BRIDGE_EPEX|0x3e|Ivy Bridge
-CPU_KABYLAKE|0x8E,0x9E|Kabylake
-CPU_KNIGHTS_LANDING|0x57|Knights Landing
-CPU_KNIGHTS_MILL|0x85|Knights Mill
-CPU_LAKEFIELD|0x8A|Lakefield
-CPU_NEHALEM|0x1a,0x2c,0x1e,0x25|Intel Xeon 5500 series / Core i3/5/7 (\"Nehalem/Westmere\")
-CPU_P6OLD|0x0,0x1,0x2,0x3,0x4,0x5,0x6,0x7,0x8,0x9,0xA,0xB,0xC,0xD,0xE|Intel PPro/P2/P3/old Xeon
-CPU_RAPTORLAKE|0xb7|Raptorlake
-CPU_ROCKETLAKE|0xA7|Rocketlake
-CPU_SANDY_BRIDGE|0x2a|Sandy Bridge EP
-CPU_SANDY_BRIDGE_EP|0x2d|Sandy Bridge
-CPU_SAPPHIRERAPIDS|0x8F|Sapphirerapids server
-CPU_SKYLAKE|0x4e,0x5e|Skylake
-CPU_SKYLAKE_XEON|0x55|Skylake server
-CPU_TIGERLAKE|0x8C,0x8D|Tigerlake
-CPU_TREMONT_D|0x86|Tremont microserver
-CPU_XEON75XX|0x2e,0x2f|Intel Xeon 7500 series
+CPU_ALDERLAKE|0x97,0x9A,0xBE|Alderlake|alderlake
+CPU_ATOM|0x1c,0x26,0x27,0x35,0x36,0x37,0x4a,0x4c,0x4d,0x5a,0x5d|ATOM|atom
+CPU_BROADWELL|0x3d|Broadwell|broadwell
+CPU_BROADWELL_DE|0x56|Intel Xeon (Broadwell) D family|broadwell-d
+CPU_BROADWELL_EPEX|0x4f|Intel Xeon v4 (Broadwell) EP/EX|broadwell-ep,broadwell-ex,xeon-v4
+CPU_COMETLAKE|0xa5,0xa6|Cometlake|cometlake
+CPU_CORE2|0xf,0x17|Intel Core|core2,xeon3100,xeon3200,xeon5100,xeon5200,xeon7200
+CPU_DENVERTON|0x5f|Denverton|denverton
+CPU_DUNNINGTON|0x1d|Intel Xeon 7400 series|dunnington,xeon7400,xeon74xx
+CPU_HASWELL|0x3c,0x45,0x46|Intel Xeon v3 (Haswell) EP/EX|haswell-ep,haswell-ex,xeon-v3
+CPU_HASWELL_EPEX|0x3f|Haswell|haswell
+CPU_ICELAKE|0x7D,0x7E,0x9D|Icelake server D Family|icelake
+CPU_ICELAKE_DE|0x6C|Icelake|icelake-d
+CPU_ICELAKE_XEON|0x6A|Icelake server|icelake_server
+CPU_IVY_BRIDGE|0x3a|Intel Xeon v2 (Ivy Bridge) EP/EX|ivybridge-ep,ivybridge-ex,xeon-v2
+CPU_IVY_BRIDGE_EPEX|0x3e|Ivy Bridge|ivybridge
+CPU_KABYLAKE|0x8E,0x9E|Kabylake|kabylake
+CPU_KNIGHTS_LANDING|0x57|Knights Landing|knightslanding
+CPU_KNIGHTS_MILL|0x85|Knights Mill|knightsmill
+CPU_LAKEFIELD|0x8A|Lakefield|lakefield
+CPU_NEHALEM|0x1a,0x2c,0x1e,0x25|Intel Xeon 5500 series / Core i3/5/7 (\"Nehalem/Westmere\")|core_i3,core_i5,core_i7,nehalem,westmere,xeon5500
+CPU_P6OLD|0x0,0x1,0x2,0x3,0x4,0x5,0x6,0x7,0x8,0x9,0xA,0xB,0xC,0xD,0xE|Intel PPro/P2/P3/old Xeon|p6old
+CPU_RAPTORLAKE|0xb7|Raptorlake|raptorlake
+CPU_ROCKETLAKE|0xA7|Rocketlake|rocketlake
+CPU_SANDY_BRIDGE|0x2a|Sandy Bridge EP|sandybridge
+CPU_SANDY_BRIDGE_EP|0x2d|Sandy Bridge|sandybridge-ep
+CPU_SAPPHIRERAPIDS|0x8F|Sapphirerapids server|sapphirerapids_server
+CPU_SKYLAKE|0x4e,0x5e|Skylake|skylake
+CPU_SKYLAKE_XEON|0x55|Skylake server|cascadelake_server,skylake_server
+CPU_TIGERLAKE|0x8C,0x8D|Tigerlake|tigerlake
+CPU_TREMONT_D|0x86|Tremont microserver|snowridge
+CPU_XEON75XX|0x2e,0x2f|Intel Xeon 7500 series|xeon7500,xeon75xx
