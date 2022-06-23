@@ -375,17 +375,11 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 			mod,
 			step);
 	}
-	if (cputype != CPU_SANDY_BRIDGE_EP && cputype != CPU_IVY_BRIDGE_EPEX &&
-	    cputype != CPU_HASWELL_EPEX && cputype != CPU_BROADWELL &&
-	    cputype != CPU_BROADWELL_DE && cputype != CPU_BROADWELL_EPEX &&
-	    cputype != CPU_KNIGHTS_LANDING && cputype != CPU_KNIGHTS_MILL &&
-	    cputype != CPU_SKYLAKE && cputype != CPU_SKYLAKE_XEON &&
-	    cputype != CPU_KABYLAKE && cputype != CPU_DENVERTON &&
-	    cputype != CPU_ICELAKE_XEON && cputype != CPU_ICELAKE_DE &&
-	    cputype != CPU_TREMONT_D && cputype != CPU_COMETLAKE &&
-	    cputype != CPU_TIGERLAKE && cputype != CPU_ROCKETLAKE &&
-	    cputype != CPU_ALDERLAKE && cputype != CPU_LAKEFIELD &&
-	    cputype != CPU_SAPPHIRERAPIDS && cputype != CPU_RAPTORLAKE)
+	if (cputype == CPU_ATOM || cputype == CPU_CORE2 || cputype == CPU_DUNNINGTON ||
+	    cputype == CPU_GENERIC || cputype == CPU_HASWELL || cputype == CPU_ICELAKE ||
+	    cputype == CPU_INTEL || cputype == CPU_IVY_BRIDGE || cputype == CPU_K8 ||
+	    cputype == CPU_NEHALEM || cputype == CPU_P4 || cputype == CPU_P6OLD ||
+	    cputype == CPU_SANDY_BRIDGE || cputype == CPU_TULSA || cputype == CPU_XEON75XX)
 		resolveaddr(m->addr);
 }
 
