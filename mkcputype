@@ -5,6 +5,8 @@ awk -F\| 'BEGIN {
 	print "enum cputype {" > "cputype.tmp"
 	print "\tCPU_GENERIC," > "cputype.tmp"
 	print "\tCPU_K8," > "cputype.tmp"
+
+	print "\n\n/* Insert any new non-intel CPU models before this line */\n\n" > "cputype.tmp"
 	print "\tCPU_INTEL," > "cputype.tmp"
 	print "\tCPU_P4," > "cputype.tmp"
 	print "\tCPU_TULSA," > "cputype.tmp"

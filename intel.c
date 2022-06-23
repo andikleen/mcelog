@@ -79,11 +79,7 @@ enum cputype select_intel_cputype(int family, int model)
 
 int is_intel_cpu(int cpu)
 {
-	switch (cpu) {
-	CASE_INTEL_CPUS:
-		return 1;
-	} 
-	return 0;
+	return cpu >= CPU_INTEL;
 }
 
 static int intel_memory_error(struct mce *m, unsigned recordlen)

@@ -123,16 +123,14 @@ static char *bankname(unsigned bank)
 	if (bank >= MCE_EXTENDED_BANK) 
 		return extended_bankname(bank);
 
-	switch (cputype) { 
-	case CPU_K8:
-		return k8_bank_name(bank);
-	CASE_INTEL_CPUS:
+	if (cputype >= CPU_INTEL)
 		return intel_bank_name(bank);
+	else if (cputype == CPU_K8)
+		return k8_bank_name(bank);
+
 	/* add banks of other cpu types here */
-	default:
-		sprintf(numeric, "BANK %d", bank); 
-		return numeric;
-	}
+	sprintf(numeric, "BANK %d", bank);
+	return numeric;
 } 
 
 static void resolveaddr(unsigned long long addr)
@@ -146,17 +144,14 @@ static int mce_filter(struct mce *m, unsigned recordlen)
 {
 	if (!filter_bogus) 
 		return 1;
+
 	/* Filter out known broken MCEs */
-	switch (cputype) {
-	case CPU_K8:
-		return mce_filter_k8(m);
-		/* add more buggy CPUs here */
-	CASE_INTEL_CPUS:
+	if (cputype >= CPU_INTEL)
 		return mce_filter_intel(m, recordlen);
-	default:
-	case CPU_GENERIC:
-		return 1;
-	}	
+	else if (cputype == CPU_K8)
+		return mce_filter_k8(m);
+
+	return 1;
 }
 
 static void print_tsc(int cpunum, __u64 tsc, unsigned long time) 
@@ -347,17 +342,12 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 		time_t t = m->time;
 		Wprintf("TIME %llu %s", m->time, ctime(&t));
 	} 
-	switch (cputype) { 
-	case CPU_K8:
+	if (cputype == CPU_K8)
 		decode_k8_mc(m, &ismemerr); 
-		break;
-	CASE_INTEL_CPUS:
+	else if (cputype >= CPU_INTEL)
 		decode_intel_mc(m, cputype, &ismemerr, recordlen);
-		break;
-	/* add handlers for other CPUs here */
-	default:
-		break;
-	} 
+	/* else add handlers for other CPUs here */
+
 	/* decode all status bits here */
 	Wprintf("STATUS %llx MCGSTATUS %llx\n", m->status, m->mcgstatus);
 	n = 0;
