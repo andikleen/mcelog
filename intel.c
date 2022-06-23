@@ -32,19 +32,11 @@ int memory_error_support;
 
 void intel_cpu_init(enum cputype cpu)
 {
-	if (cpu == CPU_NEHALEM || cpu == CPU_XEON75XX || cpu == CPU_INTEL ||
-	    cpu == CPU_SANDY_BRIDGE || cpu == CPU_SANDY_BRIDGE_EP ||
-	    cpu == CPU_IVY_BRIDGE || cpu == CPU_IVY_BRIDGE_EPEX ||
-	    cpu == CPU_HASWELL || cpu == CPU_HASWELL_EPEX || cpu == CPU_BROADWELL ||
-	    cpu == CPU_BROADWELL_DE || cpu == CPU_BROADWELL_EPEX ||
-	    cpu == CPU_KNIGHTS_LANDING || cpu == CPU_KNIGHTS_MILL ||
-	    cpu == CPU_SKYLAKE || cpu == CPU_SKYLAKE_XEON ||
-	    cpu == CPU_KABYLAKE || cpu == CPU_DENVERTON || cpu == CPU_ICELAKE ||
-	    cpu == CPU_ICELAKE_XEON || cpu == CPU_ICELAKE_DE ||
-	    cpu == CPU_TREMONT_D || cpu == CPU_COMETLAKE ||
-	    cpu == CPU_TIGERLAKE || cpu == CPU_ROCKETLAKE ||
-	    cpu == CPU_ALDERLAKE || cpu == CPU_LAKEFIELD ||
-	    cpu == CPU_SAPPHIRERAPIDS || cpu == CPU_RAPTORLAKE)
+	if (cpu == CPU_ATOM || cpu == CPU_CORE2 || cpu == CPU_DUNNINGTON ||
+	    cpu == CPU_GENERIC || cpu == CPU_K8 || cpu == CPU_P4 ||
+	    cpu == CPU_P6OLD || cpu == CPU_TULSA)
+		memory_error_support = 0;
+	else
 		memory_error_support = 1;
 }
 
