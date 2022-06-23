@@ -39,7 +39,7 @@ OBJ := p4.o k8.o mcelog.o dmi.o tsc.o core2.o bitfield.o intel.o \
        denverton.o i10nm.o					 \
        msr.o bus.o unknown.o
 CLEAN := mcelog dmi tsc dbquery .depend .depend.X dbquery.o \
-	version.o version.c version.tmp
+	version.o version.c version.tmp cputype.h cputype.tmp
 DOC := mce.pdf
 
 ADD_DEFINES :=
@@ -102,7 +102,14 @@ version.tmp: FORCE
 version.c: version.tmp
 	cmp version.tmp version.c || mv version.tmp version.c
 
+cputype.tmp: FORCE
+	./mkcputype
+
+cputype.h: cputype.tmp
+	cmp cputype.tmp cputype.h || mv cputype.tmp cputype.h
+
 .depend: ${SRC}
+	touch cputype.h
 	${CC} -MM -I. ${SRC} > .depend.X && mv .depend.X .depend
 
 include .depend
