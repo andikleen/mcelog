@@ -59,74 +59,9 @@ enum cputype select_intel_cputype(int family, int model)
 		if (model >= 0x1a && model != 28) 
 			memory_error_support = 1;
 
-		if (model < 0xf) 
-			return CPU_P6OLD;
-		else if (model == 0xf || model == 0x17) /* Merom/Penryn */
-			return CPU_CORE2;
-		else if (model == 0x1d)
-			return CPU_DUNNINGTON;
-		else if (model == 0x1a || model == 0x2c || model == 0x1e ||
-			 model == 0x25)
-			return CPU_NEHALEM;
-		else if (model == 0x2e || model == 0x2f)
-			return CPU_XEON75XX;
-		else if (model == 0x2a)
-			return CPU_SANDY_BRIDGE;
-		else if (model == 0x2d)
-			return CPU_SANDY_BRIDGE_EP;
-		else if (model == 0x3a)
-			return CPU_IVY_BRIDGE;
-		else if (model == 0x3e)
-			return CPU_IVY_BRIDGE_EPEX;
-		else if (model == 0x3c || model == 0x45 || model == 0x46)
-			return CPU_HASWELL;
-		else if (model == 0x3f)
-			return CPU_HASWELL_EPEX;
-		else if (model == 0x3d)
-			return CPU_BROADWELL;
-		else if (model == 0x4f)
-			return CPU_BROADWELL_EPEX;
-		else if (model == 0x56)
-			return CPU_BROADWELL_DE;
-		else if (model == 0x57)
-			return CPU_KNIGHTS_LANDING;
-		else if (model == 0x85)
-			return CPU_KNIGHTS_MILL;
-		else if (model == 0x1c || model == 0x26 || model == 0x27 ||
-			 model == 0x35 || model == 0x36 || model == 0x36 ||
-			 model == 0x37 || model == 0x4a || model == 0x4c ||
-			 model == 0x4d || model == 0x5a || model == 0x5d)
-			return CPU_ATOM;
-		else if (model == 0x4e || model == 0x5e)
-			return CPU_SKYLAKE;
-		else if (model == 0x55)
-			return CPU_SKYLAKE_XEON;
-		else if (model == 0x8E || model == 0x9E)
-			return CPU_KABYLAKE;
-		else if (model == 0x5f)
-			return CPU_DENVERTON;
-		else if (model == 0x7D || model == 0x7E || model == 0x9D)
-			return CPU_ICELAKE;
-		else if (model == 0x6A)
-			return CPU_ICELAKE_XEON;
-		else if (model == 0x6C)
-			return CPU_ICELAKE_DE;
-		else if (model == 0x86)
-			return CPU_TREMONT_D;
-		else if (model == 0xa5 || model == 0xa6)
-			return CPU_COMETLAKE;
-		else if (model == 0x8C || model == 0x8D)
-			return CPU_TIGERLAKE;
-		else if (model == 0xA7)
-			return CPU_ROCKETLAKE;
-		else if (model == 0x97 || model == 0x9A || model == 0xBE)
-			return CPU_ALDERLAKE;
-		else if (model == 0x8A)
-			return CPU_LAKEFIELD;
-		else if (model == 0x8F)
-			return CPU_SAPPHIRERAPIDS;
-		else if (model == 0xb7)
-			return CPU_RAPTORLAKE;
+		model = lookup_intel_cputype(model);
+		if (model != -1)
+			return model;
 		if (model > 0x1a) {
 			Eprintf("Family 6 Model %u CPU: only decoding architectural errors\n",
 				model);

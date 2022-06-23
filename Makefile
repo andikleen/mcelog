@@ -37,9 +37,10 @@ OBJ := p4.o k8.o mcelog.o dmi.o tsc.o core2.o bitfield.o intel.o \
        sandy-bridge.o ivy-bridge.o haswell.o		 	 \
        broadwell_de.o broadwell_epex.o skylake_xeon.o		 \
        denverton.o i10nm.o					 \
-       msr.o bus.o unknown.o
+       msr.o bus.o unknown.o lookup_intel_cputype.o
 CLEAN := mcelog dmi tsc dbquery .depend .depend.X dbquery.o \
-	version.o version.c version.tmp cputype.h cputype.tmp
+	version.o version.c version.tmp cputype.h cputype.tmp \
+	lookup_intel_cputype.c lookup_intel_cputype.tmp
 DOC := mce.pdf
 
 ADD_DEFINES :=
@@ -102,11 +103,14 @@ version.tmp: FORCE
 version.c: version.tmp
 	cmp version.tmp version.c || mv version.tmp version.c
 
-cputype.tmp: FORCE
+cputype.tmp lookup_intel_cputype.tmp: FORCE
 	./mkcputype
 
 cputype.h: cputype.tmp
 	cmp cputype.tmp cputype.h || mv cputype.tmp cputype.h
+
+lookup_intel_cputype.c: lookup_intel_cputype.tmp
+	cmp lookup_intel_cputype.c lookup_intel_cputype.tmp || mv lookup_intel_cputype.tmp lookup_intel_cputype.c
 
 .depend: ${SRC}
 	touch cputype.h
