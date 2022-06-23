@@ -219,46 +219,6 @@ static u32 unparse_cpuid(unsigned family, unsigned model)
 	return c.v;
 }
 
-static char *cputype_name[] = {
-	[CPU_GENERIC] = "generic CPU",
-	[CPU_P6OLD] = "Intel PPro/P2/P3/old Xeon",
-	[CPU_CORE2] = "Intel Core", /* 65nm and 45nm */
-	[CPU_K8] = "AMD K8 and derivates",
-	[CPU_P4] = "Intel P4",
-	[CPU_NEHALEM] = "Intel Xeon 5500 series / Core i3/5/7 (\"Nehalem/Westmere\")",
-	[CPU_DUNNINGTON] = "Intel Xeon 7400 series",
-	[CPU_TULSA] = "Intel Xeon 7100 series",
-	[CPU_INTEL] = "Intel generic architectural MCA",
-	[CPU_XEON75XX] = "Intel Xeon 7500 series",
-	[CPU_SANDY_BRIDGE] = "Sandy Bridge", /* Fill in better name */
-	[CPU_SANDY_BRIDGE_EP] = "Sandy Bridge EP", /* Fill in better name */
-	[CPU_IVY_BRIDGE] = "Ivy Bridge", /* Fill in better name */
-	[CPU_IVY_BRIDGE_EPEX] = "Intel Xeon v2 (Ivy Bridge) EP/EX", /* Fill in better name */
-	[CPU_HASWELL] = "Haswell", /* Fill in better name */
-	[CPU_HASWELL_EPEX] = "Intel Xeon v3 (Haswell) EP/EX",
-	[CPU_BROADWELL] = "Broadwell",
-	[CPU_BROADWELL_DE] = "Intel Xeon (Broadwell) D family",
-	[CPU_BROADWELL_EPEX] = "Intel Xeon v4 (Broadwell) EP/EX",
-	[CPU_KNIGHTS_LANDING] = "Knights Landing",
-	[CPU_KNIGHTS_MILL] = "Knights Mill",
-	[CPU_ATOM] = "ATOM",
-	[CPU_SKYLAKE] = "Skylake",
-	[CPU_SKYLAKE_XEON] = "Skylake server",
-	[CPU_KABYLAKE] = "Kabylake",
-	[CPU_DENVERTON] = "Denverton",
-	[CPU_ICELAKE] = "Icelake",
-	[CPU_ICELAKE_XEON] = "Icelake server",
-	[CPU_ICELAKE_DE] = "Icelake server D Family",
-	[CPU_TREMONT_D] = "Tremont microserver",
-	[CPU_COMETLAKE] = "Cometlake",
-	[CPU_TIGERLAKE] = "Tigerlake",
-	[CPU_ROCKETLAKE] = "Rocketlake",
-	[CPU_ALDERLAKE] = "Alderlake",
-	[CPU_LAKEFIELD] = "Lakefield",
-	[CPU_SAPPHIRERAPIDS] = "Sapphirerapids server",
-	[CPU_RAPTORLAKE] = "Raptorlake",
-};
-
 static struct config_choice cpu_choices[] = {
 	{ "generic", CPU_GENERIC },
 	{ "p6old", CPU_P6OLD },
