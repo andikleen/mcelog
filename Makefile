@@ -115,7 +115,7 @@ lookup_intel_cputype.c: lookup_intel_cputype.tmp
 lookup_intel_cputype.o: cputype.h config.h
 
 .depend: ${SRC}
-	touch cputype.h
+	[ -f cputype.h ] || touch cputype.h
 	${CC} -MM -I. ${SRC} > .depend.X && mv .depend.X .depend
 
 include .depend
