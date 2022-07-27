@@ -28,7 +28,7 @@ TRIGGERS=cache-error-trigger dimm-error-trigger page-error-trigger \
 
 all: mcelog
 
-.PHONY: install clean depend FORCE
+.PHONY: install install-nodoc clean depend FORCE
 
 OBJ := p4.o k8.o mcelog.o dmi.o tsc.o core2.o bitfield.o intel.o \
        nehalem.o dunnington.o tulsa.o config.o memutil.o msg.o   \
@@ -50,16 +50,11 @@ SRC := $(OBJ:.o=.c)
 mcelog: ${OBJ} version.o
 
 # dbquery intentionally not installed by default
-install: mcelog mcelog.conf mcelog.conf.5 mcelog.triggers.5
-	mkdir -p $(DESTDIR)${etcprefix}/etc/mcelog $(DESTDIR)${prefix}/sbin $(DESTDIR)$(MANDIR)/man5 $(DESTDIR)$(MANDIR)/man8
-	install -m 755 -p mcelog $(DESTDIR)${prefix}/sbin/mcelog
+install: install-nodoc mcelog.conf.5 mcelog.triggers.5
+	mkdir -p $(DESTDIR)$(MANDIR)/man5 $(DESTDIR)$(MANDIR)/man8
 	install -m 644 -p mcelog.8 $(DESTDIR)$(MANDIR)/man8
 	install -m 644 -p mcelog.conf.5 $(DESTDIR)$(MANDIR)/man5
 	install -m 644 -p mcelog.triggers.5 $(DESTDIR)$(MANDIR)/man5
-	install -m 644 -p -b mcelog.conf $(DESTDIR)${etcprefix}/etc/mcelog/mcelog.conf
-	for i in ${TRIGGERS} ; do 						\
-		install -m 755 -p -b triggers/$$i $(DESTDIR)${etcprefix}/etc/mcelog ; 	\
-	done
 ifdef DOCDIR
 	install -d 755 $(DESTDIR)${DOCDIR}
 	install -m 644 -p ${DOC} $(DESTDIR)${DOCDIR}
@@ -67,6 +62,14 @@ else
 	echo
 	echo "Consider defining DOCDIR to install additional documentation"
 endif
+
+install-nodoc: mcelog mcelog.conf
+	mkdir -p $(DESTDIR)${etcprefix}/etc/mcelog $(DESTDIR)${prefix}/sbin
+	install -m 755 -p mcelog $(DESTDIR)${prefix}/sbin/mcelog
+	install -m 644 -p -b mcelog.conf $(DESTDIR)${etcprefix}/etc/mcelog/mcelog.conf
+	for i in ${TRIGGERS} ; do 						\
+		install -m 755 -p -b triggers/$$i $(DESTDIR)${etcprefix}/etc/mcelog ; 	\
+	done
 
 mcelog.conf.5: mcelog.conf config-intro.man
 	./genconfig.py mcelog.conf config-intro.man > mcelog.conf.5
