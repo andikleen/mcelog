@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # generate man config documentation from mcelog.conf example
 # genconfig.py mcelog.conf intro.html
 import sys
