@@ -106,7 +106,7 @@ version.tmp: FORCE
 version.c: version.tmp
 	cmp version.tmp version.c || mv version.tmp version.c
 
-cputype.tmp lookup_intel_cputype.tmp: FORCE
+cputype.tmp lookup_intel_cputype.tmp &: cputype.table
 	./mkcputype
 
 cputype.h: cputype.tmp
