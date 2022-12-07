@@ -36,9 +36,9 @@ memory page are found. It mostly focuses on memory errors.
 -  Install page-types tool, which is accompanied with Linux kernel source
    (2.6.32 or newer).
 
-   # cd $KERNEL_SRC/Documentation/vm/
-   # gcc -o page-types page-types.c
-   # cp page-types /usr/bin/
+   # cd $KERNEL_SRC/tools/vm/
+   # make
+   # cp page-types /usr/sbin/
 
 
 
