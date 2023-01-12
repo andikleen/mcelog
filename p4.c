@@ -311,6 +311,7 @@ static int check_for_mirror(__u8 bank, __u64  status, __u64 misc)
 	case CPU_ICELAKE_XEON:
 		return i10nm_ce_type(bank, status, misc);
 	case CPU_SAPPHIRERAPIDS:
+	case CPU_EMERALDRAPIDS:
 	default:
 		return 0;
 	}
@@ -464,6 +465,7 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 		i10nm_decode_model(cputype, log->bank, log->status, log->misc);
 		break;
 	case CPU_SAPPHIRERAPIDS:
+	case CPU_EMERALDRAPIDS:
 		sapphire_decode_model(cputype, log->bank, log->status, log->misc);
 		break;
 	case CPU_DENVERTON:

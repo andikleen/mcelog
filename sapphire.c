@@ -375,6 +375,7 @@ void sapphire_decode_model(int cputype, int bank, u64 status, u64 misc)
 
 	switch (cputype) {
 	case CPU_SAPPHIRERAPIDS:
+	case CPU_EMERALDRAPIDS:
 		banktype = sapphire[bank];
 		break;
 	default:

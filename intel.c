@@ -106,6 +106,7 @@ static int intel_memory_error(struct mce *m, unsigned recordlen)
 			i10nm_memerr_misc(m, channel, dimm);
 			break;
 		case CPU_SAPPHIRERAPIDS:
+		case CPU_EMERALDRAPIDS:
 			sapphire_memerr_misc(m, channel, dimm);
 			break;
 		default:
