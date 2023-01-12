@@ -27,6 +27,7 @@
 #include "haswell.h"
 #include "skylake_xeon.h"
 #include "i10nm.h"
+#include "sapphire.h"
 
 int memory_error_support;
 
@@ -102,8 +103,10 @@ static int intel_memory_error(struct mce *m, unsigned recordlen)
 		case CPU_ICELAKE_XEON:
 		case CPU_ICELAKE_DE:
 		case CPU_TREMONT_D:
-		case CPU_SAPPHIRERAPIDS:
 			i10nm_memerr_misc(m, channel, dimm);
+			break;
+		case CPU_SAPPHIRERAPIDS:
+			sapphire_memerr_misc(m, channel, dimm);
 			break;
 		default:
 			break;

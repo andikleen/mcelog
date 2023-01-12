@@ -1,5 +1,5 @@
-/* Copyright (C) 2019 Intel Corporation
-   Decode Intel 10nm specific machine check errors.
+/* Copyright (C) 2023 Intel Corporation
+   Decode Intel Xeon 4th generation specific machine check errors.
 
    mcelog is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public
@@ -20,13 +20,8 @@
 
 #include "mcelog.h"
 #include "bitfield.h"
-#include "i10nm.h"
+#include "sapphire.h"
 #include "memdb.h"
-
-/* Memory error was corrected by mirroring with channel failover */
-#define I10NM_MCI_MISC_FO      (1ULL<<63)
-/* Memory error was corrected by mirroring and primary channel scrubbed successfully */
-#define I10NM_MCI_MISC_MC      (1ULL<<62)
 
 static char *pcu_1[] = {
 	[0x0D] = "MCA_LLC_BIST_ACTIVE_TIMEOUT",
@@ -81,6 +76,7 @@ static char *pcu_1[] = {
 	[0xA0] = "MCA_ADR_SIGNAL_TIMEOUT",
 	[0xA1] = "MCA_BCLK_FREQ_OC_ABOVE_THRESHOLD",
 	[0xB0] = "MCA_DISPATCHER_RUN_BUSY_TIMEOUT",
+	[0xC0] = "MCA_DISPATCHER_RUN_BUSY_TIMEOUT",
 };
 
 static char *pcu_2[] = {
@@ -99,6 +95,18 @@ static char *pcu_3[] = {
 	[0x07] = "Double bit RAM error on Data Fetch",
 };
 
+static char *pcu_4[] = {
+	[0x01] = "MCE when CR4.MCE is clear",
+	[0x02] = "MCE when MCIP bit is set",
+	[0x03] = "MCE under WPS",
+	[0x04] = "Unrecoverable error during security flow execution",
+	[0x05] = "SW triple fault shutdown",
+	[0x06] = "VMX exit consistency check failures",
+	[0x07] = "RSM consistency check failures",
+	[0x08] = "Invalid conditions on protected mode SMM entry",
+	[0x09] = "Unrecoverable error during security flow execution",
+};
+
 static struct field pcu1[] = {
 	FIELD(0, pcu_1),
 	{}
@@ -111,6 +119,11 @@ static struct field pcu2[] = {
 
 static struct field pcu3[] = {
 	FIELD(0, pcu_3),
+	{}
+};
+
+static struct field pcu4[] = {
+	FIELD(0, pcu_4),
 	{}
 };
 
@@ -129,13 +142,14 @@ static struct field upi1[] = {
 };
 
 static char *upi_2[] = {
-	[0x00] = "Phy Initialization Failure (NumInit)",
+	[0x00] = "Phy Initialization Failure",
 	[0x01] = "Phy Detected Drift Buffer Alarm",
 	[0x02] = "Phy Detected Latency Buffer Rollover",
 	[0x10] = "LL Rx detected CRC error: unsuccessful LLR (entered Abort state)",
 	[0x11] = "LL Rx Unsupported/Undefined packet",
 	[0x12] = "LL or Phy Control Error",
 	[0x13] = "LL Rx Parameter Exception",
+	[0x15] = "UC LL Rx SGX MAC Error",
 	[0x1F] = "LL Detected Control Error",
 	[0x20] = "Phy Initialization Abort",
 	[0x21] = "Phy Inband Reset",
@@ -145,7 +159,6 @@ static char *upi_2[] = {
 	[0x25] = "Phy L0p exit error corrected with reset",
 	[0x30] = "LL Rx detected CRC error: successful LLR without Phy Reinit",
 	[0x31] = "LL Rx detected CRC error: successful LLR with Phy Reinit",
-	[0x32] = "Tx received LLR",
 };
 
 static struct field upi2[] = {
@@ -153,15 +166,21 @@ static struct field upi2[] = {
 	{}
 };
 
+static char *m2m_0[] = {
+	[0x01] = "Read ECC error",
+	[0x02] = "Bucket1 error",
+	[0x03] = "RdTrkr Parity error",
+	[0x05] = "Prefetch channel mismatch",
+	[0x07] = "Read completion parity error",
+	[0x08] = "Response parity error",
+	[0x09] = "Timeout error",
+	[0x0A] = "CMI reserved credit pool error",
+	[0x0B] = "CMI total credit count error",
+	[0x0C] = "CMI credit oversubscription error",
+};
+
 static struct field m2m[] = {
-	SBITFIELD(16, "MC read data error"),
-	SBITFIELD(17, "Reserved"),
-	SBITFIELD(18, "MC partial write data error"),
-	SBITFIELD(19, "Full write data error"),
-	SBITFIELD(20, "M2M clock-domain-crossing buffer (BGF) error"),
-	SBITFIELD(21, "M2M time out"),
-	SBITFIELD(22, "M2M tracker parity error"),
-	SBITFIELD(23, "fatal Bucket1 error"),
+	FIELD(0, m2m_0),
 	{}
 };
 
@@ -182,18 +201,11 @@ static char *imc_0[] = {
 
 static char *imc_1[] = {
 	[0x00] = "WDB read parity error",
-	[0x03] = "RPA parity error",
-	[0x06] = "DDR_T_DPPP data BE error",
-	[0x07] = "DDR_T_DPPP data error",
 	[0x08] = "DDR link failure",
-	[0x11] = "PCLS CAM error",
-	[0x12] = "PCLS data error",
 };
 
 static char *imc_2[] = {
-	[0x00] = "DDR command / address parity error",
-	[0x20] = "HBM command / address parity error",
-	[0x21] = "HBM data parity error",
+	[0x00] = "DDR5 command / address parity error",
 };
 
 static char *imc_4[] = {
@@ -288,30 +300,50 @@ static struct field imc10[] = {
 	{}
 };
 
-static void i10nm_imc_misc(u64 status, u64 misc)
+static void sapphire_imc_misc(bool hbm, u64 status, u64 misc)
 {
 	u32 column = EXTRACT(misc, 9, 18) << 2;
 	u32 row = EXTRACT(misc, 19, 39);
-	u32 bank = EXTRACT(misc, 42, 43);
-	u32 bankgroup = EXTRACT(misc, 40, 41) | (EXTRACT(misc, 44, 44) << 2);
-	u32 fdevice = EXTRACT(misc, 46, 51);
+	u32 bank = EXTRACT(misc, 39, 40);
+	u32 bankgroup = EXTRACT(misc, 37, 38) | (EXTRACT(misc, 41, 41) << 2);
+	u32 fdevice = EXTRACT(misc, 43, 48);
+	u32 hbm_fdevice = EXTRACT(misc, 51, 55);
 	u32 subrank = EXTRACT(misc, 52, 55);
 	u32 rank = EXTRACT(misc, 56, 58);
 	u32 eccmode = EXTRACT(misc, 59, 62);
 	u32 transient = EXTRACT(misc, 63, 63);
 
 	Wprintf("bank: 0x%x bankgroup: 0x%x row: 0x%x column: 0x%x\n", bank, bankgroup, row, column);
-	if (!transient && !EXTRACT(status, 61, 61))
-		Wprintf("failed device: 0x%x\n", fdevice);
+	if (!transient && !EXTRACT(status, 61, 61)) {
+		if (hbm)
+			Wprintf("failed device: 0x%x,0x%x\n", hbm_fdevice, fdevice);
+		else
+			Wprintf("failed device: 0x%x\n", fdevice);
+	}
 	Wprintf("rank: 0x%x subrank: 0x%x\n", rank, subrank);
-	Wprintf("ecc mode: ");
-	switch (eccmode) {
-	case 0: Wprintf("SDDC memory mode\n"); break;
-	case 1: Wprintf("SDDC\n"); break;
-	case 4: Wprintf("ADDDC memory mode\n"); break;
-	case 5: Wprintf("ADDDC\n"); break;
-	case 8: Wprintf("DDRT read\n"); break;
-	default: Wprintf("unknown\n"); break;
+	if (hbm) {
+		switch (eccmode) {
+		case 1:
+			Wprintf("HBM 64B read\n");
+			break;
+		case 9:
+			Wprintf("HBM 32B read\n");
+			break;
+		}
+	} else {
+		Wprintf("ecc mode: ");
+		switch (eccmode) {
+		case 0: Wprintf("SDDC 2LM memory mode\n"); break;
+		case 1: Wprintf("SDDC\n"); break;
+		case 2: Wprintf("SDDC+1 2LM memory mode\n"); break;
+		case 3: Wprintf("SDDC+1\n"); break;
+		case 4: Wprintf("ADDDC 2LM memory mode\n"); break;
+		case 5: Wprintf("ADDDC\n"); break;
+		case 6: Wprintf("ADDDC+1 2LM memory mode\n"); break;
+		case 7: Wprintf("ADDDC+1\n"); break;
+		case 8: Wprintf("DDRT read\n"); break;
+		default: Wprintf("unknown\n"); break;
+		}
 	}
 	if (transient)
 		Wprintf("transient\n");
@@ -323,50 +355,27 @@ enum banktype {
 	BT_UPI,
 	BT_M2M,
 	BT_IMC,
+	BT_HBMM2M,
+	BT_HBMIMC,
 };
 
-static enum banktype icelake[32] = {
+static enum banktype sapphire[32] = {
 	[4]		= BT_PCU,
 	[5]		= BT_UPI,
-	[7 ... 8]	= BT_UPI,
 	[12]		= BT_M2M,
-	[16]		= BT_M2M,
-	[20]		= BT_M2M,
-	[24]		= BT_M2M,
-	[13 ... 15]	= BT_IMC,
-	[17 ... 19]	= BT_IMC,
-	[21 ... 23]	= BT_IMC,
-	[25 ... 27]	= BT_IMC,
+	[13 ... 20]	= BT_IMC,
+	[29]		= BT_HBMM2M,
+	[30 ... 31]	= BT_HBMIMC,
 };
 
-static enum banktype icelake_de[32] = {
-	[4]		= BT_PCU,
-	[12]		= BT_M2M,
-	[16]		= BT_M2M,
-	[13 ... 15]	= BT_IMC,
-	[17 ... 19]	= BT_IMC,
-};
-
-static enum banktype tremont[32] = {
-	[4]		= BT_PCU,
-	[12]		= BT_M2M,
-	[13 ... 15]	= BT_IMC,
-};
-
-void i10nm_decode_model(int cputype, int bank, u64 status, u64 misc)
+void sapphire_decode_model(int cputype, int bank, u64 status, u64 misc)
 {
 	enum banktype banktype;
 	u64 f;
 
 	switch (cputype) {
-	case CPU_ICELAKE_XEON:
-		banktype = icelake[bank];
-		break;
-	case CPU_ICELAKE_DE:
-		banktype = icelake_de[bank];
-		break;
-	case CPU_TREMONT_D:
-		banktype = tremont[bank];
+	case CPU_SAPPHIRERAPIDS:
+		banktype = sapphire[bank];
 		break;
 	default:
 		return;
@@ -385,8 +394,12 @@ void i10nm_decode_model(int cputype, int bank, u64 status, u64 misc)
 		if (f)
 			decode_bitfield(f, pcu2);
 		f = EXTRACT(status, 16, 19);
-		if (f)
-			decode_bitfield(f, pcu3);
+		if (f) {
+			if (EXTRACT(status, 0, 15) != 0x40C)
+				decode_bitfield(f, pcu3);
+			else
+				decode_bitfield(f, pcu4);
+		}
 		break;
 
 	case BT_UPI:
@@ -398,14 +411,22 @@ void i10nm_decode_model(int cputype, int bank, u64 status, u64 misc)
 		decode_bitfield(f, upi2);
 		break;
 
+	case BT_HBMM2M:
+		Wprintf("HBM: ");
+		/*fallthrough*/
+
 	case BT_M2M:
 		Wprintf("M2M: ");
 		f = EXTRACT(status, 24, 25);
-		Wprintf("MscodDDRType=0x%llx\n", f);
-		f = EXTRACT(status, 26, 31);
-		Wprintf("MscodMiscErrs=0x%llx\n", f);
-		decode_bitfield(status, m2m);
+		if (f == 1)
+			Wprintf("HBM Error\n");
+		f = EXTRACT(status, 16, 23);
+		decode_bitfield(f, m2m);
 		break;
+
+	case BT_HBMIMC:
+		Wprintf("HBM: ");
+		/*fallthrough*/
 
 	case BT_IMC:
 		Wprintf("MemCtrl: ");
@@ -418,24 +439,9 @@ void i10nm_decode_model(int cputype, int bank, u64 status, u64 misc)
 		case 8: decode_bitfield(f, imc8); break;
 		case 0x10: decode_bitfield(f, imc10); break;
 		}
-		i10nm_imc_misc(status, misc);
+		sapphire_imc_misc(bank >= 30, status, misc);
 		break;
 	}
-}
-
-int i10nm_ce_type(int bank, u64 status, u64 misc)
-{
-	if (bank != 12 && bank != 16 && bank != 20 && bank != 24)
-		return 0;
-
-	if (status & MCI_STATUS_MISCV) {
-		if (misc & I10NM_MCI_MISC_FO)
-			return 1;
-		if (misc & I10NM_MCI_MISC_MC)
-			return 2;
-	}
-
-	return 0;
 }
 
 /*
@@ -443,10 +449,10 @@ int i10nm_ce_type(int bank, u64 status, u64 misc)
  * we can derive the channel from the bank number.
  * There can be four memory controllers with two channels each.
  */
-void i10nm_memerr_misc(struct mce *m, int *channel, int *dimm)
+void sapphire_memerr_misc(struct mce *m, int *channel, int *dimm)
 {
 	u64 status = m->status;
-	unsigned int chan, imc;
+	unsigned int chan;
 
 	/* Check this is a memory error */
 	if (!test_prefix(7, status & 0xefff))
@@ -457,33 +463,11 @@ void i10nm_memerr_misc(struct mce *m, int *channel, int *dimm)
 		return;
 
 	switch (m->bank) {
-	case 12: /* M2M 0 */
-	case 13: /* IMC 0, Channel 0 */
-	case 14: /* IMC 0, Channel 1 */
-	case 15: /* IMC 0, Channel 2 */
-		imc = 0;
+	case 13 ... 20:
+		channel[0] = m->bank - 13;
 		break;
-	case 16: /* M2M 1 */
-	case 17: /* IMC 1, Channel 0 */
-	case 18: /* IMC 1, Channel 1 */
-	case 19: /* IMC 1, Channel 2 */
-		imc = 1;
+	case 30 ... 31:
+		channel[0] = 8 + m->bank - 30;
 		break;
-	case 20: /* M2M 2 */
-	case 21: /* IMC 2, Channel 0 */
-	case 22: /* IMC 2, Channel 1 */
-	case 23: /* IMC 2, Channel 2 */
-		imc = 2;
-		break;
-	case 24: /* M2M 3 */
-	case 25: /* IMC 3, Channel 0 */
-	case 26: /* IMC 3, Channel 1 */
-	case 27: /* IMC 3, Channel 2 */
-		imc = 3;
-		break;
-	default:
-		return;
 	}
-
-	channel[0] = imc * 3 + chan;
 }
