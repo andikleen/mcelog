@@ -43,6 +43,8 @@ void intel_cpu_init(enum cputype cpu)
 
 enum cputype select_intel_cputype(int family, int model)
 {
+	int ret;
+
 	if (family == 15) { 
 		if (model == 6) 
 			return CPU_TULSA;
@@ -52,9 +54,9 @@ enum cputype select_intel_cputype(int family, int model)
 		if (model >= 0x1a && model != 28) 
 			memory_error_support = 1;
 
-		model = lookup_intel_cputype(model);
-		if (model != -1)
-			return model;
+		ret = lookup_intel_cputype(model);
+		if (ret != -1)
+			return ret;
 		if (model > 0x1a) {
 			Eprintf("Family 6 Model %u CPU: only decoding architectural errors\n",
 				model);
