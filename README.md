@@ -1,4 +1,4 @@
-# mcelog
+# mcelog...
 
 mcelog is the user space backend for logging machine check errors reported
 by the hardware to the kernel. The kernel does the immediate actions
