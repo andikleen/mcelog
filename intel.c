@@ -28,6 +28,7 @@
 #include "skylake_xeon.h"
 #include "i10nm.h"
 #include "sapphire.h"
+#include "granite.h"
 
 int memory_error_support;
 
@@ -110,6 +111,9 @@ static int intel_memory_error(struct mce *m, unsigned recordlen)
 		case CPU_SAPPHIRERAPIDS:
 		case CPU_EMERALDRAPIDS:
 			sapphire_memerr_misc(m, channel, dimm);
+			break;
+		case CPU_GRANITERAPIDS:
+			granite_memerr_misc(m, channel, dimm);
 			break;
 		default:
 			break;
