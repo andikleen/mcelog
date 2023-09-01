@@ -470,6 +470,7 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 		sapphire_decode_model(cputype, log->bank, log->status, log->misc);
 		break;
 	case CPU_GRANITERAPIDS:
+	case CPU_SIERRAFOREST:
 		granite_decode_model(cputype, log->bank, log->status, log->misc);
 		break;
 	case CPU_DENVERTON:
