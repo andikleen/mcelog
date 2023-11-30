@@ -664,7 +664,8 @@ restart:
 				if (n > 2) {
 					m.bank = bank;
 					FIELD(bank);
-				} else if (n > 3) 
+				}
+				if (n > 3) 
 					FIELD(status);
 				if (n < 4)
 					missing++; 
@@ -780,7 +781,7 @@ restart:
 					FIELD(cpu);
 				}
 			} else if ((n = sscanf(s, "(XEN) Bank %d: %llx at %llx", 
-						&bank, &m.status, &m.addr) >= 1)) {
+						&bank, &m.status, &m.addr)) >= 1) {
 				m.bank = bank;
 				FIELD(bank);	
 				if (n >= 2) 
