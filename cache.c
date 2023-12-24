@@ -108,6 +108,7 @@ static void read_cpu_map(struct cache *c, char *cfn)
 	parse_cpumap(map, c->cpumap, c->cpumaplen);
 out:
 	free(map);
+	map = NULL;
 }
 
 static int read_caches(void)
@@ -144,9 +145,11 @@ static int read_caches(void)
 					c->level = read_field_num(cfn, "level");
 					read_cpu_map(c, cfn);
 					free(cfn);
+					cfn = NULL;
 				}
 			}
 			free(fn);
+			fn = NULL;
 		}
 	}
 	closedir(cpus);

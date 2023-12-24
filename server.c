@@ -70,8 +70,11 @@ static void free_inbuf(struct clientcon *cc)
 static void free_cc(struct clientcon *cc)
 {
 	free(cc->outbuf);
+	cc->outbuf = NULL;
 	free(cc->inbuf);
-	free(cc);	
+	cc->inbuf = NULL;
+	free(cc);
+	cc = NULL;
 }
 
 static void sendstring(int fd, char *str)
@@ -264,6 +267,7 @@ static void client_accept(struct pollfd *pfd, void *data)
 
 cleanup:
 	free(cc);
+	cc = NULL;
 	close(nfd);
 }
 

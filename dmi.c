@@ -667,6 +667,7 @@ void dmi_decodeaddr(unsigned long long addr)
 		Wprintf("No DIMM found for %llx in SMBIOS\n", addr);
 	}
 	free(devs);
+	devs = NULL;
 } 
 
 void dmi_set_verbosity(int v)

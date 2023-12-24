@@ -75,6 +75,7 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls, int soc
 	xasprintf(&msg, "%s has large number of corrected cache errors in %s %s",
 		location, ls, ts);
 	free(location);
+	location = NULL;
 	if (yellow_log) {
 		Lprintf("%s\n", msg);
 		Lprintf("System operating correctly, but might lead to uncorrected cache errors soon\n");
@@ -96,10 +97,13 @@ void run_yellow_trigger(int cpu, int tnum, int lnum, char *ts, char *ls, int soc
 	assert(ei < MAX_ENV);
 
 	run_trigger(yellow_trigger, NULL, env, false, "yellow");
-	for (i = 0; i < ei; i++)
+	for (i = 0; i < ei; i++) {
 		free(env[i]);
+		env[i] = NULL;
+	}
 out:
 	free(msg);
+	msg = NULL;
 }
 
 void yellow_setup(void)

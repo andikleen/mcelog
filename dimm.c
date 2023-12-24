@@ -378,6 +378,7 @@ void new_error(unsigned long long addr, unsigned long max_error, char *trigger)
 		}
 	}
 	free(devs);
+	devs = NULL;
 }
 
 void reset_dimm(char *locator)

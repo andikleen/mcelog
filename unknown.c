@@ -60,6 +60,7 @@ void run_unknown_trigger(int socket, int cpu, struct mce *log)
 	xasprintf(&msg, "%s received unknown error", location);
 	xasprintf(&env[ei++], "LOCATION=%s", location);
 	free(location);
+	location = NULL;
 
 	if (socket >= 0)
 		xasprintf(&env[ei++], "SOCKETID=%d", socket);
@@ -74,8 +75,11 @@ void run_unknown_trigger(int socket, int cpu, struct mce *log)
 	assert(ei < MAX_ENV);
 
 	run_trigger(unknown_trigger, NULL, env, false, "unknown");
-	for (i = 0; i < ei; i++)
+	for (i = 0; i < ei; i++) {
 		free(env[i]);
+		env[i] = NULL;
+	}
 	free(msg);
+	msg = NULL;
 }
 

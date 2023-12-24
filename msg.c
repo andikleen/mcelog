@@ -26,6 +26,7 @@ int open_logfile(char *fn)
 		char *old = output_fn;
 		output_fn = xstrdup(fn);
 		free(old);
+		old = NULL;
 		return 0;
 	}
 	return -1;
@@ -100,6 +101,7 @@ void SYSERRprintf(char *fmt, ...)
 		xasprintf(&fmt2, "%s: %s\n", fmt, err);
 		vsyslog(LOG_ERR, fmt2, ap);
 		free(fmt2);
+		fmt2 = NULL;
 		va_end(ap);
 	}
 }

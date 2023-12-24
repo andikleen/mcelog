@@ -69,6 +69,7 @@ void run_bus_trigger(int socket, int cpu, char *level, char *pp, char *rrrr,
 		location, ii);
 	xasprintf(&env[ei++], "LOCATION=%s", location);
 	free(location);
+	location = NULL;
 
 	if (socket >= 0)
 		xasprintf(&env[ei++], "SOCKETID=%d", socket);
@@ -83,9 +84,12 @@ void run_bus_trigger(int socket, int cpu, char *level, char *pp, char *rrrr,
 	assert(ei < MAX_ENV);
 
 	run_trigger(bus_trigger, NULL, env, false, "bus");
-	for (i = 0; i < ei; i++)
+	for (i = 0; i < ei; i++) {
 		free(env[i]);
+		env[i] = NULL;
+	}
 	free(msg);
+	msg = NULL;
 }
 
 void run_iomca_trigger(int socket, int cpu, int seg, int bus, int dev, int fn)
@@ -107,6 +111,7 @@ void run_iomca_trigger(int socket, int cpu, int seg, int bus, int dev, int fn)
 		location, seg, bus, dev, fn);
 	xasprintf(&env[ei++], "LOCATION=%s", location);
 	free(location);
+	location = NULL;
 
 	if (socket >= 0)
 		xasprintf(&env[ei++], "SOCKETID=%d", socket);
@@ -120,8 +125,10 @@ void run_iomca_trigger(int socket, int cpu, int seg, int bus, int dev, int fn)
 	assert(ei < MAX_ENV);
 
 	run_trigger(iomca_trigger, NULL, env, false, "iomca");
-	for (i = 0; i < ei; i++)
+	for (i = 0; i < ei; i++) {
 		free(env[i]);
+		env[i] = NULL;
+	}
 	free(msg);
-
+	msg = NULL;
 }
