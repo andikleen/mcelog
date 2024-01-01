@@ -64,6 +64,12 @@ void ask_server(char *command)
 			}
 
 			fputs(buf, stdout);
+
+			/* we want to show the string pong before exiting the loop */
+			if (n >= 5 && !memcmp(buf + n - 5, "pong\n", 5)) {
+				fclose(fp);
+				return;
+			}
 		}
 		fclose(fp);
 	}
