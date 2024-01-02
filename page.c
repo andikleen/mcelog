@@ -265,11 +265,15 @@ static void counter_trigger(char *msg, time_t t, struct mempage_replacement *mr,
 
 	run_trigger(bc->trigger, NULL, env, sync, "page-error-counter");
 
-	for (i = 0; i < ei; i++)
+	for (i = 0; i < ei; i++) {
 		free(env[i]);
+		env[i] = NULL;
+	}
 out:
 	free(out);
+	out = NULL;
 	free(thresh);
+	thresh = NULL;
 }
 
 void account_page_error(struct mce *m, int channel, int dimm)
@@ -323,9 +327,11 @@ void account_page_error(struct mce *m, int channel, int dimm)
 			thresh = bucket_output(&mp_replacement_trigger_conf, &mp_repalcement.bucket);
 			xasprintf(&msg, "Replacements of page correctable error counter exceed threshold %s", thresh);
 			free(thresh);
+			thresh = NULL;
 
 			counter_trigger(msg, t, &mp_repalcement, &mp_replacement_trigger_conf, false);
 			free(msg);
+			msg = NULL;
 		}
 	} else {
 		mempage_cluster_lru_list_update(to_cluster(mp));
@@ -342,8 +348,10 @@ void account_page_error(struct mce *m, int channel, int dimm)
 		xasprintf(&msg, "Corrected memory errors on page %llx exceed threshold %s",
 			addr, thresh);
 		free(thresh);
+		thresh = NULL;
 		memdb_trigger(msg, md, t, &mp->ce, &page_trigger_conf, NULL, false, "page");
 		free(msg);
+		msg = NULL;
 		mp->triggered = 1;
 
 		if (offline == OFFLINE_SOFT || offline == OFFLINE_SOFT_THEN_HARD) {
@@ -365,6 +373,7 @@ void account_page_error(struct mce *m, int channel, int dimm)
 			asprintf(&msg, "pre soft trigger run for page %lld", addr);
 			memdb_trigger(msg, md, t, &mp->ce, &page_soft_trigger_conf, argv, true, "page_pre_soft");
 			free(msg);
+			msg = NULL;
 
 			offline_action(mp, addr);
 
@@ -375,8 +384,9 @@ void account_page_error(struct mce *m, int channel, int dimm)
 			asprintf(&msg, "post soft trigger run for page %lld", addr);
 			memdb_trigger(msg, md, t, &mp->ce, &page_soft_trigger_conf, argv, true, "page_post_soft");
 			free(msg);
+			msg = NULL;
 			free(args);
-
+			args = NULL;
 		} else
 			offline_action(mp, addr);
 	}
@@ -402,6 +412,7 @@ void dump_page_errors(FILE *f)
 			page_state[(unsigned)p->offlined],
 			p->triggered ? " triggered" : "");
 		free(msg);
+		msg = NULL;
 		fputc('\n', f);
 	}
 }

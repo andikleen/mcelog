@@ -108,7 +108,8 @@ static void finish_child(pid_t child, int status)
 					c->name, strsignal(WTERMSIG(status)));
 			}
 			list_del(&c->nd);
-			free(c);		
+			free(c);
+			c = NULL;
 			num_children--;
 			return;
 		}
@@ -175,8 +176,10 @@ int trigger_check(char *s)
 
 	rc = access(name, R_OK|X_OK);
 
-	if (trigger_dir)
+	if (trigger_dir) {
 		free(name);
+		name = NULL;
+	}
 
 	return rc;
 }

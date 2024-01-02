@@ -174,12 +174,17 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 	env[ei] = NULL;	
 	assert(ei < MAX_ENV);
 	run_trigger(bc->trigger, args, env, sync, reporter);
-	for (i = 0; i < ei; i++)
+	for (i = 0; i < ei; i++) {
 		free(env[i]);
+		env[i] = NULL;
+	}
 out:
 	free(location);
+	location = NULL;
 	free(out);
+	out = NULL;
 	free(thresh);
+	thresh = NULL;
 }
 
 /* 
@@ -197,6 +202,7 @@ account_over(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigned
 				 t->type, corr_err_cnt);
 			memdb_trigger(msg, md, 0, &md->ce, &t->ce_bucket_conf, NULL, false, reporter);
 			free(msg);
+			msg = NULL;
 		}
 	}
 }
@@ -219,6 +225,7 @@ account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m, const c
 			memdb_trigger(msg, md, m->time, &md->ce, &t->ce_bucket_conf, NULL, false, reporter);
 	}
 	free(msg);
+	msg = NULL;
 }
 
 /* 
@@ -281,6 +288,7 @@ static void dump_errtype(char *name, struct err_type *e, FILE *f, enum printflag
 		s = bucket_output(bc, &e->bucket);
 		fprintf(f, "\t%s\n", s);  
 		free(s);
+		s = NULL;
 	}
 }
 
@@ -343,6 +351,7 @@ void dump_memory_errors(FILE *f, enum printflags flags)
 		dump_dimm(da[i], f, flags);
 	}
 	free(da);
+	da = NULL;
 }
 
 void memdb_config(void)

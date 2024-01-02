@@ -56,6 +56,7 @@ static bool in_lockdown(void)
 	if (!strstr(lockdown, "[none]"))
 		ret = true;
 	free(lockdown);
+	lockdown = NULL;
 	return ret;
 }
 

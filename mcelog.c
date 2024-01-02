@@ -165,6 +165,7 @@ static void print_tsc(int cpunum, __u64 tsc, unsigned long time)
 		ret = decode_tsc_current(&buf, cpunum, cputype, cpumhz, tsc);
 	Wprintf("TSC %llx %s", tsc, ret >= 0 && buf ? buf : "");
 	free(buf);
+	buf = NULL;
 }
 
 struct cpuid1 {
@@ -477,6 +478,7 @@ int is_cpu_supported(void)
 		} 
 		fclose(f);
 		free(line);
+		line = NULL;
 	} else
 		Eprintf("warning: Cannot open /proc/cpuinfo\n");
 
@@ -805,6 +807,7 @@ restart:
 			data = 1;
 	} 
 	free(line);
+	line = NULL;
 	if (data)
 		dump_mce_final(&m, symbol, missing, recordlen, disclaimer_seen);
 }
@@ -812,8 +815,10 @@ restart:
 static void remove_pidfile(void)
 {
 	unlink(pidfile);
-	if (pidfile != pidfile_default)
+	if (pidfile != pidfile_default) {
 		free(pidfile);
+		pidfile = NULL;
+	}
 }
 
 static void signal_exit(int sig)

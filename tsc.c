@@ -55,6 +55,7 @@ static double cpufreq_mhz(int cpu, double infomhz)
 	xasprintf(&fn, "/sys/devices/system/cpu/cpu%d/cpufreq/cpuinfo_max_freq", cpu);
 	f = fopen(fn, "r");
 	free(fn);
+	fn = NULL;
 	if (!f) {
 		/* /sys exists, but no cpufreq -- use value from cpuinfo */
 		if (access("/sys/devices", F_OK) == 0)
@@ -87,12 +88,14 @@ static int deep_sleep_states(int cpu)
 	xasprintf(&fn, "/sys/devices/system/cpu/cpu%d/cpuidle", cpu);
 	ret = access(fn, X_OK);
 	free(fn);
+	fn = NULL;
 	if (ret == 0)
 		return 1;
 
 	xasprintf(&fn, "/proc/acpi/processor/CPU%d/power", cpu);
 	f = fopen(fn, "r");
 	free(fn);
+	fn = NULL;
 	if (!f)
 		return 0;
 
@@ -107,6 +110,7 @@ static int deep_sleep_states(int cpu)
 		}
 	}
 	free(line);
+	line = NULL;
 	fclose(f);
 	return 0;
 }

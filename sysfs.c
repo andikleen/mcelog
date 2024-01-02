@@ -37,6 +37,7 @@ char *read_field(char *base, char *name)
 	xasprintf(&fn, "%s/%s", base, name);
 	fd = open(fn, O_RDONLY);
 	free(fn);
+	fn = NULL;
 	if (fd < 0)
 		goto bad_buf;
 	n = read(fd, buf, 4096);
@@ -47,6 +48,7 @@ char *read_field(char *base, char *name)
 	memcpy(val, buf, n);
 	val[n] = 0;
 	free(buf);
+	buf = NULL;
 	s = memchr(val, '\n', n);
 	if (s)
 		*s = 0;
@@ -54,6 +56,7 @@ char *read_field(char *base, char *name)
 
 bad_buf:
 	free(buf);
+	buf = NULL;
 	SYSERRprintf("Cannot read sysfs field %s/%s", base, name);
 	return xstrdup("");
 }
@@ -64,6 +67,7 @@ unsigned read_field_num(char *base, char *name)
 	char *val = read_field(base, name);
 	int n = sscanf(val, "%u", &num);
 	free(val);
+	val = NULL;
 	if (n != 1) { 
 		Eprintf("Cannot parse number in sysfs field %s/%s\n", base,name);
 		return 0;
@@ -81,10 +85,12 @@ unsigned read_field_map(char *base, char *name, struct map *map)
 	}
 	if (map->name) {
 		free(val);
+		val = NULL;
 		return map->value;
 	}
 	Eprintf("sysfs field %s/%s has unknown string value `%s'\n", base, name, val);
 	free(val);
+	val = NULL;
 	return -1;
 }
 
@@ -104,6 +110,7 @@ int sysfs_write(const char *name, const char *fmt, ...)
 	e = errno;
 	close(fd);
 	free(buf);
+	buf = NULL;
 	errno = e;
 	return n;
 }

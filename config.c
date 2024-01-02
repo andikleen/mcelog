@@ -110,6 +110,7 @@ static void unparseable(char *desc, const char *header, const char *name)
 	}
 	Eprintf("%s config option `%s' unparseable\n", desc, field);
 	free(field);
+	field = NULL;
 	exit(1);
 }
 
@@ -180,6 +181,7 @@ int parse_config_file(const char *fn)
 	}
 	fclose(f);
 	free(line);
+	line = NULL;
 	return 0;
 }
 
@@ -302,6 +304,7 @@ int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
 		}
 	}
 	free(name);
+	name = NULL;
 
 	xasprintf(&name, "%s-trigger", base);
 	s = config_string(header, name);
@@ -314,6 +317,7 @@ int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
 		bc->trigger = s;
 	}
 	free(name);
+	name = NULL;
 
 	bc->log = 0;
 	xasprintf(&name, "%s-log", base);
@@ -321,6 +325,7 @@ int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
 	if (n >= 0)
 		bc->log = n;
 	free(name);
+	name = NULL;
 
 	return 0;
 }
@@ -342,6 +347,7 @@ void config_cred(char *header, char *base, struct config_cred *cred)
 		        cred->uid = pw->pw_uid;
 	}
 	free(name);
+	name = NULL;
 	xasprintf(&name, "%s-group", base);	
 	if ((s = config_string(header, name)) != NULL) { 
 		struct group *gr;
@@ -354,6 +360,7 @@ void config_cred(char *header, char *base, struct config_cred *cred)
 			cred->gid = gr->gr_gid;
 	}
 	free(name);
+	name = NULL;
 }
 
 #ifdef TEST
@@ -386,8 +393,11 @@ int main(int ac, char **av)
 			break;
 		}
 		free(type);
+		type = NULL;
 		free(header);
+		header = NULL;
 		free(name);
+		name = NULL;
 	} 
 	return 0;
 }
