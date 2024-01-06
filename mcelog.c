@@ -891,6 +891,7 @@ void usage(void)
 "--raw		     (with --ascii) Dump in raw ASCII format for machine processing\n"
 "--daemon            Run in background waiting for events (needs newer kernel)\n"
 "--client            Query a currently running mcelog daemon for errors\n"
+"--ping              Send ping command to the currently running mcelog daemon\n"
 "--ignorenodev       Exit silently when the device cannot be opened\n"
 "--file filename     With --ascii read machine check log from filename instead of stdin\n"
 "--logfile filename  Log decoded machine checks in file filename\n"
@@ -935,6 +936,7 @@ enum options {
 	O_DAEMON,
 	O_ASCII,
 	O_CLIENT,
+	O_PING,
 	O_VERSION,
 	O_CONFIG_FILE,
 	O_CPU,
@@ -976,6 +978,7 @@ static struct option options[] = {
 	{ "cpu", 1, NULL, O_CPU },
 	{ "foreground", 0, NULL, O_FOREGROUND },
 	{ "client", 0, NULL, O_CLIENT },
+	{ "ping", 0, NULL, O_PING },
 	{ "num-errors", 1, NULL, O_NUMERRORS },
 	{ "pidfile", 1, NULL, O_PIDFILE },
 	{ "debug-numerrors", 0, NULL, O_DEBUG_NUMERRORS }, /* undocumented: for testing */
@@ -1281,8 +1284,16 @@ static void client_command(int ac, char **av)
 	argsleft(ac, av);
 	no_syslog();
 	// XXX modifiers
-	ask_server("dump all bios\n");		
+	ask_server("dump all bios\n");
 	ask_server("pages\n");
+}
+
+static void ping_command(int ac, char **av)
+{
+	argsleft(ac, av);
+	no_syslog();
+	// XXX modifiers
+	ask_server("ping\n");
 }
 
 struct mcefd_data {
@@ -1317,13 +1328,16 @@ int main(int ac, char **av)
 			exit(1);
 		} else if (combined_modifier(opt) > 0) {
 			continue;
-		} else if (opt == O_ASCII) { 
+		} else if (opt == O_ASCII) {
 			ascii_command(ac, av);
 			exit(0);
-		} else if (opt == O_CLIENT) { 
+		} else if (opt == O_CLIENT) {
 			client_command(ac, av);
 			exit(0);
-		} else if (opt == O_VERSION) { 
+		} else if (opt == O_PING) {
+			ping_command(ac, av);
+			exit(0);
+		} else if (opt == O_VERSION) {
 			noargs(ac, av);
 			fprintf(stderr, "mcelog %s\n", MCELOG_VERSION);
 			exit(0);

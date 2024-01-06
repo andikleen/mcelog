@@ -18,6 +18,8 @@ mcelog [options] \-\-ascii
 .br
 mcelog [options] \-\-is\-cpu\-supported
 .br
+mcelog \-\-ping
+.br
 mcelog \-\-version
 .SH DESCRIPTION
 X86 CPUs report errors detected by the CPU as
@@ -238,6 +240,13 @@ not to with the
 .B \-\-no-imc-log
 option. You might need this option when decoding old logs
 from a system where this mode was not enabled.
+
+Users can utilize the 
+.B \-\-ping
+option to check the availability of the mcelog server. If the mcelog server 
+is running, the command returns the string 
+.I pong
+followed by a newline character.
 
 .\".B \-\-database filename
 .\"specifies the memory module error database file. Default is

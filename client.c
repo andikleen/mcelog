@@ -64,6 +64,10 @@ void ask_server(char *command)
 			}
 
 			fputs(buf, stdout);
+
+			if (n >= 5 && !memcmp(buf + n - 5, "pong\n", 5)) {
+				fflush(stdout);
+			}
 		}
 		fclose(fp);
 	}
