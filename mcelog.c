@@ -1383,6 +1383,7 @@ int main(int ac, char **av)
 		if (ignore_nodev) 
 			exit(0);
 		SYSERRprintf("Cannot open `%s'", logfn);
+		SYSERRprintf("Is your kernel built with CONFIG_X86_MCELOG_LEGACY=y?");
 		exit(1);
 	}
 	
