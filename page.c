@@ -103,13 +103,20 @@ static struct mempage *mempage_alloc(void)
 
 static struct mempage *mempage_replace(void)
 {
+	struct mempage *mp;
+
 	/* If no free mp_cluster, reuse the last mp_cluster of the LRU list  */
 	if (mp_cluster->mp_used == N) {
 		mp_cluster = list_last_entry(&mempage_cluster_lru_list, struct mempage_cluster, lru);
 		mp_cluster->mp_used = 0;
 	}
 
-	return &mp_cluster->mp[mp_cluster->mp_used++];
+	mp = &mp_cluster->mp[mp_cluster->mp_used++];
+	mp->offlined = PAGE_ONLINE;
+	mp->triggered = 0;
+	mp->ce.count = 0;
+
+	return mp;
 }
 
 static struct mempage *mempage_lookup(u64 addr)
