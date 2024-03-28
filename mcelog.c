@@ -44,7 +44,6 @@
 #include "intel.h"
 #include "p4.h"
 #include "dmi.h"
-#include "dimm.h"
 #include "tsc.h"
 #include "version.h"
 #include "config.h"
