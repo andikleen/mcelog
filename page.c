@@ -133,6 +133,9 @@ static struct mempage *mempage_lookup(u64 addr)
 	return NULL;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+
 static struct mempage *
 mempage_insert_lookup(u64 addr, struct rb_node * node)
 {
@@ -155,6 +158,8 @@ mempage_insert_lookup(u64 addr, struct rb_node * node)
 	rb_insert_color(node, &mempage_root);
 	return NULL;
 }
+
+#pragma GCC diagnostic pop
 
 static struct mempage *mempage_insert(u64 addr, struct mempage *mp)
 {
