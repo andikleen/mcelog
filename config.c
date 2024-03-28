@@ -95,7 +95,7 @@ static void noreturn parse_error(int line, char *msg)
 
 static void nothing(char *s, int line)
 {
-	if (!empty(s) != 0)
+	if (!empty(s))
 		parse_error(line, "left over characters at end of line");
 }
 

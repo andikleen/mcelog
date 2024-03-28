@@ -94,16 +94,16 @@ static struct field punit2[] = {
 };
 
 static char *b2cmi_1[] = {
-	[0x01] "Read ECC error",
-	[0x02] "Bucket1 error",
-	[0x03] "Tracker Parity error",
-	[0x04] "Security mismatch",
-	[0x07] "Read completion parity error",
-	[0x08] "Response parity error",
-	[0x09] "Timeout error",
-	[0x0a] "Address parity error",
-	[0x0c] "CMI credit over subscription error",
-	[0x0d] "SAI mismatch error",
+	[0x01] = "Read ECC error",
+	[0x02] = "Bucket1 error",
+	[0x03] = "Tracker Parity error",
+	[0x04] = "Security mismatch",
+	[0x07] = "Read completion parity error",
+	[0x08] = "Response parity error",
+	[0x09] = "Timeout error",
+	[0x0a] = "Address parity error",
+	[0x0c] = "CMI credit over subscription error",
+	[0x0d] = "SAI mismatch error",
 };
 
 static struct field b2cmi1[] = {
