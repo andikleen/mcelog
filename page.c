@@ -18,10 +18,7 @@
 
 /* NB 
    investigate other data structures. Primary consideration would 
-   be space efficiency. rbtree nodes are rather large. 
-
-   Do we need aging? Right now the only way to get rid of old nodes
-   is to restart. */
+   be space efficiency. rbtree nodes are rather large.  */
 #define _GNU_SOURCE 1 
 #include <stdlib.h>
 #include <stdio.h>
