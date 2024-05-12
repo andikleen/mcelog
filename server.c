@@ -305,7 +305,7 @@ static int server_ping(struct sockaddr_un *un)
 	if (sigsetjmp(ping_timeout_ctx, 1) == 0) {
 		ret = -1;
 		alarm(initial_ping_timeout);
-		if (connect(fd, un, sizeof(struct sockaddr_un)) < 0)
+		if (connect(fd, (const struct sockaddr *)un, sizeof(struct sockaddr_un)) < 0)
 			goto cleanup;
 		if (write(fd, PAIR("ping\n")) < 0)
 			goto cleanup;
