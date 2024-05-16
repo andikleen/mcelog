@@ -64,6 +64,14 @@ enum cputype select_intel_cputype(int family, int model)
 			return CPU_INTEL; 
 		}
 	}
+	if (family > 0xf) {
+		ret = lookup_intel_cputype((family << 8) | model);
+		if (ret != -1)
+			return ret;
+		Eprintf("Family %u Model %u CPU: only decoding architectural errors\n",
+			family, model);
+		return CPU_INTEL;
+	}
 	if (family > 6) { 
 		Eprintf("Family %u Model %u CPU: only decoding architectural errors\n",
 				family, model);
