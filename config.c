@@ -289,7 +289,8 @@ void config_options(struct option *opts, int (*func)(int))
 	}
 }
 
-int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
+int config_trigger(const char *header, const char *base, struct bucket_conf *bc) //set up a configuratin for triggers. Reads settings from configruation file and
+//applies then to bucket_conf (bc)
 {
 	char *s;
 	char *name;

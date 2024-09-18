@@ -30,14 +30,15 @@ void bucket_age(const struct bucket_conf *c, struct leaky_bucket *b,
 			time_t now)
 {
 	long diff;
-	diff = now - b->tstamp;
-	if (diff >= c->agetime) { 
-		unsigned age = (diff / (double)c->agetime) * c->capacity;
-		b->tstamp = now;
-		if (age > b->count)
-			b->count = 0;
+	diff = now - b->tstamp; //time difference between now and last time the bucket was updated
+	if (diff >= c->agetime) {  //if enough time has passed, it reduces the bucket count based on the time that has passed
+		unsigned age = (diff / (double)c->agetime) * c->capacity; /*It divides the time difference (diff) by the configured agetime to figure out how many intervals have passed.
+		Then, it multiplies by the bucket's total capacity to see how much to drain. -> Calculate how much of the bucket should be emptied based on how much time has passed*/
+		b->tstamp = now; //bucket's time stamp is updated to current time
+		if (age > b->count) //is the amount of bucket to be drained greated than how much we have in the bucket?
+			b->count = 0;  //empty bucket
 		else
-			b->count -= age;
+			b->count -= age; //drain bucket by the calcualted amount (age)
 		b->excess = 0;
 	}
 }
@@ -48,9 +49,9 @@ int __bucket_account(const struct bucket_conf *c, struct leaky_bucket *b,
 {
 	if (c->capacity == 0)
 		return 0;
-	bucket_age(c, b, t);
-	b->count += inc; 
-	if (b->count >= c->capacity) {
+	bucket_age(c, b, t); //ages the bucket based on the current time
+	b->count += inc;  //increments error count
+	if (b->count >= c->capacity) { //if count exceeds capacity
 		b->excess += b->count;
 		/* should disable overflow completely in the same time unit */
 		b->count = 0;

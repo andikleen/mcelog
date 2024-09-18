@@ -39,31 +39,39 @@
 #include "memdb.h"
 #include "sysfs.h"
 
+/* sets up 2^12 = 4k BYTE page size*/
+
 #define PAGE_SHIFT 12
 #define PAGE_SIZE (1UL << PAGE_SHIFT)
 
+/* a page can either be online or offline*/
+
 enum { PAGE_ONLINE = 0, PAGE_OFFLINE = 1, PAGE_OFFLINE_FAILED = 2 };
 
+/* represents a memory page, storing error-related information and its status online/offline*/
 struct mempage { 
 	struct rb_node nd;
-	/* one char used by rb_node */
-	char offlined;
-	char triggered;
+	/* one char used by rb_node, node for integrating into red-black tree for efficent lookup */
+	char offlined; //status of the page
+	char triggered; //flag indicating if a trigger has been activated for this page
 	// 1(32bit)-5(64bit) bytes of padding to play with here
 	u64 addr;
+
+	/*err_type stores leaky bucket and count; each page has a leaky bucket*/
 	struct err_type ce;
+	
 };
 
 #define N ((PAGE_SIZE - sizeof(struct list_head)) / sizeof(struct mempage))
 #define to_cluster(mp)	(struct mempage_cluster *)((long)(mp) & ~((long)(PAGE_SIZE - 1)))
 
-struct mempage_cluster {
+struct mempage_cluster { //a group of mempags
 	struct list_head lru;
 	struct mempage mp[N];
-	int mp_used;
+	int mp_used; //number of mempages in cluster
 };
 
-struct mempage_replacement {
+struct mempage_replacement { //tracks page replacements when error thresholds are exceeded
 	struct leaky_bucket bucket;
 	unsigned count;
 };
@@ -75,7 +83,7 @@ enum {
 static int corr_err_counters;
 static struct mempage_cluster *mp_cluster;
 static struct mempage_replacement mp_repalcement;
-static struct rb_root mempage_root;
+static struct rb_root mempage_root; //red-black tree structure used to store and lookup mempages efficciently based on page addresses
 static LIST_HEAD(mempage_cluster_lru_list);
 static struct bucket_conf page_trigger_conf;
 static struct bucket_conf mp_replacement_trigger_conf;
@@ -87,7 +95,7 @@ static const char *page_state[] = {
 	[PAGE_OFFLINE_FAILED] = "offline-failed",
 };
 
-static struct mempage *mempage_alloc(void)
+static struct mempage *mempage_alloc(void) //allocates new mempage from a cluster
 {
 	if (!mp_cluster || mp_cluster->mp_used == N) {
 		mp_cluster = mmap(0, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -98,7 +106,7 @@ static struct mempage *mempage_alloc(void)
 	return &mp_cluster->mp[mp_cluster->mp_used++];
 }
 
-static struct mempage *mempage_replace(void)
+static struct mempage *mempage_replace(void) //pages can be replaced if cluster is full
 {
 	struct mempage *mp;
 
@@ -116,7 +124,7 @@ static struct mempage *mempage_replace(void)
 	return mp;
 }
 
-static struct mempage *mempage_lookup(u64 addr)
+static struct mempage *mempage_lookup(u64 addr) //searches for a page in red-black tree
 {
 	struct rb_node *n = mempage_root.rb_node;
 
@@ -137,7 +145,7 @@ static struct mempage *mempage_lookup(u64 addr)
 #pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 
 static struct mempage *
-mempage_insert_lookup(u64 addr, struct rb_node * node)
+mempage_insert_lookup(u64 addr, struct rb_node * node) //finds the correct position in the tree and links the node
 {
 	struct rb_node **p = &mempage_root.rb_node;
 	struct rb_node *parent = NULL;
@@ -161,19 +169,19 @@ mempage_insert_lookup(u64 addr, struct rb_node * node)
 
 #pragma GCC diagnostic pop
 
-static struct mempage *mempage_insert(u64 addr, struct mempage *mp)
+static struct mempage *mempage_insert(u64 addr, struct mempage *mp) //inserts new mempage in red-black tree
 {
 	mp->addr = addr;
 	mp = mempage_insert_lookup(addr, &mp->nd);
 	return mp;
 }
 
-static void mempage_rb_tree_update(u64 addr, struct mempage *mp)
+static void mempage_rb_tree_update(u64 addr, struct mempage *mp) //updates red black tree when replacing a mem page
 {
 	rb_erase(&mp->nd, &mempage_root);
 	mempage_insert(addr, mp);
 }
-
+//LRU list management; manages LRU list by adding or moving mempage_cluster entries to maintain usage order
 static void mempage_cluster_lru_list_insert(struct mempage_cluster *mp_cluster)
 {
 	list_add(&mp_cluster->lru, &mempage_cluster_lru_list);
@@ -190,12 +198,12 @@ static void mempage_cluster_lru_list_update(struct mempage_cluster *mp_cluster)
 
 /* Following arrays need to be all kept in sync with the enum */
 
-enum otype { 
-	OFFLINE_OFF, 
+enum otype {  //different type of offlining strategies
+	OFFLINE_OFF,  
 	OFFLINE_ACCOUNT, 
 	OFFLINE_SOFT, 
 	OFFLINE_HARD,
-	OFFLINE_SOFT_THEN_HARD 
+	OFFLINE_SOFT_THEN_HARD //attempt soft offlining first then hard offliing if soft fails
 };
 
 static const char *kernel_offline[] = { 
@@ -215,13 +223,37 @@ static struct config_choice offline_choice[] = {
 
 static enum otype offline = OFFLINE_OFF;
 
-static int do_memory_offline(u64 addr, enum otype type)
+static int do_memory_offline(u64 addr, enum otype type) //writes the memory page address to the appropriate sysfs entry to offline the page
 {
 	return sysfs_write(kernel_offline[type], "%#llx", addr);
 }
 
-static int memory_offline(u64 addr)
+// ----------------------------------------
+// MODIFICATION BEGIN - HELPER FUNCTION TO OFFLINE MULTIPLE CONSECUTIVE PAGES - HANDLES PAGE OFFLINE AT THE ROW LEVEL
+// ----------------------------------------
+
+static int do_consecutive_memory_offline(u64 addr, int num_pages, enum otype type)
 {
+    for (int i = 0; i < num_pages; i++) { //iterates through consecutive number of pages 
+        u64 page_addr = addr + (i * PAGE_SIZE);  // Calculate consecutive page addresses
+        if (do_memory_offline(page_addr, type) < 0) { //if do_memory_offline fails
+            Lprintf("Offlining page %llx failed\n", page_addr);
+            return -1;
+        }
+    }
+    return 0;
+}
+
+// ----------------------------------------
+// MODIFICATION END - HELPER FUNCTION TO OFFLINE MULTIPLE CONSECUTIVE PAGES - HANDLES PAGE OFFLINE AT THE ROW LEVEL
+// ----------------------------------------
+
+static int memory_offline(u64 addr) /*determines offlining strategy based on offline mode and attemps to offline the page. If mode is offlining_soft_then_hard, it first tries 
+ soft offlining. If soft offlining fails, it attempts hard offlining. For other modes, it directly attempts the configured type of offlining.*/
+{
+
+	const int num_consecutive_pages = 5;  //MODIFICATION - Number of consecutive pages to offline
+
 	if (offline == OFFLINE_SOFT_THEN_HARD) {
 		if (do_memory_offline(addr, OFFLINE_SOFT) < 0)  { 
 			Lprintf("Soft offlining of page %llx failed, trying hard offlining\n",
@@ -230,7 +262,10 @@ static int memory_offline(u64 addr)
 		}
 		return 0;
 	}
-	return do_memory_offline(addr, offline);
+	//return do_memory_offline(addr, offline); MODIFICATION - LINE HAS BEEN COMMENTED OUT
+
+	return do_consecutive_memory_offline(addr, num_consecutive_pages, offline);
+
 }
 
 static void offline_action(struct mempage *mp, u64 addr)
@@ -285,7 +320,7 @@ out:
 	thresh = NULL;
 }
 
-void account_page_error(struct mce *m, int channel, int dimm)
+void account_page_error(struct mce *m, int channel, int dimm) //core function that handles each memory error reported by system
 {
 	u64 addr = m->addr;
 	struct mempage *mp;
@@ -294,8 +329,8 @@ void account_page_error(struct mce *m, int channel, int dimm)
 	unsigned cpu = m->extcpu ? m->extcpu : m->cpu;
 
 	if (offline == OFFLINE_OFF)
-		return;
-	if (!(m->status & MCI_STATUS_ADDRV)  || (m->status & MCI_STATUS_UC))
+		return; //exit if offlining disabled
+	if (!(m->status & MCI_STATUS_ADDRV)  || (m->status & MCI_STATUS_UC)) //check if error has valid address
 		return;
 
 	switch (cputype) {
@@ -316,22 +351,25 @@ void account_page_error(struct mce *m, int channel, int dimm)
 	}
 
 	t = m->time;
+	//rounds down to nearest page size boundary
 	addr &= ~((u64)PAGE_SIZE - 1);
-	mp = mempage_lookup(addr);
-	if (!mp && corr_err_counters < max_corr_err_counters) {
+	mp = mempage_lookup(addr); //attempt to find an existing mempage for the address
+	if (!mp && corr_err_counters < max_corr_err_counters) { //if not found, allocate a new mempage, initialize its bucket, insert into red-black tree and LRU list increment error counter
+		//max_corr_err_counters is the max number of correctable error pages that can be tracked. The variable corr_err_counters keeps track of the current number of correctable error pages
+
 		mp = mempage_alloc();
 		bucket_init(&mp->ce.bucket);
 	        mempage_insert(addr, mp);
 		mempage_cluster_lru_list_insert(to_cluster(mp));
 		corr_err_counters++;
-	} else if (!mp) {
+	} else if (!mp) { //if not found and maximum counters reached, replace an existing mempage, initialize its bucket...etc.
 		mp = mempage_replace();
 		bucket_init(&mp->ce.bucket);
 		mempage_rb_tree_update(addr, mp);
 		mempage_cluster_lru_list_update(to_cluster(mp));
 
 		/* Report how often the replacement of counter 'mp' happened */
-		++mp_repalcement.count;
+		++mp_repalcement.count; //tracks how often old error pages have been replaced by new ones
 		if (__bucket_account(&mp_replacement_trigger_conf, &mp_repalcement.bucket, 1, t)) {
 			thresh = bucket_output(&mp_replacement_trigger_conf, &mp_repalcement.bucket);
 			xasprintf(&msg, "Replacements of page correctable error counter exceed threshold %s", thresh);
@@ -345,13 +383,16 @@ void account_page_error(struct mce *m, int channel, int dimm)
 	} else {
 		mempage_cluster_lru_list_update(to_cluster(mp));
 	}
+	//increment error count for page -> adding to its bucket
 	++mp->ce.count;
+	//checks if number of errors on page exceeds threshold using __bucket_account function..(page_trigger_conf kinda important for defining threshold?)
 	if (__bucket_account(&page_trigger_conf, &mp->ce.bucket, 1, t)) { 
 		struct memdimm *md;
-
+		//if page has already been offlined, skip rest of code
 		if (mp->offlined != PAGE_ONLINE)
 			return;
-		/* Only do triggers and messages for online pages */
+		/* Only do triggers and messages for online pages. 
+		This generates a message that includes the number of errors and the time window during which they occurred.*/
 		thresh = bucket_output(&page_trigger_conf, &mp->ce.bucket);
 		md = get_memdimm(m->socketid, channel, dimm, 1);
 		xasprintf(&msg, "Corrected memory errors on page %llx exceed threshold %s",
@@ -361,7 +402,7 @@ void account_page_error(struct mce *m, int channel, int dimm)
 		memdb_trigger(msg, md, t, &mp->ce, &page_trigger_conf, NULL, false, "page");
 		free(msg);
 		msg = NULL;
-		mp->triggered = 1;
+		mp->triggered = 1; // marks that the page has triggered this threshold-based error handling
 
 		if (offline == OFFLINE_SOFT || offline == OFFLINE_SOFT_THEN_HARD) {
 			struct bucket_conf page_soft_trigger_conf;
@@ -401,7 +442,7 @@ void account_page_error(struct mce *m, int channel, int dimm)
 	}
 }
 
-void dump_page_errors(FILE *f)
+void dump_page_errors(FILE *f) //outputs current state of memory page errors to a file
 {
 	char *msg;
 	struct rb_node *r;
@@ -426,14 +467,14 @@ void dump_page_errors(FILE *f)
 	}
 }
 
-void page_setup(void)
+void page_setup(void) //sets up various configurations
 {
 	int n;
 	
 	config_trigger("page", "memory-ce", &page_trigger_conf);
 	config_trigger("page", "memory-ce-counter-replacement", &mp_replacement_trigger_conf);
 	n = config_choice("page", "memory-ce-action", offline_choice);
-	if (n >= 0)
+	if (n >= 0) //choosing offling action
 		offline = n;
 	if (offline > OFFLINE_ACCOUNT && 
 	    !sysfs_available(kernel_offline[offline], W_OK)) {
@@ -457,7 +498,7 @@ void page_setup(void)
 	}
 
 	n = max_corr_err_counters;
-	max_corr_err_counters = roundup(max_corr_err_counters, N);
+	max_corr_err_counters = roundup(max_corr_err_counters, N); //adjusts max_corr_err_counters to the nearest multipl of N
 	if (n != max_corr_err_counters)
 		Lprintf("Round up max-corr-err-counters from %d to %d\n", n, max_corr_err_counters);
 
