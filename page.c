@@ -277,7 +277,7 @@ static int is_row_failure(u64 addr) {
         }
     }
 
-    // Step 4: Check if the majority of pages in the row have triggered the threshold.
+    // Step 4: Check if alteast half pages in the row have triggered the threshold.
     // Here, we consider a row failure if alteast half of the 8 possible pages (at least 4) have triggered errors. SUBJECT TO CHANGE BASED ON FEEDBACK
     return triggered_pages >= 4;
 }
