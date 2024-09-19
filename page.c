@@ -228,31 +228,114 @@ static int do_memory_offline(u64 addr, enum otype type) //writes the memory page
 	return sysfs_write(kernel_offline[type], "%#llx", addr);
 }
 
-// ----------------------------------------
-// MODIFICATION BEGIN - HELPER FUNCTION TO OFFLINE MULTIPLE CONSECUTIVE PAGES - HANDLES PAGE OFFLINE AT THE ROW LEVEL
-// ----------------------------------------
+static u64 get_first_memory_address(u64 addr) { //returns the memory addr at the start of the row that the input addr belongs too. The specific bits chosen were based off the system_addr decoding
+    // Bitmask to clear bits 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, and 22 (the column address bits)
+    u64 mask = ~((1ULL << 2) | (1ULL << 3) | (1ULL << 4) | (1ULL << 5) | (1ULL << 6) |
+                 (1ULL << 9) | (1ULL << 10) | (1ULL << 11) | (1ULL << 12) | (1ULL << 13) | 
+                 (1ULL << 22));
+    
+    // Apply mask to clear the specified bits
+    return addr & mask;
+}
+//CHECKS IF FAILURE IS ROW FAILURE
+static int is_row_failure(u64 addr) {
+     // Step 1: Get the first memory address of the row.
+    u64 first_row_addr = get_first_memory_address(addr);
 
-static int do_consecutive_memory_offline(u64 addr, int num_pages, enum otype type)
+    // Iterate over all 8 combinations of the 12th, 13th, and 22nd bits (3 bits => 8 combinations)
+    int triggered_pages = 0;
+    for (int i = 0; i < 8; i++) {
+        u64 modified_addr = first_row_addr;
+
+        // Set or clear the 12th bit (based on the least significant bit of 'i')
+        if (i & 0x1) {
+            modified_addr |= (1ULL << 12);  // Set the 12th bit to 1
+        } else {
+            modified_addr &= ~(1ULL << 12); // Set the 12th bit to 0
+        }
+
+        // Set or clear the 13th bit (based on the second least significant bit of 'i')
+        if (i & 0x2) {
+            modified_addr |= (1ULL << 13);  // Set the 13th bit to 1
+        } else {
+            modified_addr &= ~(1ULL << 13); // Set the 13th bit to 0
+        }
+
+        // Set or clear the 22nd bit (based on the third least significant bit of 'i')
+        if (i & 0x4) {
+            modified_addr |= (1ULL << 22);  // Set the 22nd bit to 1
+        } else {
+            modified_addr &= ~(1ULL << 22); // Set the 22nd bit to 0
+        }
+
+        // Step 2: Look up the page corresponding to the modified address.
+        struct mempage *page = mempage_lookup(modified_addr);
+        
+        // Step 3: If the page exists and has triggered the threshold, count it as a failure.
+        if (page && page->triggered) {
+            triggered_pages++;
+        }
+    }
+
+    // Step 4: Check if the majority of pages in the row have triggered the threshold.
+    // Here, we consider a row failure if alteast half of the 8 possible pages (at least 4) have triggered errors. SUBJECT TO CHANGE BASED ON FEEDBACK
+    return triggered_pages >= 4;
+}
+
+
+//HANDLES THE ROW FAILURE
+static int row_failure_handler(u64 addr, enum otype type) 
 {
-    for (int i = 0; i < num_pages; i++) { //iterates through consecutive number of pages 
-        u64 page_addr = addr + (i * PAGE_SIZE);  // Calculate consecutive page addresses
-        if (do_memory_offline(page_addr, type) < 0) { //if do_memory_offline fails
-            Lprintf("Offlining page %llx failed\n", page_addr);
+    u64 first_row_addr = get_first_memory_address(addr);  // Get the first memory address of the row
+
+    // Iterate over all 8 combinations of the 12th, 13th, and 22nd bits (3 bits => 8 combinations)
+    for (int i = 0; i < 8; i++) {
+        u64 modified_addr = first_row_addr;
+
+        // Set or clear the 12th bit (based on the least significant bit of 'i')
+        if (i & 0x1) {
+            modified_addr |= (1ULL << 12);  // Set the 12th bit to 1
+        } else {
+            modified_addr &= ~(1ULL << 12); // Set the 12th bit to 0
+        }
+
+        // Set or clear the 13th bit (based on the second least significant bit of 'i')
+        if (i & 0x2) {
+            modified_addr |= (1ULL << 13);  // Set the 13th bit to 1
+        } else {
+            modified_addr &= ~(1ULL << 13); // Set the 13th bit to 0
+        }
+
+        // Set or clear the 22nd bit (based on the third least significant bit of 'i')
+        if (i & 0x4) {
+            modified_addr |= (1ULL << 22);  // Set the 22nd bit to 1
+        } else {
+            modified_addr &= ~(1ULL << 22); // Set the 22nd bit to 0
+        }
+
+        // Find the corresponding page for the modified address
+        struct mempage *page = mempage_lookup(modified_addr);
+        if (page == NULL) {
+            Lprintf("Page lookup for address %llx failed\n", modified_addr);
+            return -1;
+        }
+
+        // Try to offline the page
+        if (do_memory_offline(modified_addr, type) < 0) {
+            Lprintf("Offlining page %llx failed\n", modified_addr);
             return -1;
         }
     }
-    return 0;
+
+    return 0;  // Return 0 if all pages were successfully offlined
 }
 
-// ----------------------------------------
-// MODIFICATION END - HELPER FUNCTION TO OFFLINE MULTIPLE CONSECUTIVE PAGES - HANDLES PAGE OFFLINE AT THE ROW LEVEL
-// ----------------------------------------
+
 
 static int memory_offline(u64 addr) /*determines offlining strategy based on offline mode and attemps to offline the page. If mode is offlining_soft_then_hard, it first tries 
- soft offlining. If soft offlining fails, it attempts hard offlining. For other modes, it directly attempts the configured type of offlining.*/
+ soft offlining. If soft offlining fails, it attempts hard offlining. */
 {
 
-	const int num_consecutive_pages = 5;  //MODIFICATION - Number of consecutive pages to offline
 
 	if (offline == OFFLINE_SOFT_THEN_HARD) {
 		if (do_memory_offline(addr, OFFLINE_SOFT) < 0)  { 
@@ -264,9 +347,14 @@ static int memory_offline(u64 addr) /*determines offlining strategy based on off
 	}
 	//return do_memory_offline(addr, offline); MODIFICATION - LINE HAS BEEN COMMENTED OUT
 
-	return do_consecutive_memory_offline(addr, num_consecutive_pages, offline);
-
-}
+	if (is_row_failure(addr)) {
+        // If row failure is detected, offline consecutive pages
+        return row_failure_handler(addr, OFFLINE_SOFT);
+    } else {
+        // If not a row failure (COL or BLK fail or just 1/2 memory addresses right next to eachother producing lots of errors), offline a single page using the configured offline mode
+        return do_memory_offline(addr, offline);
+	}
+}	
 
 static void offline_action(struct mempage *mp, u64 addr)
 {
