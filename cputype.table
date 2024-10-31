@@ -7,6 +7,7 @@ CPU_BROADWELL_EPEX|0x4f|Intel Xeon v4 (Broadwell) EP/EX|broadwell-ep,broadwell-e
 CPU_COMETLAKE|0xa5,0xa6|Cometlake|cometlake
 CPU_CORE2|0xf,0x17|Intel Core|core2,xeon3100,xeon3200,xeon5100,xeon5200,xeon7200
 CPU_DENVERTON|0x5f|Denverton|denverton
+CPU_DIAMONDRAPIDS|0x1301|Diamond Rapids|diamond_rapids
 CPU_DUNNINGTON|0x1d|Intel Xeon 7400 series|dunnington,xeon7400,xeon74xx
 CPU_EMERALDRAPIDS|0xcf|Emeraldrapids server|emeraldrapids_server
 CPU_GRANDRIDGE|0xb6|Grandridge|grandridge
