@@ -51,6 +51,7 @@ struct clientcon {
 
 static char *client_path = SOCKET_PATH;
 static int initial_ping_timeout = 2;
+static int listen_backlog = 10;
 static struct config_cred acc = { .uid = 0, .gid = -1U };
 
 static void free_outbuf(struct clientcon *cc)
@@ -275,12 +276,15 @@ static void server_config(void)
 {
 	char *s;
 	long v;
+	int l;
 
 	config_cred("server", "client", &acc);
 	if ((s = config_string("server", "socket-path")) != NULL)
 		client_path = s;
 	if (config_number("server", "initial-ping-timeout", "%u", &v) == 0)
 		initial_ping_timeout = v;
+	if (config_number("server", "listen-backlog", "%u", &l) == 0)
+		listen_backlog = l;
 }
 
 static sigjmp_buf ping_timeout_ctx;
@@ -327,6 +331,7 @@ void server_setup(void)
 	int fd;
 	struct sockaddr_un adr; 
 	int on;
+	int ret_listen;
 
 	server_config();
 
@@ -364,7 +369,11 @@ void server_setup(void)
 	}
 
 
-	listen(fd, 10);
+	ret_listen = listen(fd, listen_backlog);
+	if (ret_listen < 0) {
+		SYSERRprintf("cannot listen for connections on client unix socket");
+		goto cleanup;
+	}
 	/* Set SO_PASSCRED to avoid race with client connecting too fast */
 	/* Ignore error for old kernels */
 	on = 1;
@@ -377,5 +386,3 @@ cleanup:
 	close(fd);
 	exit(1);
 }
-
-
