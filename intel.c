@@ -122,6 +122,7 @@ static int intel_memory_error(struct mce *m, unsigned recordlen)
 			break;
 		case CPU_GRANITERAPIDS:
 		case CPU_SIERRAFOREST:
+		case CPU_CLEARWATERFOREST:
 			granite_memerr_misc(m, channel, dimm);
 			break;
 		default:
