@@ -74,7 +74,7 @@ enum {
 
 static int corr_err_counters;
 static struct mempage_cluster *mp_cluster;
-static struct mempage_replacement mp_repalcement;
+static struct mempage_replacement mp_replacement;
 static struct rb_root mempage_root;
 static LIST_HEAD(mempage_cluster_lru_list);
 static struct bucket_conf page_trigger_conf;
@@ -331,14 +331,14 @@ void account_page_error(struct mce *m, int channel, int dimm)
 		mempage_cluster_lru_list_update(to_cluster(mp));
 
 		/* Report how often the replacement of counter 'mp' happened */
-		++mp_repalcement.count;
-		if (__bucket_account(&mp_replacement_trigger_conf, &mp_repalcement.bucket, 1, t)) {
-			thresh = bucket_output(&mp_replacement_trigger_conf, &mp_repalcement.bucket);
+		++mp_replacement.count;
+		if (__bucket_account(&mp_replacement_trigger_conf, &mp_replacement.bucket, 1, t)) {
+			thresh = bucket_output(&mp_replacement_trigger_conf, &mp_replacement.bucket);
 			xasprintf(&msg, "Replacements of page correctable error counter exceed threshold %s", thresh);
 			free(thresh);
 			thresh = NULL;
 
-			counter_trigger(msg, t, &mp_repalcement, &mp_replacement_trigger_conf, false);
+			counter_trigger(msg, t, &mp_replacement, &mp_replacement_trigger_conf, false);
 			free(msg);
 			msg = NULL;
 		}
@@ -461,5 +461,5 @@ void page_setup(void)
 	if (n != max_corr_err_counters)
 		Lprintf("Round up max-corr-err-counters from %d to %d\n", n, max_corr_err_counters);
 
-	bucket_init(&mp_repalcement.bucket);
+	bucket_init(&mp_replacement.bucket);
 }
