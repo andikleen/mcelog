@@ -27,12 +27,12 @@ time_t __attribute__((weak)) bucket_time(void)
 }
 
 void bucket_age(const struct bucket_conf *c, struct leaky_bucket *b,
-			time_t now)
+			time_t now, unsigned char capacity_multiplier)
 {
 	long diff;
 	diff = now - b->tstamp;
 	if (diff >= c->agetime) { 
-		unsigned age = (diff / (double)c->agetime) * c->capacity;
+		unsigned age = (diff / (double)c->agetime) * c->capacity * capacity_multiplier;
 		b->tstamp = now;
 		if (age > b->count)
 			b->count = 0;
@@ -44,13 +44,13 @@ void bucket_age(const struct bucket_conf *c, struct leaky_bucket *b,
 
 /* Account increase in leaky bucket. Return 1 if bucket overflowed. */
 int __bucket_account(const struct bucket_conf *c, struct leaky_bucket *b, 
-		   unsigned inc, time_t t)
+		   unsigned inc, time_t t, unsigned char capacity_multiplier)
 {
 	if (c->capacity == 0)
 		return 0;
-	bucket_age(c, b, t);
+	bucket_age(c, b, t, capacity_multiplier);
 	b->count += inc; 
-	if (b->count >= c->capacity) {
+	if (b->count >= c->capacity * capacity_multiplier) {
 		b->excess += b->count;
 		/* should disable overflow completely in the same time unit */
 		b->count = 0;
@@ -62,7 +62,7 @@ int __bucket_account(const struct bucket_conf *c, struct leaky_bucket *b,
 int bucket_account(const struct bucket_conf *c, struct leaky_bucket *b, 
 		   unsigned inc) 
 {
-	return __bucket_account(c, b, inc, bucket_time());
+	return __bucket_account(c, b, inc, bucket_time(), 1);
 }
 
 static int timeconv(char unit, int *out)
@@ -89,7 +89,6 @@ char *bucket_output(const struct bucket_conf *c, struct leaky_bucket *b)
 		xasprintf(&buf, "not enabled");
 	} else { 
 		int unit = 0;
-		//bucket_age(c, b, bucket_time());
 		timeconv(c->tunit, &unit);
 		xasprintf(&buf, "%u in %u%c", b->count + b->excess,
 			c->agetime/unit, c->tunit);
@@ -198,7 +197,7 @@ int main(int argc, char **argv)
 
 	for (i = 1; i <= TOTAL_EVENTS; i++) {
 		event_time = start_time + i * SECONDS_PER_EVENT;
-		ret = __bucket_account(&c, &b, 1, event_time);
+		ret = __bucket_account(&c, &b, 1, event_time, 1);
 
 #ifdef TEST_LEAKY_BUCKET_DEBUG
 		if (ret)

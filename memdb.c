@@ -196,7 +196,7 @@ account_over(struct err_triggers *t, struct memdimm *md, struct mce *m, unsigned
 {
 	if (corr_err_cnt && --corr_err_cnt > 0) {
 		md->ce.count += corr_err_cnt;
-		if (__bucket_account(&t->ce_bucket_conf, &md->ce.bucket, corr_err_cnt, m->time)) { 
+		if (__bucket_account(&t->ce_bucket_conf, &md->ce.bucket, corr_err_cnt, m->time, 1)) {
 			char *msg;
 			xasprintf(&msg, "Fallback %s memory error count %d exceeded threshold",
 				 t->type, corr_err_cnt);
@@ -217,11 +217,11 @@ account_memdb(struct err_triggers *t, struct memdimm *md, struct mce *m, const c
 
 	if (m->status & MCI_STATUS_UC) { 
 		md->uc.count++;
-		if (__bucket_account(&t->uc_bucket_conf, &md->uc.bucket, 1, m->time))
+		if (__bucket_account(&t->uc_bucket_conf, &md->uc.bucket, 1, m->time, 1))
 			memdb_trigger(msg, md, m->time, &md->uc, &t->uc_bucket_conf, NULL, false, reporter);
 	} else {
 		md->ce.count++;
-		if (__bucket_account(&t->ce_bucket_conf, &md->ce.bucket, 1, m->time))
+		if (__bucket_account(&t->ce_bucket_conf, &md->ce.bucket, 1, m->time, 1))
 			memdb_trigger(msg, md, m->time, &md->ce, &t->ce_bucket_conf, NULL, false, reporter);
 	}
 	free(msg);
@@ -278,7 +278,7 @@ static void dump_errtype(char *name, struct err_type *e, FILE *f, enum printflag
 	int all = (flags & DUMP_ALL);
 	char *s;
 
-	bucket_age(bc, &e->bucket, bucket_time());
+	bucket_age(bc, &e->bucket, bucket_time(), 1);
 	if (e->count || e->bucket.count || all)
 		fprintf(f, "%s:\n", name);
 	if (e->count || all) {

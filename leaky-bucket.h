@@ -23,12 +23,12 @@ struct leaky_bucket {
 int bucket_account(const struct bucket_conf *c, struct leaky_bucket *b, 
 		   unsigned inc);
 int __bucket_account(const struct bucket_conf *c, struct leaky_bucket *b, 
-		   unsigned inc, time_t time);
+		   unsigned inc, time_t time, unsigned char capacity_multiplier);
 char *bucket_output(const struct bucket_conf *c, struct leaky_bucket *b);
 int bucket_conf_init(struct bucket_conf *c, const char *rate);
 void bucket_init(struct leaky_bucket *b);
 time_t bucket_time(void);
 void bucket_age(const struct bucket_conf *c, struct leaky_bucket *b,
-			time_t now);
+			time_t now, unsigned char capacity_multiplier);
 
 #endif
