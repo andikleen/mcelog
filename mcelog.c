@@ -85,6 +85,7 @@ static int debug_numerrors;
 int imc_log = -1;
 static int check_only = 0;
 int max_corr_err_counters = 4158;
+static bool binary_file;
 
 static int is_cpu_supported(void);
 
@@ -878,24 +879,24 @@ void usage(void)
 "  mcelog [options] --ascii --file log\n"
 "Decode machine check ASCII output from kernel logs\n"
 "\n"
-"Options:\n"  
+"Options:\n"
 "--version           Show the version of mcelog and exit\n"
 "--cpu CPU           Set CPU type CPU to decode (see below for valid types)\n"
-"--intel-cpu FAMILY,MODEL  Set CPU type for an Intel CPU based on family and model from cpuid\n"
+"--intel-cpu         FAMILY,MODEL  Set CPU type for an Intel CPU based on family and model from cpuid\n"
 "--k8                Set the CPU to be an AMD K8\n"
 "--p4                Set the CPU to be an Intel Pentium4\n"
 "--core2             Set the CPU to be an Intel Core2\n"
 "--generic           Set the CPU to a generic version\n"
 "--cpumhz MHZ        Set CPU Mhz to decode time (output unreliable, not needed on new kernels)\n"
-"--raw		     (with --ascii) Dump in raw ASCII format for machine processing\n"
+"--raw               (with --ascii) Dump in raw ASCII format for machine processing\n"
 "--daemon            Run in background waiting for events (needs newer kernel)\n"
 "--client            Query a currently running mcelog daemon for errors\n"
 "--ping              Send ping command to the currently running mcelog daemon\n"
 "--ignorenodev       Exit silently when the device cannot be opened\n"
 "--file filename     With --ascii read machine check log from filename instead of stdin\n"
 "--logfile filename  Log decoded machine checks in file filename\n"
-"--syslog            Log decoded machine checks in syslog (default stdout or syslog for daemon)\n"	     
-"--syslog-error	     Log decoded machine checks in syslog with error level\n"
+"--syslog            Log decoded machine checks in syslog (default stdout or syslog for daemon)\n"
+"--syslog-error      Log decoded machine checks in syslog with error level\n"
 "--no-syslog         Never log anything to syslog\n"
 "--logfile filename  Append log output to logfile instead of stdout\n"
 "--dmi               Use SMBIOS information to decode DIMMs (needs root)\n"
@@ -903,14 +904,15 @@ void usage(void)
 "--dmi-verbose       Dump SMBIOS information (for debugging)\n"
 "--filter            Inhibit known bogus events (default on)\n"
 "--no-filter         Don't inhibit known broken events\n"
-"--config-file filename Read config information from config file instead of " CONFIG_FILENAME "\n"
+"--config-file       filename Read config information from config file instead of " CONFIG_FILENAME "\n"
 "--foreground        Keep in foreground (for debugging)\n"
 "--num-errors N      Only process N errors (for testing)\n"
-"--pidfile file	     Write pid of daemon into file\n"
-"--no-imc-log	     Disable extended iMC logging\n"
+"--pidfile file      Write pid of daemon into file\n"
+"--no-imc-log        Disable extended iMC logging\n"
 "--is-cpu-supported  Exit with return code indicating whether the CPU is supported\n"
 "--max-corr-err-counters Max page correctable error counters\n"
-"--help	             Display this message.\n"
+"--binary            Input is binary (e.g. from pstore)\n"
+"--help              Display this message.\n"
 		);
 	printf("\n");
 	print_cputypes();
@@ -948,6 +950,7 @@ enum options {
 	O_IS_CPU_SUPPORTED,
 	O_MAX_CORR_ERR_COUNTERS,
 	O_HELP,
+	O_BINARY,
 };
 
 static struct option options[] = {
@@ -984,6 +987,7 @@ static struct option options[] = {
 	{ "no-imc-log", 0, NULL, O_NO_IMC_LOG },
 	{ "max-corr-err-counters", 1, NULL, O_MAX_CORR_ERR_COUNTERS },
 	{ "help", 0, NULL, O_HELP },
+	{ "binary", 0, NULL, O_BINARY },
 	{ "is-cpu-supported", 0, NULL, O_IS_CPU_SUPPORTED },
 	{}
 };
@@ -1103,6 +1107,8 @@ static int modifier(int opt)
 		usage();
 		exit(0);
 		break;
+	case O_BINARY:
+		binary_file = true;
 	case 0:
 		break;
 	default:
@@ -1386,10 +1392,15 @@ int main(int ac, char **av)
 		exit(1);
 	}
 	
-	if (ioctl(fd, MCE_GET_RECORD_LEN, &d.recordlen) < 0)
-		err("MCE_GET_RECORD_LEN");
-	if (ioctl(fd, MCE_GET_LOG_LEN, &d.loglen) < 0)
-		err("MCE_GET_LOG_LEN");
+	if (binary_file) {
+		d.recordlen = d.loglen = lseek(fd, 0, SEEK_END);
+		lseek(fd, 0, SEEK_SET);
+	} else {
+		if (ioctl(fd, MCE_GET_RECORD_LEN, &d.recordlen) < 0)
+			err("MCE_GET_RECORD_LEN");
+		if (ioctl(fd, MCE_GET_LOG_LEN, &d.loglen) < 0)
+			err("MCE_GET_LOG_LEN");
+	}
 
 	d.buf = xalloc(d.recordlen * d.loglen); 
 	if (daemon_mode) {

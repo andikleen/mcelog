@@ -241,6 +241,12 @@ not to with the
 option. You might need this option when decoding old logs
 from a system where this mode was not enabled.
 
+With the
+.B \-\-binary
+option mcelog reads from a regular file given and first argument
+instead of from /dev/mcelog. Useful for decoding errors saved
+in binary format to the pstore file system.
+
 Users can utilize the 
 .B \-\-ping
 option to check the availability of the mcelog server. If the mcelog server 
