@@ -349,8 +349,7 @@ static int decode_mci(__u64 status, __u64 misc, int cpu, unsigned mcgcap, int *i
 
 	if (status & MCI_STATUS_PCC)
 		Wprintf("Processor context corrupt\n");
-
-	if (status & (MCI_STATUS_S|MCI_STATUS_AR))
+	else if (status & (MCI_STATUS_S|MCI_STATUS_AR))
 		Wprintf("%s\n", arstate[(status >> 55) & 3]);
 
 	if ((mcgcap & MCG_SER_P) && (status & MCI_STATUS_FWST)) {
