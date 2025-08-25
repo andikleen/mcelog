@@ -294,7 +294,7 @@ void granite_memerr_misc(struct mce *m, int *channel, int *dimm)
 	if (chan == 0xf)
 		return;
 
-	if (m->bank < 13 || m->bank > 25)
+	if (m->bank < 13 || m->bank > 24)
 		return;
 
 	channel[0] = m->bank - 13;
