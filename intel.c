@@ -29,6 +29,7 @@
 #include "i10nm.h"
 #include "sapphire.h"
 #include "granite.h"
+#include "diamond.h"
 
 int memory_error_support;
 
@@ -124,6 +125,9 @@ static int intel_memory_error(struct mce *m, unsigned recordlen)
 		case CPU_SIERRAFOREST:
 		case CPU_CLEARWATERFOREST:
 			granite_memerr_misc(m, channel, dimm);
+			break;
+		case CPU_DIAMONDRAPIDS:
+			diamond_memerr_misc(m, channel, dimm);
 			break;
 		default:
 			break;

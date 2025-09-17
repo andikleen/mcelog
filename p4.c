@@ -43,6 +43,7 @@
 #include "i10nm.h"
 #include "sapphire.h"
 #include "granite.h"
+#include "diamond.h"
 
 /* decode mce for P4/Xeon and Core2 family */
 
@@ -472,6 +473,9 @@ void decode_intel_mc(struct mce *log, int cputype, int *ismemerr, unsigned size)
 	case CPU_SIERRAFOREST:
 	case CPU_CLEARWATERFOREST:
 		granite_decode_model(cputype, log->bank, log->status, log->misc);
+		break;
+	case CPU_DIAMONDRAPIDS:
+		diamond_decode_model(cputype, log);
 		break;
 	case CPU_DENVERTON:
 		denverton_decode_model(cputype, log->bank, log->status, log->misc);
