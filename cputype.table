@@ -39,4 +39,5 @@ CPU_SKYLAKE|0x4e,0x5e|Skylake|skylake
 CPU_SKYLAKE_XEON|0x55|Skylake server|cascadelake_server,skylake_server
 CPU_TIGERLAKE|0x8C,0x8D|Tigerlake|tigerlake
 CPU_TREMONT_D|0x86|Tremont microserver|snowridge
+CPU_WILDCATLAKE|0xd5|Wildcatlake|wildcatlake
 CPU_XEON75XX|0x2e,0x2f|Intel Xeon 7500 series|xeon7500,xeon75xx
