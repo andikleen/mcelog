@@ -37,7 +37,8 @@ OBJ := p4.o k8.o mcelog.o dmi.o tsc.o core2.o bitfield.o intel.o \
        sandy-bridge.o ivy-bridge.o haswell.o		 	 \
        broadwell_de.o broadwell_epex.o skylake_xeon.o		 \
        denverton.o i10nm.o sapphire.o granite.o diamond.o	 \
-       msr.o bus.o unknown.o lookup_intel_cputype.o
+       msr.o bus.o unknown.o lookup_intel_cputype.o zhaoxin.o	 \
+       zhaoxin-kh50000.o
 CLEAN := mcelog dmi tsc dbquery .depend .depend.X dbquery.o \
 	version.o version.c version.tmp cputype.h cputype.tmp \
 	lookup_intel_cputype.c lookup_intel_cputype.tmp

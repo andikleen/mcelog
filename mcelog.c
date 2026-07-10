@@ -42,6 +42,7 @@
 #include "paths.h"
 #include "k8.h"
 #include "intel.h"
+#include "zhaoxin.h"
 #include "p4.h"
 #include "dmi.h"
 #include "tsc.h"
@@ -127,6 +128,8 @@ static char *bankname(unsigned bank)
 		return intel_bank_name(bank);
 	else if (cputype == CPU_K8)
 		return k8_bank_name(bank);
+	else if (cputype >= CPU_ZHAOXIN && cputype <= CPU_ZHAOXIN_KH50000)
+		return zhaoxin_bank_name(bank);
 
 	/* add banks of other cpu types here */
 	sprintf(numeric, "BANK %d", bank);
@@ -150,6 +153,8 @@ static int mce_filter(struct mce *m, unsigned recordlen)
 		return mce_filter_intel(m, recordlen);
 	else if (cputype == CPU_K8)
 		return mce_filter_k8(m);
+	else if (cputype >= CPU_ZHAOXIN && cputype <= CPU_ZHAOXIN_KH50000)
+		return mce_filter_zhaoxin(m, recordlen);
 
 	return 1;
 }
@@ -192,7 +197,11 @@ static void parse_cpuid(u32 cpuid, u32 *family, u32 *model, u32 *stepping)
 	if (*family == 0xf) 
 		*family += c.c.ext_family;
 	*model = c.c.model;
-	if (*family == 6 || *family == 0xf) 
+	/*
+	 * Follow the Linux kernel: apply the extended model for family >= 6
+	 * (covers Intel/AMD family 6 & 0xf as well as Zhaoxin family 7).
+	 */
+	if (*family >= 0x6)
 		*model += c.c.ext_model << 4;
 	*stepping = c.c.stepping;
 }
@@ -210,7 +219,11 @@ static u32 unparse_cpuid(unsigned family, unsigned model)
 		c.c.ext_family = family - 0xf;
 	}
 	c.c.model = model & 0xf;
-	if (family == 6 || family == 0xf)
+	/*
+	 * Follow the Linux kernel: apply the extended model for family >= 6
+	 * (covers Intel/AMD family 6 & 0xf as well as Zhaoxin family 7).
+	 */
+	if (family >= 0x6)
 		c.c.ext_model = model >> 4;
 	return c.v;
 }
@@ -247,7 +260,9 @@ static char *vendor[] = {
 	[5] = "Centaur",
 	[6] = "vendor 6",
 	[7] = "Transmeta",
-	[8] = "NSC"
+	[8] = "NSC",
+	[9] = "vendor 9",
+	[10] = "Zhaoxin"
 };
 
 static unsigned cpuvendor_to_num(char *name)
@@ -279,6 +294,9 @@ static enum cputype setup_cpuid(u32 cpuvendor, u32 cpuid)
 	switch (cpuvendor) { 
 	case X86_VENDOR_INTEL:
 	        return select_intel_cputype(family, model);
+	case X86_VENDOR_CENTAUR:
+	case X86_VENDOR_ZHAOXIN:
+		return select_zhaoxin_cputype(family, model);
 	case X86_VENDOR_AMD:
 		if (family >= 15 && family <= 17)
 			return CPU_K8;
@@ -347,6 +365,8 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 		decode_k8_mc(m, &ismemerr); 
 	else if (cputype >= CPU_INTEL)
 		decode_intel_mc(m, cputype, &ismemerr, recordlen);
+	else if (cputype >= CPU_ZHAOXIN && cputype <= CPU_ZHAOXIN_KH50000)
+		decode_zhaoxin_mc(m, cputype, &ismemerr, recordlen);
 	/* else add handlers for other CPUs here */
 
 	/* decode all status bits here */
@@ -380,7 +400,8 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 	    cputype == CPU_GENERIC || cputype == CPU_HASWELL || cputype == CPU_ICELAKE ||
 	    cputype == CPU_INTEL || cputype == CPU_IVY_BRIDGE || cputype == CPU_K8 ||
 	    cputype == CPU_NEHALEM || cputype == CPU_P4 || cputype == CPU_P6OLD ||
-	    cputype == CPU_SANDY_BRIDGE || cputype == CPU_TULSA || cputype == CPU_XEON75XX)
+	    cputype == CPU_SANDY_BRIDGE || cputype == CPU_TULSA || cputype == CPU_XEON75XX ||
+	    cputype == CPU_ZHAOXIN || cputype == CPU_ZHAOXIN_KH50000)
 		resolveaddr(m->addr);
 }
 
@@ -472,6 +493,13 @@ int is_cpu_supported(void)
 				return 0;
 			} else if (!strcmp(vendor,"GenuineIntel"))
 				cputype = select_intel_cputype(family, model);
+			/*
+			 * sscanf skips the leading padding in "  Shanghai  "
+			 * but preserves its two trailing spaces.
+			 */
+			else if (!strcmp(vendor, "CentaurHauls") || !strcmp(vendor, "Shanghai  ")) {
+				cputype = select_zhaoxin_cputype(family, model);
+			}
 			/* Add checks for other CPUs here */	
 		} else {
 			Eprintf("warning: Cannot parse /proc/cpuinfo\n"); 
