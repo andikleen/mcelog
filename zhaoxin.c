@@ -15,6 +15,7 @@
 #include "memdb.h"
 #include "page.h"
 #include "zhaoxin.h"
+#include "zhaoxin-kh40000.h"
 #include "zhaoxin-kh50000.h"
 #include "yellow.h"
 #include "bus.h"
@@ -42,6 +43,8 @@ enum cputype select_zhaoxin_cputype(int family, int model)
 
 	if (family == 0x7) {
 		switch (model) {
+		case 0x5b:
+			return CPU_ZHAOXIN_KH40000;
 		case 0x7b:
 			return CPU_ZHAOXIN_KH50000;
 		}
@@ -65,6 +68,9 @@ static int zhaoxin_memory_error(struct mce *m, unsigned int recordlen)
 		int channel = (m->status & 0xf) == 0xf ? -1 : (int)(m->status & 0xf);
 
 		switch (cputype) {
+		case CPU_ZHAOXIN_KH40000:
+			kh40000_memerr_misc(m, &channel);
+			break;
 		case CPU_ZHAOXIN_KH50000:
 			kh50000_memerr_misc(m, &channel);
 			break;
@@ -97,6 +103,8 @@ char *zhaoxin_bank_name(unsigned int num)
 	static char numeric[64];
 
 	switch (cputype) {
+	case CPU_ZHAOXIN_KH40000:
+		return kh40000_bank_name(num);
 	case CPU_ZHAOXIN_KH50000:
 		return kh50000_bank_name(num);
 	default:
@@ -403,6 +411,9 @@ void decode_zhaoxin_mc(struct mce *m, int cputype, int *ismemerr, unsigned int r
 		run_unknown_trigger(socket, cpu, m);
 
 	switch (cputype) {
+	case CPU_ZHAOXIN_KH40000:
+		kh40000_decode_model(m);
+		break;
 	case CPU_ZHAOXIN_KH50000:
 		kh50000_decode_model(m);
 		break;

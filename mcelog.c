@@ -401,7 +401,7 @@ static void dump_mce(struct mce *m, unsigned recordlen)
 	    cputype == CPU_INTEL || cputype == CPU_IVY_BRIDGE || cputype == CPU_K8 ||
 	    cputype == CPU_NEHALEM || cputype == CPU_P4 || cputype == CPU_P6OLD ||
 	    cputype == CPU_SANDY_BRIDGE || cputype == CPU_TULSA || cputype == CPU_XEON75XX ||
-	    cputype == CPU_ZHAOXIN || cputype == CPU_ZHAOXIN_KH50000)
+	    cputype == CPU_ZHAOXIN || cputype == CPU_ZHAOXIN_KH50000 || cputype == CPU_ZHAOXIN_KH40000)
 		resolveaddr(m->addr);
 }
 

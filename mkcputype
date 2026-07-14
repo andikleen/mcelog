@@ -6,6 +6,7 @@ awk -F\| 'BEGIN {
 	print "\tCPU_GENERIC," > "cputype.tmp"
 	print "\tCPU_K8," > "cputype.tmp"
 	print "\tCPU_ZHAOXIN," > "cputype.tmp"
+	print "\tCPU_ZHAOXIN_KH40000," > "cputype.tmp"
 	print "\tCPU_ZHAOXIN_KH50000," > "cputype.tmp"
 
 	print "\n\n/* Insert any new non-intel CPU models before this line */\n\n" > "cputype.tmp"
@@ -47,6 +48,7 @@ END {
 	print "\t[CPU_GENERIC] = \"generic CPU\"," > "lookup_intel_cputype.tmp"
 	print "\t[CPU_K8] = \"AMD K8 and derivates\"," > "lookup_intel_cputype.tmp"
 	print "\t[CPU_ZHAOXIN] = \"Zhaoxin generic CPU\"," > "lookup_intel_cputype.tmp"
+	print "\t[CPU_ZHAOXIN_KH40000] = \"Zhaoxin KH-40000 server\"," > "lookup_intel_cputype.tmp"
 	print "\t[CPU_ZHAOXIN_KH50000] = \"Zhaoxin KH-50000 server\"," > "lookup_intel_cputype.tmp"
 	print "\t[CPU_INTEL] = \"Intel generic architectural MCA\"," > "lookup_intel_cputype.tmp"
 	print "\t[CPU_P4] = \"Intel P4\"," > "lookup_intel_cputype.tmp"
@@ -58,6 +60,7 @@ END {
 	print "\t{ \"generic\", CPU_GENERIC }," > "lookup_intel_cputype.tmp"
 	print "\t{ \"k8\", CPU_K8 }," > "lookup_intel_cputype.tmp"
 	print "\t{ \"zhaoxin\", CPU_ZHAOXIN }," > "lookup_intel_cputype.tmp"
+	print "\t{ \"kh-40000\", CPU_ZHAOXIN_KH40000 }," > "lookup_intel_cputype.tmp"
 	print "\t{ \"kh-50000\", CPU_ZHAOXIN_KH50000 }," > "lookup_intel_cputype.tmp"
 	print "\t{ \"intel\", CPU_INTEL }," > "lookup_intel_cputype.tmp"
 	print "\t{ \"p4\", CPU_P4 }," > "lookup_intel_cputype.tmp"
