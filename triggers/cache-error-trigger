@@ -24,7 +24,7 @@ EXIT=0
 
 logger -s -p daemon.crit -t mcelog "Level $LEVEL cache error threshold affects CPUs: $AFFECTED_CPUS"
 
-if [ $DO_OFFLINE = 0 -o $AFFECTED_CPUS = unknown ]
+if [ "$DO_OFFLINE" = 0 ] || [ "$AFFECTED_CPUS" = unknown ]
 then
 	exit $EXIT
 fi
