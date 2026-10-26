@@ -72,6 +72,7 @@ static int timeconv(char unit, int *out)
 	case 'd': corr *= 24; /* FALL THROUGH */
 	case 'h': corr *= 60; /* FALL THROUGH */
 	case 'm': corr *= 60; /* FALL THROUGH */
+	case 's': /* FALL THROUGH */
 	case 0:   break;
 	default:
 		*out = 1;
