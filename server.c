@@ -114,7 +114,7 @@ static void dispatch_commands(char *line, FILE *fh)
 	char *s;
 	while ((s = strsep(&line, "\n")) != NULL) { 
 		while (isspace(*s))
-			line++;
+			s++;
 		if (!strncmp(s, "dump", 4))
 			dispatch_dump(fh, s);
 		else if (!strncmp(s, "pages", 5))
@@ -275,16 +275,15 @@ cleanup:
 static void server_config(void)
 {
 	char *s;
-	long v;
-	int l;
+	int v;
 
 	config_cred("server", "client", &acc);
 	if ((s = config_string("server", "socket-path")) != NULL)
 		client_path = s;
-	if (config_number("server", "initial-ping-timeout", "%u", &v) == 0)
+	if (config_number("server", "initial-ping-timeout", "%d", &v) == 0)
 		initial_ping_timeout = v;
-	if (config_number("server", "listen-backlog", "%u", &l) == 0)
-		listen_backlog = l;
+	if (config_number("server", "listen-backlog", "%d", &v) == 0)
+		listen_backlog = v;
 }
 
 static sigjmp_buf ping_timeout_ctx;
