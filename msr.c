@@ -19,24 +19,24 @@ static void domsr(int cpu, int msr, int bit)
 	if (fd == -1) {
 		switch (errno) {
 		case ENOENT:
-			SYSERRprintf("Warning: cpu %d offline?, imc_log not set\n", cpu);
+			SYSERRprintf("Warning: cpu %d offline?, imc_log not set", cpu);
 			return;
 		default:
-			SYSERRprintf("Cannot open %s to set imc_log\n", fpath);
+			SYSERRprintf("Cannot open %s to set imc_log", fpath);
 			return;
 		}
 	}
 	if (pread(fd, &data, sizeof data, msr) != sizeof data) {
-		SYSERRprintf("Cannot read MSR_ERROR_CONTROL from %s\n", fpath);
+		SYSERRprintf("Cannot read MSR_ERROR_CONTROL from %s", fpath);
 		goto out;
 	}
 	data |= bit;
 	if (pwrite(fd, &data, sizeof data, msr) != sizeof data) {
-		SYSERRprintf("Cannot write MSR_ERROR_CONTROL to %s\n", fpath);
+		SYSERRprintf("Cannot write MSR_ERROR_CONTROL to %s", fpath);
 		goto out;
 	}
 	if (pread(fd, &data, sizeof data, msr) != sizeof data) {
-		SYSERRprintf("Cannot re-read MSR_ERROR_CONTROL from %s\n", fpath);
+		SYSERRprintf("Cannot re-read MSR_ERROR_CONTROL from %s", fpath);
 		goto out;
 	}
 	if ((data & bit) == 0)
