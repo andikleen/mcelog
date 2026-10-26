@@ -170,7 +170,7 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 	xasprintf(&env[ei++], "AGETIME=%u", bc->agetime);
 	// XXX human readable version of agetime
 	xasprintf(&env[ei++], "MESSAGE=%s", out);
-	xasprintf(&env[ei++], "THRESHOLD_COUNT=%d", bucket->count);
+	xasprintf(&env[ei++], "THRESHOLD_COUNT=%u", bucket->count + bucket->excess);
 	env[ei] = NULL;	
 	assert(ei < MAX_ENV);
 	run_trigger(bc->trigger, args, env, sync, reporter);
