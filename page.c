@@ -379,14 +379,13 @@ void account_page_error(struct mce *m, int channel, int dimm)
 			};
 			char *args;
 
-			asprintf(&args, "%lld", addr);
-			argv[0]=args;
+			xasprintf(&args, "%llu", addr);
 
 			memcpy(&page_soft_trigger_conf, &page_trigger_conf, sizeof(struct bucket_conf));
 			page_soft_trigger_conf.trigger = page_error_pre_soft_trigger;
 			argv[0]=page_error_pre_soft_trigger;
 			argv[1]=args;
-			asprintf(&msg, "pre soft trigger run for page %lld", addr);
+			xasprintf(&msg, "pre soft trigger run for page %llu", addr);
 			memdb_trigger(msg, md, t, &mp->ce, &page_soft_trigger_conf, argv, true, "page_pre_soft");
 			free(msg);
 			msg = NULL;
@@ -397,7 +396,7 @@ void account_page_error(struct mce *m, int channel, int dimm)
 			page_soft_trigger_conf.trigger = page_error_post_soft_trigger;
 			argv[0]=page_error_post_soft_trigger;
 			argv[1]=args;
-			asprintf(&msg, "post soft trigger run for page %lld", addr);
+			xasprintf(&msg, "post soft trigger run for page %llu", addr);
 			memdb_trigger(msg, md, t, &mp->ce, &page_soft_trigger_conf, argv, true, "page_post_soft");
 			free(msg);
 			msg = NULL;
