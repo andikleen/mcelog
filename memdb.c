@@ -238,7 +238,7 @@ void memory_error(struct mce *m, int ch, int dimm, unsigned corr_err_cnt,
 {
 	struct memdimm *md;
 
-	if (recordlen < offsetof(struct mce, socketid)) { 
+	if (recordlen < endof_field(struct mce, socketid)) {
 		static int warned;
 		if (!warned) {
 			Eprintf("Cannot account memory errors because kernel does not report socketid");
