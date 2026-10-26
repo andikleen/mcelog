@@ -1222,7 +1222,17 @@ static void process(int fd, unsigned recordlen, unsigned loglen, char *buf)
 	}
 
 	for (i = 0; (i < count) && !finish; i++) {
-		struct mce *mce = (struct mce *)(buf + i*recordlen);
+		struct mce m;
+		struct mce *mce = &m;
+
+		/*
+		 * The record may be shorter than struct mce (older kernel or
+		 * binary input file). Work on a zero padded copy so that
+		 * the decoders never access memory beyond the record.
+		 */
+		memset(&m, 0, sizeof(struct mce));
+		memcpy(&m, buf + i*recordlen,
+		       recordlen < sizeof(struct mce) ? recordlen : sizeof(struct mce));
 		mce_prepare(mce);
 		if (numerrors > 0 && --numerrors == 0)
 			finish = 1;
@@ -1405,7 +1415,9 @@ int main(int ac, char **av)
 	}
 	
 	if (binary_file) {
-		d.recordlen = d.loglen = lseek(fd, 0, SEEK_END);
+		/* The whole file is a single record */
+		d.recordlen = lseek(fd, 0, SEEK_END);
+		d.loglen = 1;
 		lseek(fd, 0, SEEK_SET);
 	} else {
 		if (ioctl(fd, MCE_GET_RECORD_LEN, &d.recordlen) < 0)
