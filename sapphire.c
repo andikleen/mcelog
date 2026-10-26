@@ -376,6 +376,8 @@ void sapphire_decode_model(int cputype, int bank, u64 status, u64 misc)
 	switch (cputype) {
 	case CPU_SAPPHIRERAPIDS:
 	case CPU_EMERALDRAPIDS:
+		if (bank < 0 || bank >= (int)NELE(sapphire))
+			return;
 		banktype = sapphire[bank];
 		break;
 	default:
