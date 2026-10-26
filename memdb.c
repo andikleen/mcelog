@@ -152,7 +152,7 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 		goto out;
 	xasprintf(&env[ei++], "PATH=%s", getenv("PATH") ?: "/sbin:/usr/sbin:/bin:/usr/bin");
 	xasprintf(&env[ei++], "THRESHOLD=%s", thresh);
-	xasprintf(&env[ei++], "TOTALCOUNT=%lu", et->count);
+	xasprintf(&env[ei++], "TOTALCOUNT=%u", et->count);
 	xasprintf(&env[ei++], "LOCATION=%s", location);
 	if (md->location)
 		xasprintf(&env[ei++], "DMI_LOCATION=%s", md->location);
@@ -163,10 +163,10 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 	if (md->channel != -1)
 		xasprintf(&env[ei++], "CHANNEL=%d", md->channel);
 	xasprintf(&env[ei++], "SOCKETID=%d", md->socketid);
-	xasprintf(&env[ei++], "CECOUNT=%lu", md->ce.count);
-	xasprintf(&env[ei++], "UCCOUNT=%lu", md->uc.count);
+	xasprintf(&env[ei++], "CECOUNT=%u", md->ce.count);
+	xasprintf(&env[ei++], "UCCOUNT=%u", md->uc.count);
 	if (t)
-		xasprintf(&env[ei++], "LASTEVENT=%lu", t);
+		xasprintf(&env[ei++], "LASTEVENT=%ld", (long)t);
 	xasprintf(&env[ei++], "AGETIME=%u", bc->agetime);
 	// XXX human readable version of agetime
 	xasprintf(&env[ei++], "MESSAGE=%s", out);
