@@ -189,10 +189,10 @@ static void parse_cpuid(u32 cpuid, u32 *family, u32 *model, u32 *stepping)
 	/* Algorithm from IA32 SDM 2a 3-191 */
 	c.v = cpuid;
 	*family = c.c.family; 
-	if (*family == 0xf) 
+	if (c.c.family == 0xf) 
 		*family += c.c.ext_family;
 	*model = c.c.model;
-	if (*family == 6 || *family == 0xf) 
+	if (c.c.family == 6 || c.c.family == 0xf) 
 		*model += c.c.ext_model << 4;
 	*stepping = c.c.stepping;
 }
@@ -204,13 +204,14 @@ static u32 unparse_cpuid(unsigned family, unsigned model)
 		u32 v;	
        } c;
 
+	c.v = 0;
 	c.c.family = family;
 	if (family >= 0xf) {
 		c.c.family = 0xf;
 		c.c.ext_family = family - 0xf;
 	}
 	c.c.model = model & 0xf;
-	if (family == 6 || family == 0xf)
+	if (family == 6 || family >= 0xf)
 		c.c.ext_model = model >> 4;
 	return c.v;
 }
