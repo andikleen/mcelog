@@ -95,13 +95,13 @@ void SYSERRprintf(char *fmt, ...)
 		va_end(ap);
 	}
 	if (syslog_opt & SYSLOG_ERROR) { 
-		char *fmt2;
+		char *msg;
 		va_start(ap, fmt);
 		opensyslog();
-		xasprintf(&fmt2, "%s: %s\n", fmt, err);
-		vsyslog(LOG_ERR, fmt2, ap);
-		free(fmt2);
-		fmt2 = NULL;
+		xvasprintf(&msg, fmt, ap);
+		syslog(LOG_ERR, "%s: %s", msg, err);
+		free(msg);
+		msg = NULL;
 		va_end(ap);
 	}
 }
