@@ -268,9 +268,9 @@ static void counter_trigger(char *msg, time_t t, struct mempage_replacement *mr,
 		goto out;
 
 	xasprintf(&env[ei++], "THRESHOLD=%s", thresh);
-	xasprintf(&env[ei++], "TOTALCOUNT=%lu", mr->count);
+	xasprintf(&env[ei++], "TOTALCOUNT=%u", mr->count);
 	if (t)
-		xasprintf(&env[ei++], "LASTEVENT=%lu", t);
+		xasprintf(&env[ei++], "LASTEVENT=%ld", (long)t);
 	xasprintf(&env[ei++], "AGETIME=%u", bc->agetime);
 	xasprintf(&env[ei++], "MESSAGE=%s", out);
 	xasprintf(&env[ei++], "THRESHOLD_COUNT=%u", bk->count + bk->excess);
