@@ -452,7 +452,7 @@ int is_cpu_supported(void)
 					cpumhz = mhz;
 				seen |= MHZ;
 			}
-			if (!strncmp(line, "flags", 5) && isspace(line[6])) {
+			if (!strncmp(line, "flags", 5) && isspace(line[5])) {
 				processor_flags = line;
 				line = NULL;
 				linelen = 0;
