@@ -48,12 +48,18 @@ void ask_server(char *command)
 	strncpy(sun.sun_path, path, sizeof(sun.sun_path)-1);
 
 	if (connect(fd, (struct sockaddr *)&sun, 
-			sizeof(struct sockaddr_un)) < 0)
+			sizeof(struct sockaddr_un)) < 0) {
 		SYSERRprintf("client connect");
+		close(fd);
+		return;
+	}
 	
 	n = strlen(command);
-	if (write(fd, command, n) != n)
+	if (write(fd, command, n) != n) {
 		SYSERRprintf("client command write");
+		close(fd);
+		return;
+	}
 
 	if ((fp = fdopen(fd, "r")) != NULL) {
 		while (fgets(buf, sizeof buf, fp)) {
