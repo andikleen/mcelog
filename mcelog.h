@@ -45,7 +45,8 @@ struct mce {
 #define X86_VENDOR_CENTAUR	5
 #define X86_VENDOR_TRANSMETA	7
 #define X86_VENDOR_NSC		8
-#define X86_VENDOR_NUM		9
+#define X86_VENDOR_ZHAOXIN	10
+#define X86_VENDOR_NUM		11
 
 #define MCE_OVERFLOW 0		/* bit 0 in flags means overflow */
 
