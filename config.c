@@ -355,7 +355,7 @@ void config_cred(char *header, char *base, struct config_cred *cred)
 			cred->gid = -1U;
 		else if ((gr = getgrnam(s)) == NULL)
 			Eprintf("Unknown group `%s' in %s:%s config entry\n", 
-				header, name, s);
+				s, header, name);
 		else
 			cred->gid = gr->gr_gid;
 	}
