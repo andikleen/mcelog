@@ -311,7 +311,7 @@ int config_trigger(const char *header, const char *base, struct bucket_conf *bc)
 	if (s) { 
 		/* no $PATH */
 		if (trigger_check(s) != 0) {
-			SYSERRprintf("Trigger `%s' not executable\n", s);
+			SYSERRprintf("Trigger `%s' not executable", s);
 			exit(1);
 		}
 		bc->trigger = s;
