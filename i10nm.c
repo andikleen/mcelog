@@ -360,12 +360,18 @@ void i10nm_decode_model(int cputype, int bank, u64 status, u64 misc)
 
 	switch (cputype) {
 	case CPU_ICELAKE_XEON:
+		if (bank < 0 || bank >= (int)NELE(icelake))
+			return;
 		banktype = icelake[bank];
 		break;
 	case CPU_ICELAKE_DE:
+		if (bank < 0 || bank >= (int)NELE(icelake_de))
+			return;
 		banktype = icelake_de[bank];
 		break;
 	case CPU_TREMONT_D:
+		if (bank < 0 || bank >= (int)NELE(tremont))
+			return;
 		banktype = tremont[bank];
 		break;
 	default:

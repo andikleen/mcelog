@@ -170,7 +170,7 @@ void memdb_trigger(char *msg, struct memdimm *md,  time_t t,
 	xasprintf(&env[ei++], "AGETIME=%u", bc->agetime);
 	// XXX human readable version of agetime
 	xasprintf(&env[ei++], "MESSAGE=%s", out);
-	xasprintf(&env[ei++], "THRESHOLD_COUNT=%d", bucket->count);
+	xasprintf(&env[ei++], "THRESHOLD_COUNT=%u", bucket->count + bucket->excess);
 	env[ei] = NULL;	
 	assert(ei < MAX_ENV);
 	run_trigger(bc->trigger, args, env, sync, reporter);
@@ -238,7 +238,7 @@ void memory_error(struct mce *m, int ch, int dimm, unsigned corr_err_cnt,
 {
 	struct memdimm *md;
 
-	if (recordlen < offsetof(struct mce, socketid)) { 
+	if (recordlen < endof_field(struct mce, socketid)) {
 		static int warned;
 		if (!warned) {
 			Eprintf("Cannot account memory errors because kernel does not report socketid");

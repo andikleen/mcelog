@@ -26,6 +26,8 @@
 logger -s -p daemon.err -t mcelog "$MESSAGE"
 logger -s -p daemon.err -t mcelog "Location: $LOCATION"
 
+[ -x ./page-error-pre-sync-soft-trigger.local ] && . ./page-error-pre-sync-soft-trigger.local $1
+# old name of the local script, kept for compatibility
 [ -x ./page-error-pre-soft-trigger.local ] && . ./page-error-pre-soft-trigger.local $1
 
 if [ -d page-error-pre-sync-soft-trigger.extern ]

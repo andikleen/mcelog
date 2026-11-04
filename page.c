@@ -273,7 +273,7 @@ static void counter_trigger(char *msg, time_t t, struct mempage_replacement *mr,
 		xasprintf(&env[ei++], "LASTEVENT=%lu", t);
 	xasprintf(&env[ei++], "AGETIME=%u", bc->agetime);
 	xasprintf(&env[ei++], "MESSAGE=%s", out);
-	xasprintf(&env[ei++], "THRESHOLD_COUNT=%d", bk->count);
+	xasprintf(&env[ei++], "THRESHOLD_COUNT=%u", bk->count + bk->excess);
 	env[ei] = NULL;
 	assert(ei < MAX_ENV);
 
